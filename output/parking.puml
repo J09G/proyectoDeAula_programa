@@ -1,0 +1,301 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+
+skinparam class {
+    BackgroundColor<<Controller>> #E3F2FD
+    BackgroundColor<<Service>> #C8E6C9
+    BackgroundColor<<Repository>> #FFCCBC
+    BackgroundColor<<Entity>> #FFF9C4
+    BorderColor Black
+}
+
+' ========== CONTROLLERS ==========
+class AdminController <<Controller>> {
+    - parqueaderoService
+    - reservaService
+    --
+    + mostrarPanelAdmin()
+    + buscarReservaPorCedula()
+    + editarParqueadero()
+    + actualizarEspacios()
+    + aceptarReserva()
+    + rechazarReserva()
+}
+
+class ClienteController <<Controller>> {
+    - zonaService
+    - reservaService
+    --
+    + mostrarPanelCliente()
+}
+
+class LoginController <<Controller>> {
+    - usuarioService
+    --
+    + mostrarLogin()
+    + procesarLogin()
+    + cerrarSesion()
+}
+
+class RegistroController <<Controller>> {
+    - usuarioService
+    --
+    + mostrarFormulario()
+    + registrarCliente()
+}
+
+class ReservaController <<Controller>> {
+    - reservaService
+    - parqueaderoService
+    --
+    + mostrarFormularioReserva()
+    + crearReserva()
+}
+
+class SuperAdminController <<Controller>> {
+    - parqueaderoService
+    - zonaService
+    - usuarioService
+    --
+    + mostrarPanelSuperadmin()
+    + registrarParqueadero()
+    + asignarAdministrador()
+    + listarUsuarios()
+    + actualizarUsuario()
+}
+
+class ZonaController <<Controller>> {
+    - zonaService
+    - parqueaderoService
+    --
+    + mostrarZona()
+}
+
+' ========== SERVICES INTERFACES ==========
+interface ParqueaderoService <<Service>> {
+    + registrarParqueadero()
+    + obtenerParqueaderoPorId()
+    + listarParqueaderos()
+    + asignarAdministrador()
+    + cambiarEstado()
+}
+
+interface ReservaService <<Service>> {
+    + crearReserva()
+    + listarReservasCliente()
+    + cambiarEstadoReserva()
+    + eliminarReserva()
+}
+
+interface UsuarioService <<Service>> {
+    + registrarUsuario()
+    + validarLogin()
+    + obtenerUsuarioPorCorreo()
+    + actualizarUsuario()
+}
+
+interface ZonaService <<Service>> {
+    + obtenerZonas()
+    + obtenerZonaPorId()
+}
+
+' ========== SERVICES IMPLEMENTATIONS ==========
+class ParqueaderoServiceImpl <<Service>> {
+    - parqueaderoRepository
+    - zonaRepository
+    - usuarioRepository
+    --
+    + registrarParqueadero()
+    + obtenerParqueaderoPorId()
+    + listarParqueaderos()
+}
+
+class ReservaServiceImpl <<Service>> {
+    - reservaRepository
+    - parqueaderoService
+    - emailService
+    --
+    + crearReserva()
+    + cambiarEstadoReserva()
+}
+
+class UsuarioServiceImpl <<Service>> {
+    - usuarioRepository
+    - rolRepository
+    --
+    + registrarUsuario()
+    + validarLogin()
+}
+
+class ZonaServiceImpl <<Service>> {
+    - zonaRepository
+    --
+    + obtenerZonas()
+}
+
+class EmailService <<Service>> {
+    - mailSender
+    --
+    + enviarCorreo()
+}
+
+' ========== REPOSITORIES ==========
+interface ParqueaderoRepository <<Repository>> {
+    + findByZona()
+    + findByAdministrador()
+    + findByNombre()
+}
+
+interface ReservaRepository <<Repository>> {
+    + findByParqueadero()
+    + findByCliente()
+}
+
+interface UsuarioRepository <<Repository>> {
+    + findByCorreo()
+    + findByCedula()
+    + existsByCorreo()
+}
+
+interface ZonaRepository <<Repository>>
+
+interface RolRepository <<Repository>>
+
+' ========== ENTITIES ==========
+class Usuario <<Entity>> {
+    - idUsuario: Integer {PK}
+    - nombre: String
+    - correo: String {UNIQUE}
+    - contrasena: String
+    - cedula: String
+    - placa: String
+    - idRol: Integer {FK}
+}
+
+class Rol <<Entity>> {
+    - idRol: Integer {PK}
+    - nombre: String
+}
+
+class Parqueadero <<Entity>> {
+    - idParqueadero: Integer {PK}
+    - nombre: String
+    - direccion: String
+    - horario: String
+    - tarifaHora: Double
+    - espaciosTotales: Integer
+    - espaciosDisponibles: Integer
+    - habilitado: Boolean
+    - urlMaps: String
+    - telefono: String
+    - idZona: Integer {FK}
+    - registradoPor: Integer {FK}
+    - idAdministrador: Integer {FK}
+}
+
+class Reserva <<Entity>> {
+    - idReserva: Integer {PK}
+    - estado: EstadoReserva
+    - idCliente: Integer {FK}
+    - idParqueadero: Integer {FK}
+}
+
+class Zona <<Entity>> {
+    - idZona: Integer {PK}
+    - nombreZona: String
+}
+
+enum EstadoReserva {
+    PENDIENTE
+    ACEPTADA
+    RECHAZADA
+}
+
+' ========== RELACIONES CONTROLLERS -> SERVICES ==========
+AdminController --> ParqueaderoService
+AdminController --> ReservaService
+ClienteController --> ZonaService
+ClienteController --> ReservaService
+LoginController --> UsuarioService
+RegistroController --> UsuarioService
+ReservaController --> ReservaService
+ReservaController --> ParqueaderoService
+SuperAdminController --> ParqueaderoService
+SuperAdminController --> ZonaService
+SuperAdminController --> UsuarioService
+ZonaController --> ZonaService
+ZonaController --> ParqueaderoService
+
+' ========== RELACIONES SERVICES IMPLEMENTATIONS ==========
+ParqueaderoServiceImpl ..|> ParqueaderoService
+ReservaServiceImpl ..|> ReservaService
+UsuarioServiceImpl ..|> UsuarioService
+ZonaServiceImpl ..|> ZonaService
+
+' ========== RELACIONES SERVICES -> REPOSITORIES ==========
+ParqueaderoServiceImpl --> ParqueaderoRepository
+ParqueaderoServiceImpl --> ZonaRepository
+ParqueaderoServiceImpl --> UsuarioRepository
+
+ReservaServiceImpl --> ReservaRepository
+ReservaServiceImpl --> ParqueaderoService
+ReservaServiceImpl --> EmailService
+
+UsuarioServiceImpl --> UsuarioRepository
+UsuarioServiceImpl --> RolRepository
+
+ZonaServiceImpl --> ZonaRepository
+
+' ========== RELACIONES REPOSITORIES -> ENTITIES ==========
+ParqueaderoRepository ..> Parqueadero
+ReservaRepository ..> Reserva
+UsuarioRepository ..> Usuario
+ZonaRepository ..> Zona
+RolRepository ..> Rol
+
+' ========== RELACIONES ENTRE ENTITIES (BASADAS EN SQL) ==========
+
+' Usuario - Rol (Many to One)
+Usuario "*" --> "1" Rol : idRol >
+
+' Parqueadero - Zona (Many to One)
+Parqueadero "*" --> "0..1" Zona : idZona >
+
+' Parqueadero - Usuario (registrado_por) - ON DELETE SET NULL
+Parqueadero "*" --> "0..1" Usuario : registradoPor >
+
+' Parqueadero - Usuario (administrador) - ON DELETE CASCADE  
+Parqueadero "0..1" --> "0..1" Usuario : idAdministrador >
+
+' Reserva - Usuario (cliente) - ON DELETE CASCADE
+Reserva "*" --> "0..1" Usuario : idCliente >
+
+' Reserva - Parqueadero - ON DELETE CASCADE
+Reserva "*" --> "0..1" Parqueadero : idParqueadero >
+
+' Reserva - EstadoReserva
+Reserva --> EstadoReserva : estado
+
+note right of Usuario
+  Un Usuario puede tener rol:
+  - CLIENTE (con placa)
+  - ADMINISTRADOR
+  - SUPERADMIN
+end note
+
+note right of Parqueadero
+  registradoPor: Usuario que creó el parqueadero (SuperAdmin)
+  idAdministrador: Usuario asignado como admin del parqueadero
+  ON DELETE CASCADE para administrador
+  ON DELETE SET NULL para registradoPor
+end note
+
+note left of Reserva
+  ON DELETE CASCADE:
+  Si se elimina el cliente o parqueadero,
+  se eliminan sus reservas
+end note
+
+@endu

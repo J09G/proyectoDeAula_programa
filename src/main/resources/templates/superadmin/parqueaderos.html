@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Parqueaderos Registrados - ParkingApp</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+</head>
+<body>
+<header class="header">
+  <div class="logo"><h1>ParkingApp</h1></div>
+  <nav class="nav">
+    <span class="user-info">Superadministrador</span>
+    <a th:href="@{/superadmin}" class="btn">Volver al Panel</a>
+    <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+  </nav>
+</header>
+
+<main class="superadmin-dashboard">
+  <h2>Parqueaderos Registrados</h2>
+
+  <div class="mensajes">
+    <p th:if="${mensaje}" th:text="${mensaje}" class="mensaje-exito"></p>
+    <p th:if="${error}" th:text="${error}" class="mensaje-error"></p>
+  </div>
+
+  <form th:action="@{/superadmin/parqueaderos/buscar}" method="get" class="form-busqueda">
+    <label>Buscar por nombre:</label>
+    <input type="text" name="nombre" placeholder="Ej: Centro Parking">
+    
+    <label>O por zona:</label>
+    <select name="idZona">
+        <option value="">Seleccionar zona</option>
+        <option th:each="zona : ${zonas}"
+                th:value="${zona.idZona}"
+                th:text="${zona.nombreZona}">
+        </option>
+    </select>
+
+    <button type="submit" class="btn">Buscar</button>
+    <a th:href="@{/superadmin/parqueaderos}" class="btn">Limpiar</a>
+  </form>
+
+  <section class="parqueaderos-registrados">
+    <p th:if="${#lists.isEmpty(parqueaderos)}" class="no-parqueaderos">
+      Aún no hay parqueaderos registrados.
+    </p>
+
+    <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
+      <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
+      <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}">Dirección</span></p>
+      <p><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}">Teléfono</span></p>
+      <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}">Zona</span></p>
+      <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}">Horario</span></p>
+      <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}">0</span>/hora</p>
+      <p>
+        <strong>Espacios:</strong>
+        <span th:text="${parqueadero.espaciosTotales}">0</span> totales -
+        <span th:text="${parqueadero.espaciosDisponibles}">0</span> disponibles
+      </p>
+      <p>
+        <strong>Administrador:</strong>
+        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.nombre : 'No asignado'}">No asignado</span>
+      </p>
+      <p>
+        <strong>Cédula:</strong>
+        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.cedula : '-'}">-</span>
+      </p>
+
+      <p>
+        <strong>Estado:</strong>
+        <span th:text="${parqueadero.habilitado ? 'Habilitado' : 'Deshabilitado'}"
+              th:classappend="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}">
+        </span>
+      </p>
+
+      <form th:action="@{/superadmin/parqueaderos/cambiarEstado}" 
+            method="post"
+            th:attr="onsubmit=${parqueadero.habilitado} ? 'return confirm(\'¿Estás seguro de que deseas deshabilitar este parqueadero?\')' : 'return confirm(\'¿Estás seguro de que deseas habilitar este parqueadero?\')'">
+        <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}">
+        <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}">
+        <button type="submit" class="btn"
+                th:text="${parqueadero.habilitado ? 'Deshabilitar' : 'Habilitar'}"></button>
+      </form>
+
+    </div>
+
+  </section>
+</main>
+
+<footer class="footer">
+  <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+</footer>
+</body>
+</html>

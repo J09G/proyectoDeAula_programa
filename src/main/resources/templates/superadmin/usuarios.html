@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios - SuperAdmin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <a th:href="@{/superadmin}" class="btn">Inicio</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <h2>Gestión de Usuarios</h2>
+
+    <div class="mensajes">
+      <p th:if="${mensaje}" th:text="${mensaje}" class="alert alert-success"></p>
+      <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
+    </div>
+
+    <form th:action="@{/superadmin/buscarUsuario}" method="get" class="form-busqueda">
+      <input type="text" name="cedula" placeholder="Buscar por cédula" required>
+      <button type="submit" class="btn">Buscar</button>
+      <a th:href="@{/superadmin/usuarios}" class="btn btn-secundario">Ver todos</a>
+    </form>
+
+    <p th:if="${#lists.isEmpty(usuarios)}" class="no-data">No hay usuarios registrados.</p>
+
+    <table th:if="${!#lists.isEmpty(usuarios)}" class="tabla-datos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Cédula</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="usuario : ${usuarios}">
+          <td th:text="${usuario.idUsuario}"></td>
+          <td th:text="${usuario.nombre}"></td>
+          <td th:text="${usuario.cedula}"></td>
+          <td th:text="${usuario.correo}"></td>
+          <td th:text="${usuario.rol.nombre}"></td>
+
+          <td>
+            <a th:href="@{'/superadmin/editar/' + ${usuario.idUsuario}}" class="btn btn-editar">Editar</a>
+            <a th:href="@{'/superadmin/eliminar/' + ${usuario.idUsuario}}"
+              th:onclick="'return confirm(\'¿Seguro que deseas eliminar este usuario? '
+                        + 'Si es un administrador, también se eliminará su parqueadero.\');'"
+              class="btn btn-eliminar">Eliminar</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

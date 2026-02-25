@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>ParkingApp - Administrador de Parqueadero</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <h1>ParkingApp</h1>
+    </div>
+    <nav class="nav">
+      <span class="user-info">Administrador de Parqueadero</span>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="admin-dashboard">
+    <h2>Panel de Administración</h2>
+    <p>Aquí puedes gestionar tu parqueadero y las reservas de los clientes.</p>
+
+    <div class="mensajes">
+      <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    </div>
+
+    <section class="editar-info">
+      <h3>Editar Información del Parqueadero</h3>
+      <form th:action="@{/admin/editar}" method="post">
+        <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.idUsuario}">
+        <input type="text" name="nombre" placeholder="Nombre del parqueadero" th:value="${parqueadero?.nombre}" required>
+        <input type="text" name="direccion" placeholder="Dirección" th:value="${parqueadero?.direccion}" required>
+        <input type="text" name="horario" placeholder="Horario (ej: 7:00 AM - 10:00 PM)" th:value="${parqueadero?.horario}" required>
+        <input type="number" name="tarifa" placeholder="Tarifa por hora ($)" th:value="${parqueadero?.tarifaHora}" required>
+        <input type="url" name="urlMaps" placeholder="URL de Google Maps (opcional)" th:value="${parqueadero?.urlMaps}">
+        <button type="submit" class="btn-primary">Guardar Cambios</button>
+      </form>
+    </section>
+
+    <!-- Sección de espacios -->
+    <section class="espacios">
+      <h3>Actualizar Espacios Disponibles</h3>
+      <form th:action="@{/admin/espacios}" method="post">
+        <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.idUsuario}">
+        <label for="espacios">Espacios disponibles:</label>
+        <input type="number" id="espacios" name="espacios" min="0" 
+               th:value="${parqueadero?.espaciosDisponibles}" placeholder="Ej: 20">
+        <button type="submit" class="btn-primary">Actualizar</button>
+      </form>
+    </section>
+
+    <!-- Sección de reservas -->
+    <section class="reservas-admin">
+      <h3>Solicitudes de Reserva</h3>
+
+      <form th:action="@{/admin/reservas/buscar}" method="get" class="form-buscar">
+        <input type="text" name="cedula" placeholder="Buscar por cédula del cliente..." required>
+        <button type="submit" class="btn-primary">Buscar</button>
+        <a th:href="@{/admin}" class="btn-secundario">Mostrar todas</a>
+      </form>
+
+      <p th:if="${#lists.isEmpty(reservas)}" class="no-reservas">No hay solicitudes de reserva pendientes.</p>
+
+      <div class="lista-reservas">
+        <div th:each="reserva : ${reservas}" class="reserva-card">
+            <h4 th:text="'Reserva #' + ${reserva.idReserva}"></h4>
+
+            <p><strong>Cliente:</strong> <span th:text="${reserva.cliente.nombre}"></span></p>
+            <p><strong>Cédula:</strong> <span th:text="${reserva.cliente.cedula}"></span></p>
+            <p><strong>Placa:</strong> <span th:text="${reserva.cliente.placa}"></span></p>
+            <p><strong>Parqueadero:</strong> <span th:text="${reserva.parqueadero.nombre}"></span></p>
+
+            <p>
+              <strong>Estado:</strong>
+              <span 
+                th:text="${reserva.estado}"
+                th:classappend="${
+                  reserva.estado == T(com.proyecto.parking.model.Reserva.EstadoReserva).PENDIENTE ? ' estado-pendiente' :
+                  (reserva.estado == T(com.proyecto.parking.model.Reserva.EstadoReserva).ACEPTADA ? ' estado-aceptada' : ' estado-rechazada')
+                }">
+              </span>
+            </p>
+
+            <div class="acciones-reserva">
+              <form th:action="@{/admin/reserva/aceptar/{id}(id=${reserva.idReserva})}" method="post">
+                <button type="submit" class="btn-aceptar">Aceptar</button>
+              </form>
+
+              <form th:action="@{/admin/reserva/rechazar/{id}(id=${reserva.idReserva})}" method="post">
+                <button type="submit" class="btn-rechazar">Rechazar</button>
+              </form>
+
+              <form th:action="@{/admin/reserva/eliminar/{id}(id=${reserva.idReserva})}" method="post">
+                <button type="submit" class="btn-eliminar"
+                        onclick="return confirm('¿Seguro que deseas eliminar esta reserva?');">
+                  Eliminar
+                </button>
+              </form>
+            </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

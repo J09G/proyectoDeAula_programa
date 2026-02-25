@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>ParkingApp - Registro Cliente</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <h1>ParkingApp</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="register-container">
+      <h2>Registro de Cliente</h2>
+      
+      <p th:if="${error}" th:text="${error}" style="color: red; font-weight: bold;"></p>
+      <p th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold;"></p>
+
+      <form th:action="@{/registro/cliente}" method="post">
+        <input type="text" name="nombre" placeholder="Nombre completo" required>
+        <input type="text" name="cedula" placeholder="Cédula" required>
+        <input type="text" name="placa" placeholder="Placa del vehículo" required>
+        <input type="email" name="email" placeholder="Correo electrónico" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <input type="password" name="confirmPassword" placeholder="Confirmar contraseña" required>
+        <button type="submit" class="btn-primary">Registrarse</button>
+      </form>
+
+      <p class="login-link">
+        ¿Ya tienes cuenta? 
+        <a th:href="@{/login}">Inicia sesión aquí</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

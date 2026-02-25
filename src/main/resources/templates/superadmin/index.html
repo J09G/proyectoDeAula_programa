@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>ParkingApp - Superadministrador</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <span class="user-info">Superadministrador</span>
+      <a th:href="@{/superadmin/usuarios}" class="btn">Usuarios</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="superadmin-dashboard">
+    <h2>Panel del Superadministrador</h2>
+    <p>Desde aquí puedes registrar nuevos parqueaderos, asignar administradores y gestionar los existentes.</p>
+
+    <!-- Mensajes dinámicos -->
+    <div class="mensajes">
+      <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    </div>
+
+    <!-- Registrar Parqueadero -->
+    <section class="register-section">
+      <h3>Registrar Nuevo Parqueadero</h3>
+      <form th:action="@{/superadmin/registrarParqueadero}" method="post">
+        <input type="text" name="nombre" placeholder="Nombre del parqueadero" required>
+        <input type="text" name="telefono" placeholder="Teléfono del parqueadero" required>
+        <input type="text" name="direccion" placeholder="Dirección" required>
+        <input type="text" name="horario" placeholder="Horario (ej: 7:00 AM - 10:00 PM)" required>
+        <input type="number" name="tarifa" placeholder="Tarifa por hora ($)" required>
+        <input type="number" name="espacios_totales" placeholder="Espacios totales" required>
+        <input type="number" name="espacios_disponibles" placeholder="Espacios disponibles" required>
+        <input type="url" name="url_maps" placeholder="URL de Google Maps (opcional)">
+
+        <!-- Selección de zona -->
+        <label>Zona:</label>
+        <select name="id_zona" required>
+          <option value="">Seleccionar Zona</option>
+          <option th:each="zona : ${zonas}"
+                  th:value="${zona.idZona}"
+                  th:text="${zona.nombreZona}"></option>
+        </select>
+
+        <button type="submit" class="btn-primary">Registrar Parqueadero</button>
+      </form>
+    </section>
+
+    <!-- Asignar Administrador -->
+    <section class="register-section">
+      <h3>Asignar Administrador a Parqueadero</h3>
+      <form th:action="@{/superadmin/asignarAdmin}" method="post">
+        <label>Correo del administrador:</label>
+        <input type="email" name="correo" placeholder="Correo del Administrador" required>
+
+        <label>Cedula del administrador:</label>
+        <input type="text" name="cedula" placeholder="Número de cédula" required>
+
+        <label>Contraseña:</label>
+        <input type="password" name="contrasena" placeholder="Contraseña" required>
+
+        <label>Seleccione el parqueadero:</label>
+        <select name="id_parqueadero" required>
+          <option value="" disabled selected>Seleccionar Parqueadero</option>
+          <option th:each="parqueadero : ${parqueaderos}"
+                  th:value="${parqueadero.idParqueadero}"
+                  th:text="${parqueadero.nombre}"></option>
+        </select>
+
+        <button type="submit" class="btn-primary">Asignar Administrador</button>
+      </form>
+    </section>
+
+    <section class="ver-parqueaderos">
+      <h3>Gestión de Parqueaderos</h3>
+      <p>Consulta todos los parqueaderos registrados y sus administradores asignados.</p>
+      <a th:href="@{/superadmin/parqueaderos}" class="btn-primary">Ver Parqueaderos Registrados</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

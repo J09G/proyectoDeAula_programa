@@ -1,0 +1,579 @@
+/* Estructura general */
+body {
+  background: #F3F7FA;
+  font-family: 'Arial', sans-serif;
+  color: #2c3e50;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.admin-dashboard {
+  max-width: 1200px;
+  margin: 40px auto;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 40px 50px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border: 1px solid #D0D5DD;
+}
+
+.admin-dashboard h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.admin-dashboard p {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* SECCIONES */
+section {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 2px solid #e0e0e0;
+}
+
+section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Clase para editar-info */
+.editar-info {
+  margin-top: 35px;
+  padding-top: 25px;
+}
+
+.editar-info h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Clase para espacios */
+.espacios {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.espacios h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/*  FORMULARIOS GENERALES */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="hidden"],
+textarea,
+select {
+  padding: 14px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 0.95rem;
+  background: #fafafa;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #2196F3;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  outline: none;
+}
+
+label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* BOTONES  */
+button, 
+.btn-primary, 
+.btn-secundario {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+/* Botones principales */
+.btn-primary {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secundario {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(127, 140, 141, 0.3);
+}
+
+.btn-secundario:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #5d6d7e 100%);
+  box-shadow: 0 6px 20px rgba(127, 140, 141, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-secundario:active {
+  transform: translateY(0);
+}
+
+/*MENSAJES */
+.mensajes {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.mensaje-exito {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-left: 4px solid #28a745;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.mensaje-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-left: 4px solid #dc3545;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+/*FORMULARIO DE BÚSQUEDA */
+.form-buscar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-buscar input {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  background: #fafafa;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  min-width: 250px;
+  flex: 1;
+}
+
+.form-buscar input:focus {
+  border-color: #2196F3;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  outline: none;
+}
+
+.form-buscar button {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+  transition: all 0.3s ease;
+}
+
+.form-buscar button:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+  transform: translateY(-2px);
+}
+
+.form-buscar button:active {
+  transform: translateY(0);
+}
+
+.form-buscar a {
+  text-decoration: none;
+}
+
+/* TEXTO DE NO RESERVAS */
+.no-reservas {
+  text-align: center;
+  color: #7f8c8d;
+  margin: 30px 0;
+  padding: 20px;
+  background: #ecf0f1;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/*RESERVAS ADMIN */
+.reservas-admin {
+  margin-top: 20px;
+}
+
+/* TARJETA DE RESERVA */
+.reserva-card {
+  width: 390px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 25px;
+  margin: 10px auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.reserva-card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.reserva-card h4 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.reserva-card p {
+  font-size: 16px;
+  margin: 4px 0;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.reserva-card p strong {
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+/* ACCIONES DE RESERVA*/
+.acciones-reserva {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  width: 100%;
+}
+
+.acciones-reserva form {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  display: inline-block;
+}
+
+.acciones-reserva button {
+  border-radius: 14px;
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+  transition: all 0.25s ease;
+}
+
+/* Botones de acciones */
+.btn-aceptar,
+.btn-rechazar,
+.btn-eliminar {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+  transition: all 0.25s ease;
+}
+
+/* Colores específicos */
+.btn-aceptar {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-aceptar:hover {
+  background: #219150;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(39, 174, 96, 0.3);
+}
+
+.btn-aceptar:active {
+  transform: translateY(0);
+}
+
+.btn-aceptar:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-rechazar {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-rechazar:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3);
+}
+
+.btn-rechazar:active {
+  transform: translateY(0);
+}
+
+.btn-rechazar:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-eliminar {
+  background: #34495e;
+  color: white;
+}
+
+.btn-eliminar:hover {
+  background: #2c3e50;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(52, 73, 94, 0.3);
+}
+
+.btn-eliminar:active {
+  transform: translateY(0);
+}
+
+.estado-pendiente {
+  color: #f39c12;
+  font-weight: 600;
+  background: #fef5e7;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-aceptada {
+  color: #27ae60;
+  font-weight: 600;
+  background: #d4edda;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-rechazada {
+  color: #e74c3c;
+  font-weight: 600;
+  background: #f8d7da;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-finalizada {
+  color: #2196F3;
+  font-weight: 600;
+  background: #e3f2fd;
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ALERTAS*/
+.alert {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #28a745;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #dc3545;
+}
+
+/*FOOTER */
+.footer {
+  text-align: center;
+  padding: 20px;
+  background: #FFFFFF;
+  color: #2c3e50;
+  margin-top: 40px;
+  font-size: 14px;
+  border-top: 1px solid #D0D5DD;
+}
+
+/*RESPONSIVIDAD */
+@media (max-width: 1024px) {
+  .lista-reservas {
+    display: flex;
+    gap: 20px; 
+    flex-wrap: wrap; 
+    justify-content: flex-start; 
+  }
+
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .acciones-reserva {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .acciones-reserva form {
+    width: 100%;
+  }
+  
+  .acciones-reserva button {
+    width: 100%;
+  }
+  
+  section h3 {
+    font-size: 1.3rem;
+  }
+  
+  .admin-dashboard h2 {
+    font-size: 1.6rem;
+  }
+
+  .form-buscar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-buscar input {
+    min-width: 100%;
+  }
+  
+  .form-buscar button,
+  .form-buscar a {
+    width: 100%;
+  }
+  
+  .reserva-card {
+    width: 390px;
+    margin: 10px auto;  
+    padding: 20px 25px;
+  }
+  
+  .reserva-card h4 {
+    font-size: 20px;
+  }
+  
+  .reserva-card p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 20px 15px;
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .reserva-card {
+    padding: 15px;
+  }
+  
+  .btn-aceptar,
+  .btn-rechazar,
+  .btn-eliminar {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

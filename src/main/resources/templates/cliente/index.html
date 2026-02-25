@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>ParkingApp - Cliente</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/cliente.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <span class="user-info">Cliente</span>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="cliente-dashboard">
+    <h2>Bienvenido a ParkingApp</h2>
+    <p>Selecciona una zona para ver los parqueaderos disponibles.</p>
+
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <section class="zonas">
+      <h3>Zonas Disponibles</h3>
+
+      <div class="zonas-grid">
+        <a th:each="zona : ${zonas}"
+          th:href="@{'/zona/' + ${zona.idZona}}"
+          class="zona-card">
+
+          <img th:src="@{'/images/' + ${zona.nombreZona} + '.jpg'}"
+              alt="Imagen de zona"
+              class="zona-img">
+
+          <span class="zona-nombre" th:text="${zona.nombreZona}">Nombre Zona</span>
+        </a>
+      </div>
+
+    </section>
+
+
+    <section class="reservas">
+      <h3>Mis Reservas</h3>
+      <p th:if="${#lists.isEmpty(reservas)}" class="mensaje-vacio">Aún no tienes reservas registradas.</p>
+
+      <table th:if="${!#lists.isEmpty(reservas)}" class="tabla-reservas">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Parqueadero</th>
+            <th>Zona</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="reserva : ${reservas}">
+            <td th:text="${reserva.idReserva}"></td>
+            <td th:text="${reserva.parqueadero.nombre}"></td>
+            <td th:text="${reserva.parqueadero.zona.nombreZona}"></td>
+            <td th:text="${reserva.estado}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

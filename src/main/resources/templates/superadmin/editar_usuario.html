@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Usuario</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <a th:href="@{/superadmin/usuarios}" class="btn">⬅ Volver</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <h2>✏️ Editar Usuario</h2>
+
+    <form th:action="@{/superadmin/actualizar}" method="post" class="form-editar">
+      <input type="hidden" name="idUsuario" th:value="${usuario.idUsuario}">
+
+      <label>Nombre:</label>
+      <input type="text" name="nombre" th:value="${usuario.nombre}" required>
+
+      <label>Correo:</label>
+      <input type="email" name="correo" th:value="${usuario.correo}" required>
+
+      <label>Cédula:</label>
+      <input type="text" name="cedula" th:value="${usuario.cedula}" required>
+
+      <button type="submit" class="btn-primary">Guardar Cambios</button>
+    </form>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp</p>
+  </footer>
+</body>
+</html>

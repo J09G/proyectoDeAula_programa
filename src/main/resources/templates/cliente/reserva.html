@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmar Reserva - ParkingApp</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/cliente.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <span class="user-info">Cliente</span>
+      <a th:href="@{/cliente}" class="btn">Volver</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="reserva-detalle">
+    <h2>Confirmar Reserva</h2>
+
+    <div class="parqueadero-info" th:if="${parqueadero != null}">
+      <h3 th:text="${parqueadero.nombre}">Nombre del parqueadero</h3>
+
+      <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
+      <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span> / hora</p>
+      <p><strong>Espacios disponibles:</strong> 
+        <span th:text="${parqueadero.espaciosDisponibles}"></span> de 
+        <span th:text="${parqueadero.espaciosTotales}"></span>
+      </p>
+      <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
+      <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}"></span></p>
+
+      <p>
+        <strong>Estado:</strong>
+        <span th:classappend="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
+              th:text="${parqueadero.habilitado ? 'Habilitado' : 'Deshabilitado'}"></span>
+      </p>
+
+      <p th:if="${parqueadero.urlMaps != null}">
+        <strong>Ubicación en Google Maps:</strong>
+        <a th:href="${parqueadero.urlMaps}" target="_blank" class="link-maps">Ver ubicación</a>
+      </p>
+
+      <form th:action="@{/reserva/crear}" method="post" class="form-reserva">
+        <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}" />
+        <button type="submit" class="btn-primary">Confirmar Reserva</button>
+      </form>
+    </div>
+
+    <p th:if="${parqueadero == null}" class="mensaje-error">No se encontró el parqueadero.</p>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>
