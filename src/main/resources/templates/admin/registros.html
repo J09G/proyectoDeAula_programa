@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Registros de Parqueo - Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <span class="user-info" th:text="${parqueadero != null ? parqueadero.nombre : 'Administrador'}"></span>
+      <a th:href="@{/admin}" class="btn">Panel Principal</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="admin-dashboard">
+    <h2>Registro de Parqueo</h2>
+
+    <!-- Mensajes -->
+    <div class="mensajes">
+      <p th:if="${mensaje}" th:text="${mensaje}" class="alert alert-success"></p>
+      <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
+      <div th:if="${idFactura}" class="alert alert-success">
+        Salida registrada exitosamente.
+        <a th:href="@{'/admin/registros/factura/' + ${idFactura}}" class="btn-link-factura">Ver Factura</a>
+      </div>
+    </div>
+
+    <!-- Registrar Entrada -->
+    <section>
+      <h3>Registrar Entrada de Vehículo</h3>
+      <form th:action="@{/admin/registros/entrada}" method="post" class="form-entrada">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Placa del vehículo *</label>
+            <input type="text" name="placa" placeholder="Ej: ABC123" required
+                   oninput="this.value = this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label>Cédula del cliente <span class="opcional">(opcional - dejar vacío si es de paso)</span></label>
+            <input type="text" name="cedula" placeholder="Número de cédula">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Registrar Entrada</button>
+      </form>
+    </section>
+
+    <!-- Vehículos Activos -->
+    <section>
+      <h3>Vehículos en el Parqueadero
+        <span class="badge-count" th:text="${#lists.size(activos)}"></span>
+      </h3>
+
+      <div th:if="${!#lists.isEmpty(activos)}" class="form-buscar" style="margin-bottom: 15px;">
+        <input type="text" id="buscarPlacaActivos" placeholder="Buscar por placa..."
+               oninput="filtrarTabla('buscarPlacaActivos', 'tablaActivos', 0)">
+      </div>
+
+      <p th:if="${#lists.isEmpty(activos)}" class="no-data">No hay vehículos en el parqueadero en este momento.</p>
+
+      <div class="tabla-responsive" th:if="${!#lists.isEmpty(activos)}">
+        <table class="tabla-datos" id="tablaActivos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Placa</th>
+              <th>Cliente</th>
+              <th>Con Reserva</th>
+              <th>Hora Entrada</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg : ${activos}">
+              <td th:text="${reg.idRegistro}"></td>
+              <td><strong th:text="${reg.placa}"></strong></td>
+              <td th:text="${reg.usuario != null ? reg.usuario.nombre + ' - ' + reg.usuario.cedula : 'Cliente de paso'}"></td>
+              <td>
+                <span th:if="${reg.reserva != null}" class="badge-reserva">Sí</span>
+                <span th:unless="${reg.reserva != null}" class="badge-sin-reserva">No</span>
+              </td>
+              <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+              <td>
+                <form th:action="@{'/admin/registros/salida/' + ${reg.idRegistro}}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
+                  <button type="submit" class="btn-salida"
+                          onclick="return confirm('¿Registrar salida del vehículo ' + this.closest('tr').querySelector('td:nth-child(2)').textContent + '?')">
+                    Registrar Salida
+                  </button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Historial -->
+    <section>
+      <h3>Historial de Registros</h3>
+
+      <div th:if="${!#lists.isEmpty(historial)}" class="form-buscar" style="margin-bottom: 15px;">
+        <input type="text" id="buscarPlacaHistorial" placeholder="Buscar por placa..."
+               oninput="filtrarTabla('buscarPlacaHistorial', 'tablaHistorial', 1)">
+      </div>
+
+      <p th:if="${#lists.isEmpty(historial)}" class="no-data">No hay registros aún.</p>
+
+      <div class="tabla-responsive" th:if="${!#lists.isEmpty(historial)}">
+        <table class="tabla-datos" id="tablaHistorial">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Placa</th>
+              <th>Cliente</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Tiempo</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg : ${historial}">
+              <td th:text="${reg.idRegistro}"></td>
+              <td><strong th:text="${reg.placa}"></strong></td>
+              <td th:text="${reg.usuario != null ? reg.usuario.nombre : 'De paso'}"></td>
+              <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+              <td th:text="${reg.horaSalida != null ? #temporals.format(reg.horaSalida, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+              <td>
+                <span th:if="${reg.tiempoMinutos != null}"
+                      th:text="${reg.tiempoMinutos / 60} + 'h ' + ${reg.tiempoMinutos % 60} + 'min'"></span>
+                <span th:unless="${reg.tiempoMinutos != null}">-</span>
+              </td>
+              <td th:text="${reg.valorPagado != null ? '$' + reg.valorPagado : '-'}"></td>
+              <td>
+                <span th:if="${reg.estado.name() == 'ACTIVO'}" class="estado-activo">Activo</span>
+                <span th:unless="${reg.estado.name() == 'ACTIVO'}" class="estado-finalizado">Finalizado</span>
+              </td>
+              <td>
+                <a th:if="${reg.estado.name() == 'FINALIZADO'}"
+                   th:href="@{'/admin/registros/factura/' + ${reg.idRegistro}}"
+                   class="btn btn-editar">Factura</a>
+                <span th:unless="${reg.estado.name() == 'FINALIZADO'}">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+
+  <script>
+    function filtrarTabla(inputId, tablaId, columna) {
+      const filtro = document.getElementById(inputId).value.toUpperCase();
+      const tabla = document.getElementById(tablaId);
+      const filas = tabla.getElementsByTagName('tr');
+      for (let i = 1; i < filas.length; i++) {
+        const celda = filas[i].getElementsByTagName('td')[columna];
+        if (celda) {
+          filas[i].style.display = celda.textContent.toUpperCase().includes(filtro) ? '' : 'none';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

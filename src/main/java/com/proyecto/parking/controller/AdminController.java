@@ -1,10 +1,17 @@
 package com.proyecto.parking.controller;
 
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPCell;
 import com.proyecto.parking.model.Parqueadero;
+import com.proyecto.parking.model.RegistroParqueo;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Usuario;
 import com.proyecto.parking.service.ParqueaderoService;
+import com.proyecto.parking.service.RegistroParqueoService;
 import com.proyecto.parking.service.ReservaService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +19,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.awt.Color;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
@@ -24,6 +34,9 @@ public class AdminController {
 
     @Autowired
     private ReservaService reservaService;
+
+    @Autowired
+    private RegistroParqueoService registroParqueoService;
 
     @GetMapping("")
     public String mostrarPanelAdmin(HttpSession session, Model model) {
@@ -186,5 +199,159 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Error al eliminar la reserva: " + e.getMessage());
         }
         return "redirect:/admin";
+    }
+
+    @GetMapping("/registros")
+    public String mostrarRegistros(HttpSession session, Model model) {
+        try {
+            Usuario admin = (Usuario) session.getAttribute("usuario");
+            if (admin == null) return "redirect:/login";
+
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            if (parqueadero == null) {
+                model.addAttribute("error", "No tienes parqueadero asignado.");
+                return "admin/registros";
+            }
+
+            model.addAttribute("parqueadero", parqueadero);
+            model.addAttribute("activos", registroParqueoService.listarActivosPorParqueadero(parqueadero.getIdParqueadero()));
+            model.addAttribute("historial", registroParqueoService.listarTodosPorParqueadero(parqueadero.getIdParqueadero()));
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar registros: " + e.getMessage());
+        }
+        return "admin/registros";
+    }
+
+    @PostMapping("/registros/entrada")
+    public String registrarEntrada(@RequestParam String placa,
+                                   @RequestParam(required = false) String cedula,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            Usuario admin = (Usuario) session.getAttribute("usuario");
+            if (admin == null) return "redirect:/login";
+
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            registroParqueoService.registrarEntrada(placa, cedula, parqueadero.getIdParqueadero());
+            redirectAttributes.addFlashAttribute("mensaje", "Entrada registrada correctamente para la placa " + placa.toUpperCase());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al registrar entrada: " + e.getMessage());
+        }
+        return "redirect:/admin/registros";
+    }
+
+    @PostMapping("/registros/salida/{idRegistro}")
+    public String registrarSalida(@PathVariable int idRegistro,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            RegistroParqueo registro = registroParqueoService.registrarSalida(idRegistro);
+            redirectAttributes.addFlashAttribute("mensaje", "Salida registrada. Valor a pagar: $" + registro.getValorPagado());
+            redirectAttributes.addFlashAttribute("idFactura", registro.getIdRegistro());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al registrar salida: " + e.getMessage());
+        }
+        return "redirect:/admin/registros";
+    }
+
+    @GetMapping("/registros/factura/{idRegistro}")
+    public String verFactura(@PathVariable int idRegistro, Model model) {
+        try {
+            RegistroParqueo registro = registroParqueoService.obtenerPorId(idRegistro);
+            model.addAttribute("registro", registro);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        return "admin/factura";
+    }
+
+    @GetMapping("/registros/factura/pdf/{idRegistro}")
+    public void descargarFacturaPdf(@PathVariable int idRegistro, HttpServletResponse response) throws IOException {
+        RegistroParqueo reg = registroParqueoService.obtenerPorId(idRegistro);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=factura-" + idRegistro + ".pdf");
+
+        Document doc = new Document(PageSize.A5);
+        try {
+            PdfWriter.getInstance(doc, response.getOutputStream());
+            doc.open();
+
+            Font fontTitulo = new Font(Font.HELVETICA, 18, Font.BOLD);
+            Font fontSubtitulo = new Font(Font.HELVETICA, 11, Font.NORMAL, Color.GRAY);
+            Font fontLabel = new Font(Font.HELVETICA, 10, Font.BOLD);
+            Font fontValor = new Font(Font.HELVETICA, 10, Font.NORMAL);
+            Font fontTotal = new Font(Font.HELVETICA, 14, Font.BOLD);
+
+            // Encabezado
+            Paragraph titulo = new Paragraph("ParkingApp", fontTitulo);
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            doc.add(titulo);
+
+            Paragraph parqueaderoNombre = new Paragraph(reg.getParqueadero().getNombre(), fontSubtitulo);
+            parqueaderoNombre.setAlignment(Element.ALIGN_CENTER);
+            doc.add(parqueaderoNombre);
+
+            Paragraph direccion = new Paragraph(reg.getParqueadero().getDireccion(), fontSubtitulo);
+            direccion.setAlignment(Element.ALIGN_CENTER);
+            doc.add(direccion);
+
+            doc.add(new Paragraph(" "));
+
+            Paragraph facturaId = new Paragraph("Factura #" + reg.getIdRegistro(), fontLabel);
+            facturaId.setAlignment(Element.ALIGN_CENTER);
+            doc.add(facturaId);
+
+            doc.add(new Paragraph(" "));
+
+            // Tabla de datos
+            PdfPTable tabla = new PdfPTable(2);
+            tabla.setWidthPercentage(100);
+            tabla.setWidths(new float[]{40f, 60f});
+
+            agregarFilaTabla(tabla, "Placa:", reg.getPlaca(), fontLabel, fontValor);
+            agregarFilaTabla(tabla, "Cliente:",
+                    reg.getUsuario() != null ? reg.getUsuario().getNombre() : "Cliente de paso",
+                    fontLabel, fontValor);
+
+            if (reg.getUsuario() != null) {
+                agregarFilaTabla(tabla, "Cédula:", reg.getUsuario().getCedula(), fontLabel, fontValor);
+            }
+
+            agregarFilaTabla(tabla, "Con reserva:",
+                    reg.getReserva() != null ? "Sí - Reserva #" + reg.getReserva().getIdReserva() : "No",
+                    fontLabel, fontValor);
+            agregarFilaTabla(tabla, "Hora de entrada:", reg.getHoraEntrada().format(fmt), fontLabel, fontValor);
+            agregarFilaTabla(tabla, "Hora de salida:", reg.getHoraSalida().format(fmt), fontLabel, fontValor);
+
+            long horas = reg.getTiempoMinutos() / 60;
+            long mins = reg.getTiempoMinutos() % 60;
+            agregarFilaTabla(tabla, "Tiempo de parqueo:", horas + "h " + mins + "min", fontLabel, fontValor);
+            agregarFilaTabla(tabla, "Tarifa por hora:", "$" + reg.getParqueadero().getTarifaHora(), fontLabel, fontValor);
+
+            doc.add(tabla);
+
+            doc.add(new Paragraph(" "));
+
+            // Total
+            Paragraph total = new Paragraph("TOTAL A PAGAR: $" + reg.getValorPagado(), fontTotal);
+            total.setAlignment(Element.ALIGN_RIGHT);
+            doc.add(total);
+
+        } finally {
+            doc.close();
+        }
+    }
+
+    private void agregarFilaTabla(PdfPTable tabla, String label, String valor, Font fontLabel, Font fontValor) {
+        PdfPCell celdaLabel = new PdfPCell(new Phrase(label, fontLabel));
+        celdaLabel.setBorder(Rectangle.BOTTOM);
+        celdaLabel.setPadding(6);
+        tabla.addCell(celdaLabel);
+
+        PdfPCell celdaValor = new PdfPCell(new Phrase(valor, fontValor));
+        celdaValor.setBorder(Rectangle.BOTTOM);
+        celdaValor.setPadding(6);
+        tabla.addCell(celdaValor);
     }
 }

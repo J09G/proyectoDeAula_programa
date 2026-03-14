@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura - ParkingApp</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <style>
+    .factura-container {
+      max-width: 600px;
+      margin: 30px auto;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 30px;
+      background: #fff;
+    }
+    .factura-header {
+      text-align: center;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .factura-header h2 { margin: 0; font-size: 1.8rem; }
+    .factura-header p { margin: 4px 0; color: #555; }
+    .factura-body table { width: 100%; border-collapse: collapse; }
+    .factura-body td { padding: 10px 8px; border-bottom: 1px solid #eee; }
+    .factura-body td:first-child { font-weight: bold; width: 45%; }
+    .factura-total {
+      text-align: right;
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 2px solid #333;
+    }
+    .factura-acciones {
+      text-align: center;
+      margin-top: 25px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    @media print {
+      .factura-acciones { display: none; }
+      header, footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <a th:href="@{/admin/registros}" class="btn">Volver</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div th:if="${registro}" class="factura-container" id="factura">
+
+      <div class="factura-header">
+        <h2>ParkingApp</h2>
+        <p th:text="${registro.parqueadero.nombre}"></p>
+        <p th:text="${registro.parqueadero.direccion}"></p>
+        <p><strong>Factura #</strong><span th:text="${registro.idRegistro}"></span></p>
+      </div>
+
+      <div class="factura-body">
+        <table>
+          <tr>
+            <td>Placa:</td>
+            <td th:text="${registro.placa}"></td>
+          </tr>
+          <tr>
+            <td>Cliente:</td>
+            <td th:text="${registro.usuario != null ? registro.usuario.nombre : 'Cliente de paso'}"></td>
+          </tr>
+          <tr th:if="${registro.usuario != null}">
+            <td>Cédula:</td>
+            <td th:text="${registro.usuario.cedula}"></td>
+          </tr>
+          <tr>
+            <td>Con reserva:</td>
+            <td th:text="${registro.reserva != null ? 'Sí - Reserva #' + registro.reserva.idReserva : 'No'}"></td>
+          </tr>
+          <tr>
+            <td>Hora de Entrada:</td>
+            <td th:text="${#temporals.format(registro.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+          </tr>
+          <tr>
+            <td>Hora de Salida:</td>
+            <td th:text="${#temporals.format(registro.horaSalida, 'dd/MM/yyyy HH:mm')}"></td>
+          </tr>
+          <tr>
+            <td>Tiempo de Parqueo:</td>
+            <td>
+              <span th:with="horas=${registro.tiempoMinutos / 60}, mins=${registro.tiempoMinutos % 60}">
+                <span th:text="${horas}"></span>h <span th:text="${mins}"></span>min
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td>Tarifa por hora:</td>
+            <td th:text="'$' + ${registro.parqueadero.tarifaHora}"></td>
+          </tr>
+        </table>
+
+        <div class="factura-total">
+          TOTAL A PAGAR: $<span th:text="${registro.valorPagado}"></span>
+        </div>
+      </div>
+
+      <div class="factura-acciones">
+        <a th:href="@{'/admin/registros/factura/pdf/' + ${registro.idRegistro}}" class="btn-primary">
+          Descargar PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-editar">Imprimir</button>
+        <a th:href="@{/admin/registros}" class="btn">Volver</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>
