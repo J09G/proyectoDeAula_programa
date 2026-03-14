@@ -20,4 +20,6 @@ public interface ParqueaderoRepository extends JpaRepository<Parqueadero, Intege
 
     List<Parqueadero> findByNombreContainingIgnoreCase(String nombre);
 
+    List<Parqueadero> findByAdministrador_CedulaContainingIgnoreCase(String cedula);
+
 }

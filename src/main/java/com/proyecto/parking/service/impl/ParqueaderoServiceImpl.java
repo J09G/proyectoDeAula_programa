@@ -144,4 +144,9 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     public List<Parqueadero> buscarPorZona(int idZona) {
         return parqueaderoRepository.findByZona_IdZona(idZona);
     }
+
+    @Override
+    public List<Parqueadero> buscarPorCedulaAdmin(String cedula) {
+        return parqueaderoRepository.findByAdministrador_CedulaContainingIgnoreCase(cedula);
+    }
 }

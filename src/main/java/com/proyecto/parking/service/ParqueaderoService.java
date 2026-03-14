@@ -33,4 +33,6 @@ public interface ParqueaderoService {
 
     List<Parqueadero> buscarPorZona(int idZona);
 
+    List<Parqueadero> buscarPorCedulaAdmin(String cedula);
+
 }

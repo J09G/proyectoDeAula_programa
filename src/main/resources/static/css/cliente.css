@@ -1,167 +1,289 @@
-/*Zona de Parqueaderos */
-.zonas-listado {
-  padding: 40px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* ===== CLIENTE DASHBOARD ===== */
+.cliente-dashboard {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 35px 40px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
-.no-data {
-  color: #7f8c8d;
+section {
+  margin-top: 35px;
+  padding-top: 25px;
+  border-top: 2px solid #EEF2F7;
+}
+
+section h3 {
+  color: #1565C0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== GRID DE ZONAS ===== */
+.zonas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.zona-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+  border: 1px solid #e8edf2;
+}
+
+.zona-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 28px rgba(21,101,192,0.18);
+}
+
+.zona-img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.zona-nombre {
+  display: block;
   text-align: center;
-  margin: 40px 0;
-  font-size: 1.1rem;
-  background: #FFFFFF;
-  padding: 30px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1565C0;
+  background: #F0F4F8;
+}
+
+/* ===== TABLA RESERVAS ===== */
+.tabla-responsive {
+  overflow-x: auto;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #e0e8f0;
+}
+
+.tabla-reservas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.tabla-reservas thead {
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+}
+
+.tabla-reservas th {
+  padding: 13px 16px;
+  text-align: left;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.tabla-reservas td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f4f8;
+  color: #2c3e50;
+}
+
+.tabla-reservas tbody tr:hover {
+  background: #f0f7ff;
+}
+
+.tabla-reservas tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Estados reserva */
+.estado-pendiente {
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.estado-aceptada {
+  background: #d1e7dd;
+  color: #0a3622;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.estado-rechazada {
+  background: #f8d7da;
+  color: #58151c;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mensaje-vacio {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 25px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px dashed #D0D5DD;
+}
+
+/* ===== PARQUEADERO CARDS (zona.html) ===== */
+.parqueaderos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 10px;
 }
 
 .parqueadero-card {
-  border: 1px solid #D0D5DD;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
   background: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
+  border: 1px solid #e0e8f0;
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .parqueadero-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 28px rgba(21,101,192,0.12);
 }
 
-.parqueadero-card h3 {
-  color: #2c3e50;
-  margin-bottom: 12px;
-  font-size: 1.3rem;
-  font-weight: 600;
+.parqueadero-card h4 {
+  color: #1565C0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #EEF2F7;
+}
+
+.parqueadero-card p {
+  font-size: 0.9rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.parqueadero-card p strong {
+  color: #2d3748;
+  min-width: 100px;
+}
+
+.parqueadero-card .acciones {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #EEF2F7;
 }
 
 .estado-habilitado {
-  color: #27ae60;
+  background: #d1e7dd;
+  color: #0a3622;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
   font-weight: 600;
-  background: #d4edda;
-  padding: 4px 12px;
-  border-radius: 6px;
   display: inline-block;
-  font-size: 0.9rem;
 }
 
 .estado-deshabilitado {
-  color: #e74c3c;
-  font-weight: 600;
   background: #f8d7da;
-  padding: 4px 12px;
-  border-radius: 6px;
+  color: #58151c;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
   display: inline-block;
-  font-size: 0.9rem;
 }
 
-.btn-link {
-  color: #2196F3;
+.btn-link, .link-maps {
+  color: #1976D2;
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.2s ease;
+  font-size: 0.88rem;
 }
 
-.btn-link:hover {
-  color: #1976D2;
+.btn-link:hover, .link-maps:hover {
   text-decoration: underline;
 }
 
-.acciones {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.no-disponible {
-  color: #95a5a6;
-  font-style: italic;
-  background: #ecf0f1;
-  padding: 8px 12px;
-  border-radius: 6px;
-  display: inline-block;
-}
-
-/* Botones mejorados */
-.btn-primary {
-  display: inline-block;
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
-  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
-  transform: translateY(-2px);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-reservar:active {
-  transform: translateY(0);
-}
-
-/* Cliente y Reservas  */
-.reserva-detalle, 
-.cliente-dashboard {
-  max-width: 900px;
+/* ===== RESERVA CONFIRMACION ===== */
+.reserva-detalle {
+  max-width: 600px;
   margin: 40px auto;
-  padding: 30px;
+  padding: 35px;
   background: #FFFFFF;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-  border: 1px solid #D0D5DD;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.reserva-detalle h2 {
+  color: #1565C0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  text-align: center;
 }
 
 .parqueadero-info {
-  margin-top: 20px;
-}
-
-.parqueadero-info p {
-  margin: 10px 0;
-  color: #2c3e50;
-  font-size: 1rem;
+  background: #F0F4F8;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
 }
 
 .parqueadero-info h3 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: #1565C0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #D0DDEF;
 }
 
-.link-maps {
-  color: #2196F3;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.2s ease;
+.parqueadero-info p {
+  font-size: 0.93rem;
+  color: #4a5568;
+  padding: 6px 0;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
 }
 
-.link-maps:hover {
-  color: #1976D2;
-  text-decoration: underline;
+.parqueadero-info p:last-child {
+  border-bottom: none;
+}
+
+.parqueadero-info p strong {
+  min-width: 120px;
+  color: #2d3748;
 }
 
 .form-reserva {
   margin-top: 20px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 .mensaje-error {
@@ -175,208 +297,88 @@
   font-weight: 600;
 }
 
-/* Tablas modernas */
-.tabla-reservas {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: 20px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.tabla-reservas th,
-.tabla-reservas td {
-  border: 1px solid #e0e0e0;
-  padding: 14px;
-  text-align: center;
-}
-
-.tabla-reservas th {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-  color: #FFFFFF;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
-}
-
-.tabla-reservas td {
-  background: #FFFFFF;
-  color: #2c3e50;
-}
-
-.tabla-reservas tr:hover td {
-  background: #f8f9fa;
-}
-
-.mensaje-vacio {
-  text-align: center;
-  color: #7f8c8d;
-  margin-top: 30px;
-  padding: 20px;
-  background: #ecf0f1;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-/* Alertas mejoradas */
+/* ===== ALERTAS ===== */
 .alert {
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 18px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 0.92rem;
+  border-left: 4px solid;
 }
 
 .alert-success {
-  background-color: #d4edda;
-  color: #155724;
-  border-left: 4px solid #28a745;
+  background-color: #d1e7dd;
+  color: #0a3622;
+  border-color: #198754;
 }
 
 .alert-error {
   background-color: #f8d7da;
-  color: #721c24;
-  border-left: 4px solid #dc3545;
+  color: #58151c;
+  border-color: #dc3545;
 }
 
-/* Botón finalizar */
-.btn-finalizar {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-}
-
-.btn-finalizar:hover {
-  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
-  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
-  transform: translateY(-2px);
-}
-
-.btn-finalizar:active {
-  transform: translateY(0);
-}
-
-/* Sección de zonas en cliente dashboard */
-.zonas {
-  margin-top: 30px;
-}
-
-.zonas h3 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-/* Sección de reservas en cliente dashboard */
-.reservas {
-  margin-top: 30px;
-}
-
-.reservas h3 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-/* Responsividad */
-@media (max-width: 768px) {
-  .zonas-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-
-  .reserva-detalle, 
-  .cliente-dashboard {
-    padding: 20px;
-    margin: 20px;
-  }
-
-  .tabla-reservas {
-    font-size: 0.9rem;
-  }
-
-  .tabla-reservas th,
-  .tabla-reservas td {
-    padding: 10px;
-  }
-}
-
-/* GRID DE ZONAS */
-.zonas-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-/* TARJETAS DE ZONA */
-.zona-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    overflow: hidden;
-    transition: transform 0.2s ease;
-}
-
-.zona-card:hover {
-    transform: scale(1.04);
-}
-
-/* HACER QUE EL <a> OCUPE TODA LA TARJETA */
-.zona-card a {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-/* IMAGEN DE LA ZONA */
-.zona-img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-}
-
-/* NOMBRE DE LA ZONA */
-.zona-nombre {
-    display: block;
-    text-align: center;
-    padding: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-}
-
+/* ===== BOTONES ===== */
 .btn {
   display: inline-block;
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-  color: white !important;
-  padding: 10px 18px;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 7px 16px;
   border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.88rem;
+}
+
+.btn:hover {
+  background: rgba(255,255,255,0.28);
+}
+
+.btn-primary {
+  display: inline-block;
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(21,101,192,0.3);
+  font-size: 0.95rem;
+  width: 100%;
+  text-align: center;
 }
 
-.btn:hover {
-  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
-  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1565C0 0%, #0d47a1 100%);
+  box-shadow: 0 6px 20px rgba(21,101,192,0.4);
   transform: translateY(-2px);
 }
 
-.btn:active {
-  transform: translateY(0);
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .cliente-dashboard {
+    padding: 20px;
+    margin: 15px;
+  }
+
+  .zonas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .parqueaderos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .zonas-grid {
+    grid-template-columns: 1fr;
+  }
 }

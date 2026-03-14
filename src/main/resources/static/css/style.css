@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 /* RESET GENERAL */
 * {
   margin: 0;
@@ -6,27 +8,31 @@
 }
 
 body {
-  font-family: 'Arial', sans-serif;
-  background: #F3F7FA; 
+  font-family: 'Poppins', sans-serif;
+  background: #F0F4F8;
   color: #1A1A1A;
   line-height: 1.6;
 }
 
 /*  Header  */
 .header {
-  background: #FFFFFF;
-  color: #1A1A1A;
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+  color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 40px;
-  border-bottom: 1px solid #D0D5DD;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 14px 40px;
+  box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header .logo h1 {
   font-size: 1.5rem;
-  color: #1A1A1A;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
 }
 
 .nav {
@@ -36,30 +42,36 @@ body {
 }
 
 .nav a {
-  color: #1A1A1A;
-  margin-left: 20px;
+  color: rgba(255,255,255,0.85);
+  margin-left: 8px;
   text-decoration: none;
   font-weight: 500;
 }
 
 .nav .btn {
-  background: #007BFF;
-  color: #FFFFFF;
-  padding: 8px 15px;
-  border-radius: 6px;
-  font-weight: bold;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-weight: 600;
   transition: 0.2s;
+  border: 1px solid rgba(255,255,255,0.25);
+  font-size: 0.88rem;
 }
 
 .nav .btn:hover {
-  background: #0066D6;
+  background: rgba(255,255,255,0.28);
 }
 
 /* Info usuario */
 .user-info {
-  margin-right: 15px;
-  font-weight: bold;
-  color: #1A1A1A;
+  margin-right: 10px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+  background: rgba(255,255,255,0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
 }
 
 /* Selector rol */
@@ -225,10 +237,10 @@ body {
 .footer {
   text-align: center;
   padding: 20px;
-  background: #FFFFFF;
-  color: #1A1A1A;
-  margin-top: 40px;
-  border-top: 1px solid #D0D5DD;
+  background: #1565C0;
+  color: rgba(255,255,255,0.8);
+  margin-top: 60px;
+  font-size: 0.85rem;
 }
 
 /* LOGIN  */
@@ -561,28 +573,29 @@ body {
 .cliente-dashboard,
 .admin-dashboard,
 .superadmin-dashboard {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 40px auto;
-  padding: 20px;
+  padding: 35px 40px;
   background: #FFFFFF;
-  border: 1px solid #D0D5DD;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  text-align: center;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
 .cliente-dashboard h2,
 .admin-dashboard h2,
 .superadmin-dashboard h2 {
-  margin-bottom: 15px;
-  color: #2c3e50;
+  margin-bottom: 8px;
+  color: #1565C0;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
-.cliente-dashboard p,
-.admin-dashboard p,
-.superadmin-dashboard p {
+.cliente-dashboard > p,
+.admin-dashboard > p,
+.superadmin-dashboard > p {
   margin-bottom: 25px;
   color: #7f8c8d;
+  font-size: 0.95rem;
 }
 
 /*Reservas */

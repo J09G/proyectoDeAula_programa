@@ -168,25 +168,25 @@
 .superadmin-dashboard {
   max-width: 1200px;
   margin: 40px auto;
-  padding: 30px;
+  padding: 35px 45px;
   background: #FFFFFF;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-  border: 1px solid #D0D5DD;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
 
 .superadmin-dashboard h2 {
   text-align: center;
-  color: #2c3e50;
-  margin-bottom: 30px;
-  font-size: 2rem;
+  color: #1565C0;
+  margin-bottom: 8px;
+  font-size: 1.8rem;
   font-weight: 700;
 }
 
-.superadmin-dashboard p {
+.superadmin-dashboard > p {
   text-align: center;
   color: #7f8c8d;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
 }
 
 .mensaje-exito {
@@ -443,7 +443,27 @@
 }
 
 /* Estados*/
-.estado-habilitado { 
+.estado-activo {
+  color: #155724;
+  font-weight: 600;
+  background: #d4edda;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+}
+
+.estado-inactivo {
+  color: #721c24;
+  font-weight: 600;
+  background: #f8d7da;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.9rem;
+}
+
+.estado-habilitado {
   color: #27ae60;
   font-weight: 600;
   background: #d4edda;
@@ -461,6 +481,67 @@
   border-radius: 6px;
   display: inline-block;
   font-size: 0.9rem;
+}
+
+/* FILTROS DE BÚSQUEDA */
+.filtros-busqueda {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+  background: #F0F4F8;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e8f0;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-grupo label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.filtro-grupo input,
+.filtro-grupo select {
+  padding: 10px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.filtro-grupo input:focus,
+.filtro-grupo select:focus {
+  border-color: #1976D2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
+}
+
+.filtro-acciones {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .filtros-busqueda {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .filtros-busqueda {
+    grid-template-columns: 1fr;
+  }
 }
 
 /*Formulario de búsqueda */

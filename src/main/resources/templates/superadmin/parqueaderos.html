@@ -2,7 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Parqueaderos Registrados - ParkingApp</title>
+  <title>Parqueaderos - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/superadmin.css}">
 </head>
@@ -11,7 +11,9 @@
   <div class="logo"><h1>ParkingApp</h1></div>
   <nav class="nav">
     <span class="user-info">Superadministrador</span>
-    <a th:href="@{/superadmin}" class="btn">Volver al Panel</a>
+    <a th:href="@{/superadmin}" class="btn">Panel</a>
+    <a th:href="@{/superadmin/usuarios}" class="btn">Usuarios</a>
+    <a th:href="@{/superadmin/zonas}" class="btn">Zonas</a>
     <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
   </nav>
 </header>
@@ -20,71 +22,87 @@
   <h2>Parqueaderos Registrados</h2>
 
   <div class="mensajes">
-    <p th:if="${mensaje}" th:text="${mensaje}" class="mensaje-exito"></p>
-    <p th:if="${error}" th:text="${error}" class="mensaje-error"></p>
+    <p th:if="${mensaje}" th:text="${mensaje}" class="alert alert-success"></p>
+    <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
   </div>
 
-  <form th:action="@{/superadmin/parqueaderos/buscar}" method="get" class="form-busqueda">
-    <label>Buscar por nombre:</label>
-    <input type="text" name="nombre" placeholder="Ej: Centro Parking">
-    
-    <label>O por zona:</label>
-    <select name="idZona">
-        <option value="">Seleccionar zona</option>
+  <!-- Filtros de búsqueda -->
+  <form th:action="@{/superadmin/parqueaderos/buscar}" method="get" class="filtros-busqueda">
+    <div class="filtro-grupo">
+      <label>Por nombre:</label>
+      <input type="text" name="nombre" placeholder="Ej: Centro Parking">
+    </div>
+    <div class="filtro-grupo">
+      <label>Por zona:</label>
+      <select name="idZona">
+        <option value="">Todas las zonas</option>
         <option th:each="zona : ${zonas}"
                 th:value="${zona.idZona}"
-                th:text="${zona.nombreZona}">
-        </option>
-    </select>
-
-    <button type="submit" class="btn">Buscar</button>
-    <a th:href="@{/superadmin/parqueaderos}" class="btn">Limpiar</a>
+                th:text="${zona.nombreZona}"></option>
+      </select>
+    </div>
+    <div class="filtro-grupo">
+      <label>Por cédula del administrador:</label>
+      <input type="text" name="cedulaAdmin" placeholder="Cédula del admin">
+    </div>
+    <div class="filtro-acciones">
+      <button type="submit" class="btn-primary">Buscar</button>
+      <a th:href="@{/superadmin/parqueaderos}" class="btn-secundario">Limpiar</a>
+    </div>
   </form>
 
-  <section class="parqueaderos-registrados">
-    <p th:if="${#lists.isEmpty(parqueaderos)}" class="no-parqueaderos">
-      Aún no hay parqueaderos registrados.
-    </p>
+  <!-- Tabla de parqueaderos -->
+  <section>
+    <p th:if="${#lists.isEmpty(parqueaderos)}" class="no-data">No hay parqueaderos registrados.</p>
 
-    <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
-      <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
-      <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}">Dirección</span></p>
-      <p><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}">Teléfono</span></p>
-      <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}">Zona</span></p>
-      <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}">Horario</span></p>
-      <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}">0</span>/hora</p>
-      <p>
-        <strong>Espacios:</strong>
-        <span th:text="${parqueadero.espaciosTotales}">0</span> totales -
-        <span th:text="${parqueadero.espaciosDisponibles}">0</span> disponibles
-      </p>
-      <p>
-        <strong>Administrador:</strong>
-        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.nombre : 'No asignado'}">No asignado</span>
-      </p>
-      <p>
-        <strong>Cédula:</strong>
-        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.cedula : '-'}">-</span>
-      </p>
-
-      <p>
-        <strong>Estado:</strong>
-        <span th:text="${parqueadero.habilitado ? 'Habilitado' : 'Deshabilitado'}"
-              th:classappend="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}">
-        </span>
-      </p>
-
-      <form th:action="@{/superadmin/parqueaderos/cambiarEstado}" 
-            method="post"
-            th:attr="onsubmit=${parqueadero.habilitado} ? 'return confirm(\'¿Estás seguro de que deseas deshabilitar este parqueadero?\')' : 'return confirm(\'¿Estás seguro de que deseas habilitar este parqueadero?\')'">
-        <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}">
-        <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}">
-        <button type="submit" class="btn"
-                th:text="${parqueadero.habilitado ? 'Deshabilitar' : 'Habilitar'}"></button>
-      </form>
-
+    <div class="tabla-responsive" th:if="${!#lists.isEmpty(parqueaderos)}">
+      <table class="tabla-datos">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Zona</th>
+            <th>Dirección</th>
+            <th>Horario</th>
+            <th>Tarifa/h</th>
+            <th>Espacios</th>
+            <th>Administrador</th>
+            <th>Cédula Admin</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="parqueadero : ${parqueaderos}">
+            <td><strong th:text="${parqueadero.nombre}"></strong></td>
+            <td th:text="${parqueadero.zona.nombreZona}"></td>
+            <td th:text="${parqueadero.direccion}"></td>
+            <td th:text="${parqueadero.horario}"></td>
+            <td th:text="'$' + ${parqueadero.tarifaHora}"></td>
+            <td>
+              <span th:text="${parqueadero.espaciosDisponibles}"></span>
+              / <span th:text="${parqueadero.espaciosTotales}"></span>
+            </td>
+            <td th:text="${parqueadero.administrador != null ? parqueadero.administrador.nombre : 'No asignado'}"></td>
+            <td th:text="${parqueadero.administrador != null ? parqueadero.administrador.cedula : '-'}"></td>
+            <td>
+              <span th:class="${parqueadero.habilitado ? 'estado-activo' : 'estado-inactivo'}"
+                    th:text="${parqueadero.habilitado ? 'Activo' : 'Inactivo'}"></span>
+            </td>
+            <td>
+              <form th:action="@{/superadmin/parqueaderos/cambiarEstado}" method="post"
+                    style="display:inline; background:none; border:none; padding:0; margin:0;"
+                    th:attr="onsubmit=${parqueadero.habilitado} ? 'return confirm(\'¿Deshabilitar este parqueadero?\')' : 'return confirm(\'¿Habilitar este parqueadero?\')'">
+                <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}">
+                <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}">
+                <button type="submit"
+                        th:class="${parqueadero.habilitado ? 'btn btn-eliminar' : 'btn btn-editar'}"
+                        th:text="${parqueadero.habilitado ? 'Deshabilitar' : 'Habilitar'}"></button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
   </section>
 </main>
 

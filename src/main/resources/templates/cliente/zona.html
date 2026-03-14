@@ -5,7 +5,6 @@
   <title th:text="'ParkingApp - ' + ${zona.nombreZona}">ParkingApp - Zona</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/cliente.css}">
-  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
 </head>
 <body>
 
@@ -18,67 +17,48 @@
   </nav>
 </header>
 
-<main class="superadmin-dashboard"> 
+<main class="cliente-dashboard">
   <h2 th:text="'Parqueaderos en ' + ${zona.nombreZona}">Parqueaderos</h2>
+  <p>Selecciona un parqueadero disponible para reservar tu espacio.</p>
 
-  <p th:if="${#lists.isEmpty(parqueaderos)}" class="no-parqueaderos">
-    No hay parqueaderos registrados en esta zona.
-  </p>
+  <section>
+    <p th:if="${#lists.isEmpty(parqueaderos)}" class="mensaje-vacio">
+      No hay parqueaderos registrados en esta zona.
+    </p>
 
-  <section class="parqueaderos-registrados">
+    <div class="parqueaderos-grid">
+      <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
 
-    <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
+        <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
 
-      <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
+        <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
+        <p th:if="${parqueadero.telefono}"><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}"></span></p>
+        <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
+        <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span>/hora</p>
+        <p>
+          <strong>Espacios:</strong>
+          <span th:text="${parqueadero.espaciosDisponibles}"></span> disponibles de
+          <span th:text="${parqueadero.espaciosTotales}"></span>
+        </p>
+        <p>
+          <strong>Estado:</strong>
+          <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
+                th:text="${parqueadero.habilitado ? 'Disponible' : 'No disponible'}"></span>
+        </p>
+        <p th:if="${parqueadero.urlMaps}">
+          <strong>Ubicación:</strong>
+          <a th:href="${parqueadero.urlMaps}" class="btn-link" target="_blank">Ver en Google Maps</a>
+        </p>
 
-      <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
-      <p><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}"></span></p>
-      <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}"></span></p>
-      <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
-      <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span>/hora</p>
+        <div class="acciones">
+          <a th:if="${parqueadero.habilitado}"
+             th:href="@{'/reserva/' + ${parqueadero.idParqueadero}}"
+             class="btn-primary">Reservar</a>
+          <span th:unless="${parqueadero.habilitado}" class="estado-deshabilitado">No disponible</span>
+        </div>
 
-      <p>
-        <strong>Espacios:</strong>
-        <span th:text="${parqueadero.espaciosTotales}"></span> totales -
-        <span th:text="${parqueadero.espaciosDisponibles}"></span> disponibles
-      </p>
-
-      <p>
-        <strong>Administrador:</strong>
-        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.nombre : 'No asignado'}"></span>
-      </p>
-
-      <p>
-        <strong>Cédula:</strong>
-        <span th:text="${parqueadero.administrador != null ? parqueadero.administrador.cedula : '-'}"></span>
-      </p>
-
-      <p>
-        <strong>Estado:</strong>
-        <span th:classappend="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
-              th:text="${parqueadero.habilitado ? 'Habilitado' : 'Deshabilitado'}">
-        </span>
-      </p>
-
-      <p th:if="${parqueadero.urlMaps}">
-        <strong>Ubicación:</strong>
-        <a th:href="${parqueadero.urlMaps}" class="btn-link" target="_blank">
-          Ver en Google Maps
-        </a>
-      </p>
-
-      <div class="acciones" style="margin-top: 10px;">
-        <a th:if="${parqueadero.habilitado}"
-           th:href="@{'/reserva/' + ${parqueadero.idParqueadero}}"
-           class="btn">Reservar</a>
-
-        <span th:if="${!parqueadero.habilitado}" class="estado-deshabilitado">
-          No disponible
-        </span>
       </div>
-
     </div>
-
   </section>
 </main>
 
