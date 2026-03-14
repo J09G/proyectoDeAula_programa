@@ -37,6 +37,11 @@ public class LoginController {
         Usuario usuario = usuarioService.obtenerUsuarioPorCorreo(correo);
 
         if (usuario != null && usuario.getContrasena().equals(contrasena)) {
+            if (!usuario.isHabilitado()) {
+                model.addAttribute("error", "Tu cuenta está deshabilitada. Contacta al administrador.");
+                return "login";
+            }
+
             session.setAttribute("usuario", usuario);
 
             String rol = usuario.getRol().getNombre().toLowerCase();

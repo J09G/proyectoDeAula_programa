@@ -19,7 +19,7 @@ public interface UsuarioService {
 
     void actualizarUsuario(int idUsuario, String nombre, String correo, String cedula);
 
-    void eliminarUsuarioPorId(int idUsuario);
+    void cambiarEstadoUsuario(int idUsuario, boolean habilitado);
 
     boolean existeCorreo(String correo);
 

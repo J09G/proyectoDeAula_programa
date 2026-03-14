@@ -30,6 +30,9 @@ public class Usuario {
     @Column(nullable = true, length = 10)
     private String placa;
 
+    @Column(nullable = false)
+    private boolean habilitado = true;
+
     public Integer getIdUsuario() {
         return idUsuario;
     }
@@ -84,5 +87,13 @@ public class Usuario {
 
     public void setPlaca(String placa) {
         this.placa = placa;
+    }
+
+    public boolean isHabilitado() {
+        return habilitado;
+    }
+
+    public void setHabilitado(boolean habilitado) {
+        this.habilitado = habilitado;
     }
 }

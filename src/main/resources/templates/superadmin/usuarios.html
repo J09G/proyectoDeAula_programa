@@ -39,6 +39,7 @@
           <th>Cédula</th>
           <th>Correo</th>
           <th>Rol</th>
+          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -51,11 +52,18 @@
           <td th:text="${usuario.rol.nombre}"></td>
 
           <td>
+            <span th:if="${usuario.habilitado}" class="estado-activo">Activo</span>
+            <span th:unless="${usuario.habilitado}" class="estado-inactivo">Inactivo</span>
+          </td>
+
+          <td>
             <a th:href="@{'/superadmin/editar/' + ${usuario.idUsuario}}" class="btn btn-editar">Editar</a>
-            <a th:href="@{'/superadmin/eliminar/' + ${usuario.idUsuario}}"
-              th:onclick="'return confirm(\'¿Seguro que deseas eliminar este usuario? '
-                        + 'Si es un administrador, también se eliminará su parqueadero.\');'"
-              class="btn btn-eliminar">Eliminar</a>
+            <form th:action="@{/superadmin/cambiarEstadoUsuario}" method="post" style="display:inline;">
+              <input type="hidden" name="idUsuario" th:value="${usuario.idUsuario}">
+              <input type="hidden" name="habilitado" th:value="${!usuario.habilitado}">
+              <button type="submit" th:class="${usuario.habilitado} ? 'btn btn-eliminar' : 'btn btn-editar'"
+                      th:text="${usuario.habilitado} ? 'Deshabilitar' : 'Habilitar'"></button>
+            </form>
           </td>
         </tr>
       </tbody>

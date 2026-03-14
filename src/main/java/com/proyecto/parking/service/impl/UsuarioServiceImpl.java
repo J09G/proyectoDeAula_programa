@@ -105,18 +105,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void eliminarUsuarioPorId(int idUsuario) {
+    public void cambiarEstadoUsuario(int idUsuario, boolean habilitado) {
         Usuario usuario = obtenerUsuarioPorId(idUsuario);
 
-        String nombreRol = usuario.getRol().getNombre();
-
-        if ("SuperAdmin".equalsIgnoreCase(nombreRol)) {
-            System.out.println("No se puede eliminar al SuperAdministrador.");
-            return;
+        if ("SuperAdmin".equalsIgnoreCase(usuario.getRol().getNombre())) {
+            throw new RuntimeException("No se puede deshabilitar al SuperAdministrador.");
         }
 
-        usuarioRepository.delete(usuario);
-        System.out.println("Usuario eliminado correctamente: " + idUsuario);
+        usuario.setHabilitado(habilitado);
+        usuarioRepository.save(usuario);
     }
 
     @Override
