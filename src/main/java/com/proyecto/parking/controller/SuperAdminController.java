@@ -138,25 +138,17 @@ public class SuperAdminController {
         return "redirect:/superadmin/usuarios";
     }
 
-    @GetMapping("/eliminar/{id}")
-    public String eliminarUsuario(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    @PostMapping("/cambiarEstadoUsuario")
+    public String cambiarEstadoUsuario(@RequestParam int idUsuario,
+                                       @RequestParam boolean habilitado,
+                                       RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = usuarioService.obtenerUsuarioPorId(id);
-
-            if (usuario.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) {
-                redirectAttributes.addFlashAttribute("error", " No se puede eliminar al SuperAdministrador.");
-                return "redirect:/superadmin/usuarios";
-            }
-
-            parqueaderoService.eliminarParqueaderoPorAdministrador(id);
-            usuarioService.eliminarUsuarioPorId(id);
-
-            redirectAttributes.addFlashAttribute("mensaje", " Usuario y su parqueadero eliminados correctamente.");
+            usuarioService.cambiarEstadoUsuario(idUsuario, habilitado);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Usuario " + (habilitado ? "habilitado" : "deshabilitado") + " correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar usuario o parqueadero: " + e.getMessage());
-            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error al cambiar estado: " + e.getMessage());
         }
-
         return "redirect:/superadmin/usuarios";
     }
 
@@ -176,19 +168,22 @@ public class SuperAdminController {
     @GetMapping("/parqueaderos/buscar")
     public String buscarParqueaderos(@RequestParam(required = false) String nombre,
                                     @RequestParam(required = false) Integer idZona,
+                                    @RequestParam(required = false) String cedulaAdmin,
                                     Model model) {
         try {
             List<Parqueadero> resultados;
 
             if (nombre != null && !nombre.trim().isEmpty()) {
                 resultados = parqueaderoService.buscarPorNombre(nombre.trim());
-                model.addAttribute("mensaje", "Resultados de búsqueda para nombre: " + nombre);
+                model.addAttribute("mensaje", "Resultados para nombre: " + nombre);
             } else if (idZona != null && idZona > 0) {
                 resultados = parqueaderoService.buscarPorZona(idZona);
-                model.addAttribute("mensaje", "Resultados de búsqueda para zona seleccionada.");
+                model.addAttribute("mensaje", "Resultados para zona seleccionada.");
+            } else if (cedulaAdmin != null && !cedulaAdmin.trim().isEmpty()) {
+                resultados = parqueaderoService.buscarPorCedulaAdmin(cedulaAdmin.trim());
+                model.addAttribute("mensaje", "Resultados para cédula de administrador: " + cedulaAdmin);
             } else {
                 resultados = parqueaderoService.listarParqueaderos();
-                model.addAttribute("mensaje", "Mostrando todos los parqueaderos.");
             }
 
             model.addAttribute("parqueaderos", resultados);
@@ -198,7 +193,6 @@ public class SuperAdminController {
         }
 
         model.addAttribute("zonas", zonaService.obtenerZonas());
-
         return "superadmin/parqueaderos";
     }
 
@@ -215,6 +209,37 @@ public class SuperAdminController {
             redirectAttributes.addFlashAttribute("error", "Error al cambiar el estado: " + e.getMessage());
         }
         return "redirect:/superadmin/parqueaderos";
+    }
+
+    @GetMapping("/zonas")
+    public String verZonas(Model model) {
+        model.addAttribute("zonas", zonaService.obtenerZonas());
+        return "superadmin/zonas";
+    }
+
+    @PostMapping("/zonas/crear")
+    public String crearZona(@RequestParam String nombreZona, RedirectAttributes redirectAttributes) {
+        try {
+            zonaService.crearZona(nombreZona);
+            redirectAttributes.addFlashAttribute("mensaje", "Zona creada correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al crear la zona: " + e.getMessage());
+        }
+        return "redirect:/superadmin/zonas";
+    }
+
+    @PostMapping("/zonas/cambiarEstado")
+    public String cambiarEstadoZona(@RequestParam int idZona,
+                                    @RequestParam boolean habilitado,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            zonaService.cambiarEstadoZona(idZona, habilitado);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Zona " + (habilitado ? "habilitada" : "deshabilitada") + " correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al cambiar estado de zona: " + e.getMessage());
+        }
+        return "redirect:/superadmin/zonas";
     }
 
     @GetMapping("/buscarUsuario")

@@ -31,7 +31,7 @@ public class ClienteController {
             return "redirect:/login";
         }
 
-        List<Zona> zonas = zonaService.obtenerZonas();
+        List<Zona> zonas = zonaService.obtenerZonasHabilitadas();
         List<Reserva> reservas = reservaService.listarReservasCliente(cliente.getIdUsuario());
 
         model.addAttribute("zonas", zonas);

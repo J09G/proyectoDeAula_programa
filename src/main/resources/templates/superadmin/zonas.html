@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Zonas - SuperAdmin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>ParkingApp</h1></div>
+    <nav class="nav">
+      <a th:href="@{/superadmin}" class="btn">Inicio</a>
+      <a th:href="@{/superadmin/usuarios}" class="btn">Usuarios</a>
+      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <h2>Gestión de Zonas</h2>
+
+    <div class="mensajes">
+      <p th:if="${mensaje}" th:text="${mensaje}" class="alert alert-success"></p>
+      <p th:if="${error}" th:text="${error}" class="alert alert-error"></p>
+    </div>
+
+    <section class="register-section">
+      <h3>Crear Nueva Zona</h3>
+      <form th:action="@{/superadmin/zonas/crear}" method="post">
+        <input type="text" name="nombreZona" placeholder="Nombre de la zona" required>
+        <button type="submit" class="btn-primary">Crear Zona</button>
+      </form>
+    </section>
+
+    <section>
+      <h3>Zonas Registradas</h3>
+      <p th:if="${#lists.isEmpty(zonas)}" class="no-data">No hay zonas registradas.</p>
+
+      <table th:if="${!#lists.isEmpty(zonas)}" class="tabla-datos">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="zona : ${zonas}">
+            <td th:text="${zona.idZona}"></td>
+            <td th:text="${zona.nombreZona}"></td>
+            <td>
+              <span th:if="${zona.habilitado}" class="estado-activo">Activa</span>
+              <span th:unless="${zona.habilitado}" class="estado-inactivo">Inactiva</span>
+            </td>
+            <td>
+              <form th:action="@{/superadmin/zonas/cambiarEstado}" method="post" style="display:inline;">
+                <input type="hidden" name="idZona" th:value="${zona.idZona}">
+                <input type="hidden" name="habilitado" th:value="${!zona.habilitado}">
+                <button type="submit" th:class="${zona.habilitado} ? 'btn btn-eliminar' : 'btn btn-editar'"
+                        th:text="${zona.habilitado} ? 'Deshabilitar' : 'Habilitar'"></button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

@@ -14,9 +14,15 @@ public class Zona {
     @Column(name = "nombre_zona", nullable = false)
     private String nombreZona;
 
+    @Column(nullable = false)
+    private boolean habilitado = true;
+
     public Integer getIdZona() { return idZona; }
     public void setIdZona(Integer idZona) { this.idZona = idZona; }
 
     public String getNombreZona() { return nombreZona; }
     public void setNombreZona(String nombreZona) { this.nombreZona = nombreZona; }
+
+    public boolean isHabilitado() { return habilitado; }
+    public void setHabilitado(boolean habilitado) { this.habilitado = habilitado; }
 }
