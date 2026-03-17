@@ -26,9 +26,11 @@ public class ClienteController {
     public String mostrarPanelCliente(Model model, HttpSession session) {
         Usuario cliente = (Usuario) session.getAttribute("usuario");
 
-        if (cliente == null || !cliente.getRol().getNombre().equalsIgnoreCase("Cliente")) {
-            model.addAttribute("error", "No tienes permiso para acceder a esta página.");
+        if (cliente == null) {
             return "redirect:/login";
+        }
+        if (!cliente.getRol().getNombre().equalsIgnoreCase("Cliente")) {
+            return "redirect:/error/403";
         }
 
         List<Zona> zonas = zonaService.obtenerZonasHabilitadas();

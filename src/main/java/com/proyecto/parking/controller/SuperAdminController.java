@@ -34,9 +34,11 @@ public class SuperAdminController {
     public String mostrarPanelSuperadmin(Model model, HttpSession session) {
         Usuario superadmin = (Usuario) session.getAttribute("usuario");
 
-        if (superadmin == null || !superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) {
-            model.addAttribute("error", "No tienes permiso para acceder a esta página.");
+        if (superadmin == null) {
             return "redirect:/login";
+        }
+        if (!superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) {
+            return "redirect:/error/403";
         }
 
         try {

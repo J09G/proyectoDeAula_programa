@@ -46,6 +46,9 @@ public class AdminController {
             if (admin == null) {
                 return "redirect:/login";
             }
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) {
+                return "redirect:/error/403";
+            }
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
             if (parqueadero == null) {
@@ -75,6 +78,9 @@ public class AdminController {
             Usuario admin = (Usuario) session.getAttribute("usuario");
             if (admin == null) {
                 return "redirect:/login";
+            }
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) {
+                return "redirect:/error/403";
             }
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
@@ -206,6 +212,7 @@ public class AdminController {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
             if (admin == null) return "redirect:/login";
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
             if (parqueadero == null) {
@@ -230,6 +237,7 @@ public class AdminController {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
             if (admin == null) return "redirect:/login";
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
             registroParqueoService.registrarEntrada(placa, cedula, parqueadero.getIdParqueadero());
