@@ -7,32 +7,31 @@ public interface ParqueaderoService {
 
     Parqueadero registrarParqueadero(String nombre, String direccion, String horario,
                                      double tarifa, int espaciosTotales, int espaciosDisponibles,
-                                     int idZona, int registradoPor, String urlMaps, String telefono); // ← agregado telefono
+                                     String idZona, String registradoPor, String urlMaps, String telefono);
 
-    Parqueadero actualizarParqueadero(int idParqueadero, String nombre, String direccion,
+    Parqueadero actualizarParqueadero(String idParqueadero, String nombre, String direccion,
                                       String horario, double tarifa, int espaciosTotales,
-                                      int espaciosDisponibles, int idZona, String urlMaps);
+                                      int espaciosDisponibles, String idZona, String urlMaps);
 
-    Parqueadero obtenerParqueaderoPorAdministrador(int idUsuario);
+    Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario);
 
-    void eliminarParqueaderoPorAdministrador(int idUsuario);
+    void eliminarParqueaderoPorAdministrador(String idUsuario);
 
-    List<Parqueadero> obtenerParqueaderosPorZona(int idZona);
+    List<Parqueadero> obtenerParqueaderosPorZona(String idZona);
 
-    Parqueadero obtenerParqueaderoPorId(int idParqueadero);
+    Parqueadero obtenerParqueaderoPorId(String idParqueadero);
 
     List<Parqueadero> listarParqueaderos();
 
-    void asignarAdministrador(int idParqueadero, int idAdministrador);
+    void asignarAdministrador(String idParqueadero, String idAdministrador);
 
-    void cambiarEstado(int idParqueadero, boolean habilitado);
+    void cambiarEstado(String idParqueadero, boolean habilitado);
 
     Parqueadero guardarParqueadero(Parqueadero parqueadero);
 
     List<Parqueadero> buscarPorNombre(String nombre);
 
-    List<Parqueadero> buscarPorZona(int idZona);
+    List<Parqueadero> buscarPorZona(String idZona);
 
     List<Parqueadero> buscarPorCedulaAdmin(String cedula);
-
 }

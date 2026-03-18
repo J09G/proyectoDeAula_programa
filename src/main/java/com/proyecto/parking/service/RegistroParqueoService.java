@@ -5,13 +5,13 @@ import java.util.List;
 
 public interface RegistroParqueoService {
 
-    RegistroParqueo registrarEntrada(String placa, String cedula, int idParqueadero);
+    RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero);
 
-    RegistroParqueo registrarSalida(int idRegistro);
+    RegistroParqueo registrarSalida(String idRegistro);
 
-    List<RegistroParqueo> listarActivosPorParqueadero(int idParqueadero);
+    List<RegistroParqueo> listarActivosPorParqueadero(String idParqueadero);
 
-    List<RegistroParqueo> listarTodosPorParqueadero(int idParqueadero);
+    List<RegistroParqueo> listarTodosPorParqueadero(String idParqueadero);
 
-    RegistroParqueo obtenerPorId(int idRegistro);
+    RegistroParqueo obtenerPorId(String idRegistro);
 }

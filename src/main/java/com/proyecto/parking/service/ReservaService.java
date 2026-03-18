@@ -5,16 +5,15 @@ import java.util.List;
 
 public interface ReservaService {
 
-    Reserva crearReserva(int idCliente, int idParqueadero);
+    Reserva crearReserva(String idCliente, String idParqueadero);
 
-    List<Reserva> listarReservasCliente(int idCliente);
+    List<Reserva> listarReservasCliente(String idCliente);
 
-    List<Reserva> listarReservasParqueadero(int idParqueadero);
+    List<Reserva> listarReservasParqueadero(String idParqueadero);
 
-    Reserva cambiarEstadoReserva(int idReserva, String nuevoEstado);
+    Reserva cambiarEstadoReserva(String idReserva, String nuevoEstado);
 
-    void eliminarReserva(int idReserva);
+    void eliminarReserva(String idReserva);
 
-    List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, int idParqueadero);
-
+    List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero);
 }

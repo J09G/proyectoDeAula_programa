@@ -35,11 +35,10 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
     private ReservaRepository reservaRepository;
 
     @Override
-    public RegistroParqueo registrarEntrada(String placa, String cedula, int idParqueadero) {
+    public RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
 
-        // Verificar que no haya ya un registro activo con esa placa
         registroRepository.findByPlacaAndEstado(placa.toUpperCase(), EstadoRegistro.ACTIVO)
                 .ifPresent(r -> { throw new RuntimeException("Ya existe un registro activo para la placa " + placa); });
 
@@ -51,7 +50,6 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
 
         boolean tieneReserva = false;
 
-        // Si se ingresó una cédula, buscar el usuario y su reserva aceptada
         if (cedula != null && !cedula.trim().isEmpty()) {
             Usuario usuario = usuarioRepository.findByCedula(cedula.trim());
             if (usuario == null) {
@@ -59,18 +57,15 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
             }
             registro.setUsuario(usuario);
 
-            // Buscar reserva ACEPTADA del usuario en este parqueadero
             Optional<Reserva> reservaOpt = reservaRepository
                     .findByClienteAndParqueaderoAndEstado(usuario, parqueadero, EstadoReserva.ACEPTADA);
 
             if (reservaOpt.isPresent()) {
                 registro.setReserva(reservaOpt.get());
                 tieneReserva = true;
-                // Espacio ya fue descontado al aceptar la reserva, no se descuenta de nuevo
             }
         }
 
-        // Si no tiene reserva, descontar espacio disponible
         if (!tieneReserva) {
             if (parqueadero.getEspaciosDisponibles() <= 0) {
                 throw new RuntimeException("No hay espacios disponibles en el parqueadero.");
@@ -83,7 +78,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
     }
 
     @Override
-    public RegistroParqueo registrarSalida(int idRegistro) {
+    public RegistroParqueo registrarSalida(String idRegistro) {
         RegistroParqueo registro = registroRepository.findById(idRegistro)
                 .orElseThrow(() -> new RuntimeException("Registro no encontrado."));
 
@@ -94,7 +89,6 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         LocalDateTime ahora = LocalDateTime.now();
         long minutos = ChronoUnit.MINUTES.between(registro.getHoraEntrada(), ahora);
 
-        // Calcular valor: mínimo cobrar 1 hora (60 minutos)
         double horas = Math.max(minutos / 60.0, 1.0);
         double valor = horas * registro.getParqueadero().getTarifaHora();
 
@@ -103,7 +97,6 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         registro.setValorPagado(Math.round(valor * 100.0) / 100.0);
         registro.setEstado(EstadoRegistro.FINALIZADO);
 
-        // Devolver el espacio al parqueadero
         Parqueadero parqueadero = registro.getParqueadero();
         parqueadero.setEspaciosDisponibles(parqueadero.getEspaciosDisponibles() + 1);
         parqueaderoRepository.save(parqueadero);
@@ -112,21 +105,21 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
     }
 
     @Override
-    public List<RegistroParqueo> listarActivosPorParqueadero(int idParqueadero) {
+    public List<RegistroParqueo> listarActivosPorParqueadero(String idParqueadero) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
         return registroRepository.findByParqueaderoAndEstado(parqueadero, EstadoRegistro.ACTIVO);
     }
 
     @Override
-    public List<RegistroParqueo> listarTodosPorParqueadero(int idParqueadero) {
+    public List<RegistroParqueo> listarTodosPorParqueadero(String idParqueadero) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
         return registroRepository.findByParqueadero(parqueadero);
     }
 
     @Override
-    public RegistroParqueo obtenerPorId(int idRegistro) {
+    public RegistroParqueo obtenerPorId(String idRegistro) {
         return registroRepository.findById(idRegistro)
                 .orElseThrow(() -> new RuntimeException("Registro no encontrado."));
     }

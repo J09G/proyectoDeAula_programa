@@ -25,7 +25,7 @@ public class ZonaServiceImpl implements ZonaService {
     }
 
     @Override
-    public Zona obtenerZonaPorId(int idZona) {
+    public Zona obtenerZonaPorId(String idZona) {
         return zonaRepository.findById(idZona)
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada con ID: " + idZona));
     }
@@ -38,7 +38,7 @@ public class ZonaServiceImpl implements ZonaService {
     }
 
     @Override
-    public void cambiarEstadoZona(int idZona, boolean habilitado) {
+    public void cambiarEstadoZona(String idZona, boolean habilitado) {
         Zona zona = obtenerZonaPorId(idZona);
         zona.setHabilitado(habilitado);
         zonaRepository.save(zona);

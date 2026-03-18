@@ -20,7 +20,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private RolRepository rolRepository;
 
     @Override
-    public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, Integer idRol) {
+    public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre) {
         if (usuarioRepository.existsByCorreo(correo)) {
             throw new RuntimeException("El correo ya está registrado");
         }
@@ -28,8 +28,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("La cédula ya está registrada");
         }
 
-        Rol rol = rolRepository.findById(idRol)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Rol rol = rolRepository.findByNombre(rolNombre);
+        if (rol == null) throw new RuntimeException("Rol no encontrado: " + rolNombre);
 
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
@@ -41,7 +41,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String placa, Integer idRol) {
+    @Override
+    public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String placa, String rolNombre) {
         if (usuarioRepository.existsByCorreo(correo)) {
             throw new RuntimeException("El correo ya está registrado");
         }
@@ -49,8 +50,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("La cédula ya está registrada");
         }
 
-        Rol rol = rolRepository.findById(idRol)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Rol rol = rolRepository.findByNombre(rolNombre);
+        if (rol == null) throw new RuntimeException("Rol no encontrado: " + rolNombre);
 
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
@@ -69,9 +70,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public String validarLogin(String correo, String contrasena) {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
-
         if (usuario != null && usuario.getContrasena().equals(contrasena)) {
-            return usuario.getRol().getNombre(); 
+            return usuario.getRol().getNombre();
         }
         return null;
     }
@@ -87,13 +87,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Usuario obtenerUsuarioPorId(int idUsuario) {
+    public Usuario obtenerUsuarioPorId(String idUsuario) {
         return usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @Override
-    public void actualizarUsuario(int idUsuario, String nombre, String correo, String cedula) {
+    public void actualizarUsuario(String idUsuario, String nombre, String correo, String cedula) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -105,7 +105,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void cambiarEstadoUsuario(int idUsuario, boolean habilitado) {
+    public void cambiarEstadoUsuario(String idUsuario, boolean habilitado) {
         Usuario usuario = obtenerUsuarioPorId(idUsuario);
 
         if ("SuperAdmin".equalsIgnoreCase(usuario.getRol().getNombre())) {
@@ -125,5 +125,4 @@ public class UsuarioServiceImpl implements UsuarioService {
     public List<Usuario> buscarPorCedula(String cedula) {
         return usuarioRepository.findByCedulaContaining(cedula);
     }
-
 }

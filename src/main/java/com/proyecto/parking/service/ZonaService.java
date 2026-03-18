@@ -8,9 +8,9 @@ public interface ZonaService {
 
     List<Zona> obtenerZonasHabilitadas();
 
-    Zona obtenerZonaPorId(int idZona);
+    Zona obtenerZonaPorId(String idZona);
 
     Zona crearZona(String nombreZona);
 
-    void cambiarEstadoZona(int idZona, boolean habilitado);
+    void cambiarEstadoZona(String idZona, boolean habilitado);
 }

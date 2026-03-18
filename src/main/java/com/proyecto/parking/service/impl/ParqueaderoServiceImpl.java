@@ -27,7 +27,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     @Override
     public Parqueadero registrarParqueadero(String nombre, String direccion, String horario,
                                             double tarifa, int espaciosTotales, int espaciosDisponibles,
-                                            int idZona, int registradoPor, String urlMaps, String telefono) { // ← nuevo parámetro
+                                            String idZona, String registradoPor, String urlMaps, String telefono) {
 
         Zona zona = zonaRepository.findById(idZona)
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada."));
@@ -45,19 +45,16 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
         parqueadero.setZona(zona);
         parqueadero.setRegistradoPor(superadmin);
         parqueadero.setAdministrador(null);
-
-        // Nuevo campo
         parqueadero.setTelefono((telefono != null && !telefono.trim().isEmpty()) ? telefono.trim() : null);
-
         parqueadero.setUrlMaps((urlMaps != null && !urlMaps.trim().isEmpty()) ? urlMaps.trim() : null);
 
         return parqueaderoRepository.save(parqueadero);
     }
 
     @Override
-    public Parqueadero actualizarParqueadero(int idParqueadero, String nombre, String direccion,
+    public Parqueadero actualizarParqueadero(String idParqueadero, String nombre, String direccion,
                                              String horario, double tarifa, int espaciosTotales,
-                                             int espaciosDisponibles, int idZona, String urlMaps) {
+                                             int espaciosDisponibles, String idZona, String urlMaps) {
 
         Parqueadero parqueadero = obtenerParqueaderoPorId(idParqueadero);
         Zona zona = zonaRepository.findById(idZona)
@@ -76,33 +73,30 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
-    public Parqueadero obtenerParqueaderoPorAdministrador(int idUsuario) {
+    public Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
         return parqueaderoRepository.findByAdministrador(usuario);
     }
 
     @Override
-    public void eliminarParqueaderoPorAdministrador(int idUsuario) {
+    public void eliminarParqueaderoPorAdministrador(String idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
 
         Parqueadero parqueadero = parqueaderoRepository.findByAdministrador(usuario);
         if (parqueadero != null) {
             parqueaderoRepository.delete(parqueadero);
-            System.out.println("Parqueadero eliminado: " + parqueadero.getNombre());
-        } else {
-            System.out.println("No se encontró parqueadero para el administrador con ID " + idUsuario);
         }
     }
 
     @Override
-    public List<Parqueadero> obtenerParqueaderosPorZona(int idZona) {
-        return parqueaderoRepository.findByZona_IdZona(idZona);
+    public List<Parqueadero> obtenerParqueaderosPorZona(String idZona) {
+        return parqueaderoRepository.findByZona_Id(idZona);
     }
 
     @Override
-    public Parqueadero obtenerParqueaderoPorId(int idParqueadero) {
+    public Parqueadero obtenerParqueaderoPorId(String idParqueadero) {
         return parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
     }
@@ -113,7 +107,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
-    public void asignarAdministrador(int idParqueadero, int idAdministrador) {
+    public void asignarAdministrador(String idParqueadero, String idAdministrador) {
         Parqueadero parqueadero = obtenerParqueaderoPorId(idParqueadero);
         Usuario administrador = usuarioRepository.findById(idAdministrador)
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado."));
@@ -123,7 +117,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
-    public void cambiarEstado(int idParqueadero, boolean habilitado) {
+    public void cambiarEstado(String idParqueadero, boolean habilitado) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado"));
         parqueadero.setHabilitado(habilitado);
@@ -141,8 +135,8 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
-    public List<Parqueadero> buscarPorZona(int idZona) {
-        return parqueaderoRepository.findByZona_IdZona(idZona);
+    public List<Parqueadero> buscarPorZona(String idZona) {
+        return parqueaderoRepository.findByZona_Id(idZona);
     }
 
     @Override

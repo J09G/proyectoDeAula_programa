@@ -34,10 +34,11 @@ public class ReservaServiceImpl implements ReservaService {
     @Autowired
     private UsuarioService usuarioService;
 
-    
+    @Autowired
+    private EmailService emailService;
 
     @Override
-    public Reserva crearReserva(int idCliente, int idParqueadero) {
+    public Reserva crearReserva(String idCliente, String idParqueadero) {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
@@ -61,21 +62,21 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public List<Reserva> listarReservasCliente(int idCliente) {
+    public List<Reserva> listarReservasCliente(String idCliente) {
         Usuario cliente = usuarioRepository.findById(idCliente)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado."));
         return reservaRepository.findByCliente(cliente);
     }
 
     @Override
-    public List<Reserva> listarReservasParqueadero(int idParqueadero) {
+    public List<Reserva> listarReservasParqueadero(String idParqueadero) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
         return reservaRepository.findByParqueadero(parqueadero);
     }
 
     @Override
-    public Reserva cambiarEstadoReserva(int idReserva, String nuevoEstado) {
+    public Reserva cambiarEstadoReserva(String idReserva, String nuevoEstado) {
         Reserva reserva = reservaRepository.findById(idReserva)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada."));
 
@@ -102,14 +103,13 @@ public class ReservaServiceImpl implements ReservaService {
         }
 
         reservaRepository.save(reserva);
-
         enviarCorreoCambioEstado(reserva);
 
         return reserva;
     }
 
     @Override
-    public void eliminarReserva(int idReserva) {
+    public void eliminarReserva(String idReserva) {
         if (!reservaRepository.existsById(idReserva)) {
             throw new RuntimeException("La reserva no existe.");
         }
@@ -117,7 +117,7 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, int idParqueadero) {
+    public List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
 
@@ -129,9 +129,6 @@ public class ReservaServiceImpl implements ReservaService {
         return reservaRepository.findByClienteAndParqueadero(cliente, parqueadero);
     }
 
-    @Autowired
-    private EmailService emailService;
-
     private void enviarCorreoCambioEstado(Reserva reserva) {
         String correo = reserva.getCliente().getCorreo();
         String nombre = reserva.getCliente().getNombre();
@@ -139,15 +136,13 @@ public class ReservaServiceImpl implements ReservaService {
 
         String asunto = "Actualización de tu reserva en ParkingApp";
         String mensaje = "Hola " + nombre + ",\n\n" +
-                "Tu reserva con el ID #" + reserva.getIdReserva() + " ha sido " + estado.toLowerCase() + ".\n\n" +
+                "Tu reserva con el ID #" + reserva.getId() + " ha sido " + estado.toLowerCase() + ".\n\n" +
                 "Gracias por usar ParkingApp.";
 
         try {
             emailService.enviarCorreo(correo, asunto, mensaje);
-            System.out.println("Correo enviado a " + correo + " correctamente.");
         } catch (Exception e) {
             System.err.println("Error al enviar correo al cliente: " + e.getMessage());
         }
     }
-
 }

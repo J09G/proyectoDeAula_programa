@@ -5,9 +5,9 @@ import java.util.List;
 
 public interface UsuarioService {
 
-    void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String placa, Integer idRol);
+    void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String placa, String rolNombre);
 
-    void registrarUsuario(String nombre, String cedula, String correo, String contrasena, Integer idRol);
+    void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre);
 
     String validarLogin(String correo, String contrasena);
 
@@ -15,11 +15,11 @@ public interface UsuarioService {
 
     List<Usuario> obtenerTodosLosUsuarios();
 
-    Usuario obtenerUsuarioPorId(int idUsuario);
+    Usuario obtenerUsuarioPorId(String idUsuario);
 
-    void actualizarUsuario(int idUsuario, String nombre, String correo, String cedula);
+    void actualizarUsuario(String idUsuario, String nombre, String correo, String cedula);
 
-    void cambiarEstadoUsuario(int idUsuario, boolean habilitado);
+    void cambiarEstadoUsuario(String idUsuario, boolean habilitado);
 
     boolean existeCorreo(String correo);
 
