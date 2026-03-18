@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface ReservaRepository extends MongoRepository<Reserva, String> {
-    List<Reserva> findByParqueadero(Parqueadero parqueadero);
-    List<Reserva> findByCliente(Usuario cliente);
-    List<Reserva> findByClienteAndParqueadero(Usuario cliente, Parqueadero parqueadero);
-    Optional<Reserva> findByClienteAndParqueaderoAndEstado(Usuario cliente, Parqueadero parqueadero, EstadoReserva estado);
+    List<Reserva> findByParqueadero_Id(String idParqueadero);
+    List<Reserva> findByCliente_Id(String idCliente);
+    List<Reserva> findByCliente_IdAndParqueadero_Id(String idCliente, String idParqueadero);
+    Optional<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);
 }

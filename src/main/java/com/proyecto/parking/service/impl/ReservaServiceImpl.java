@@ -4,7 +4,6 @@ import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.model.Usuario;
-import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.ReservaRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.EmailService;
@@ -26,9 +25,6 @@ public class ReservaServiceImpl implements ReservaService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private ParqueaderoRepository parqueaderoRepository;
-
-    @Autowired
     private ParqueaderoService parqueaderoService;
 
     @Autowired
@@ -42,9 +38,9 @@ public class ReservaServiceImpl implements ReservaService {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
-        List<Reserva> existentes = reservaRepository.findByClienteAndParqueadero(cliente, parqueadero);
-        boolean tieneActiva = existentes.stream()
-                .anyMatch(r -> r.getEstado() == EstadoReserva.PENDIENTE);
+        boolean tieneActiva = reservaRepository
+                .findByCliente_IdAndParqueadero_IdAndEstado(cliente.getId(), parqueadero.getId(), EstadoReserva.PENDIENTE)
+                .isPresent();
         if (tieneActiva) {
             throw new RuntimeException("Ya tienes una reserva activa en este parqueadero.");
         }
@@ -67,16 +63,12 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> listarReservasCliente(String idCliente) {
-        Usuario cliente = usuarioRepository.findById(idCliente)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado."));
-        return reservaRepository.findByCliente(cliente);
+        return reservaRepository.findByCliente_Id(idCliente);
     }
 
     @Override
     public List<Reserva> listarReservasParqueadero(String idParqueadero) {
-        Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
-                .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
-        return reservaRepository.findByParqueadero(parqueadero);
+        return reservaRepository.findByParqueadero_Id(idParqueadero);
     }
 
     @Override
@@ -122,15 +114,11 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero) {
-        Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
-                .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
-
         Usuario cliente = usuarioRepository.findByCedula(cedula);
         if (cliente == null) {
             return List.of();
         }
-
-        return reservaRepository.findByClienteAndParqueadero(cliente, parqueadero);
+        return reservaRepository.findByCliente_IdAndParqueadero_Id(cliente.getId(), idParqueadero);
     }
 
     private void enviarCorreoCambioEstado(Reserva reserva) {

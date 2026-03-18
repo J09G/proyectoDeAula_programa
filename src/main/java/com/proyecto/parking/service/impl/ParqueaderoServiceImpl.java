@@ -74,17 +74,12 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
-        return parqueaderoRepository.findByAdministrador(usuario);
+        return parqueaderoRepository.findByAdministrador_Id(idUsuario);
     }
 
     @Override
     public void eliminarParqueaderoPorAdministrador(String idUsuario) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
-
-        Parqueadero parqueadero = parqueaderoRepository.findByAdministrador(usuario);
+        Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
         if (parqueadero != null) {
             parqueaderoRepository.delete(parqueadero);
         }

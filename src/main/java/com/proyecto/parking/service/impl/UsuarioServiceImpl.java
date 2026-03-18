@@ -122,7 +122,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Si es administrador, también cambia el estado de su parqueadero
         if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
-            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador(usuario);
+            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
             if (parqueadero != null) {
                 parqueadero.setHabilitado(habilitado);
                 parqueaderoRepository.save(parqueadero);
