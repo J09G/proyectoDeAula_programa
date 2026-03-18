@@ -26,15 +26,11 @@ public class ClienteController {
     public String mostrarPanelCliente(Model model, HttpSession session) {
         Usuario cliente = (Usuario) session.getAttribute("usuario");
 
-        if (cliente == null) {
-            return "redirect:/login";
-        }
-        if (!cliente.getRol().getNombre().equalsIgnoreCase("Cliente")) {
-            return "redirect:/error/403";
-        }
+        if (cliente == null) return "redirect:/login";
+        if (!cliente.getRol().getNombre().equalsIgnoreCase("Cliente")) return "redirect:/error/403";
 
         List<Zona> zonas = zonaService.obtenerZonasHabilitadas();
-        List<Reserva> reservas = reservaService.listarReservasCliente(cliente.getIdUsuario());
+        List<Reserva> reservas = reservaService.listarReservasCliente(cliente.getId());
 
         model.addAttribute("zonas", zonas);
         model.addAttribute("reservas", reservas);

@@ -29,17 +29,12 @@ public class SuperAdminController {
     @Autowired
     private UsuarioService usuarioService;
 
-
     @GetMapping("")
     public String mostrarPanelSuperadmin(Model model, HttpSession session) {
         Usuario superadmin = (Usuario) session.getAttribute("usuario");
 
-        if (superadmin == null) {
-            return "redirect:/login";
-        }
-        if (!superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) {
-            return "redirect:/error/403";
-        }
+        if (superadmin == null) return "redirect:/login";
+        if (!superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) return "redirect:/error/403";
 
         try {
             model.addAttribute("zonas", zonaService.obtenerZonas());
@@ -53,19 +48,20 @@ public class SuperAdminController {
 
     @PostMapping("/registrarParqueadero")
     public String registrarParqueadero(@RequestParam String nombre,
-                                    @RequestParam String direccion,
-                                    @RequestParam String horario,
-                                    @RequestParam double tarifa,
-                                    @RequestParam("espacios_totales") int espaciosTotales,
-                                    @RequestParam("espacios_disponibles") int espaciosDisponibles,
-                                    @RequestParam("id_zona") int idZona,
-                                    @RequestParam("url_maps") String urlMaps,
-                                    @RequestParam String telefono,  
-                                    Model model) {
+                                       @RequestParam String direccion,
+                                       @RequestParam String horario,
+                                       @RequestParam double tarifa,
+                                       @RequestParam("espacios_totales") int espaciosTotales,
+                                       @RequestParam("espacios_disponibles") int espaciosDisponibles,
+                                       @RequestParam("id_zona") String idZona,
+                                       @RequestParam("url_maps") String urlMaps,
+                                       @RequestParam String telefono,
+                                       HttpSession session,
+                                       Model model) {
         try {
-            int registradoPor = 1;
+            Usuario superadmin = (Usuario) session.getAttribute("usuario");
             parqueaderoService.registrarParqueadero(nombre, direccion, horario, tarifa,
-                    espaciosTotales, espaciosDisponibles, idZona, registradoPor, urlMaps, telefono);
+                    espaciosTotales, espaciosDisponibles, idZona, superadmin.getId(), urlMaps, telefono);
             model.addAttribute("mensaje", "Parqueadero registrado correctamente.");
         } catch (Exception e) {
             model.addAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
@@ -78,10 +74,10 @@ public class SuperAdminController {
 
     @PostMapping("/asignarAdmin")
     public String asignarAdministrador(@RequestParam String correo,
-                                    @RequestParam String cedula,
-                                    @RequestParam String contrasena,
-                                    @RequestParam("id_parqueadero") int idParqueadero,
-                                    Model model) {
+                                       @RequestParam String cedula,
+                                       @RequestParam String contrasena,
+                                       @RequestParam("id_parqueadero") String idParqueadero,
+                                       Model model) {
         try {
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
@@ -89,11 +85,9 @@ public class SuperAdminController {
                 model.addAttribute("error", "Este parqueadero ya tiene un administrador asignado.");
             } else {
                 String nombreAdmin = "Administrador " + idParqueadero;
-
-                usuarioService.registrarUsuario(nombreAdmin, cedula, correo, contrasena, 2);
+                usuarioService.registrarUsuario(nombreAdmin, cedula, correo, contrasena, "Administrador");
                 Usuario nuevoAdmin = usuarioService.obtenerUsuarioPorCorreo(correo);
-
-                parqueaderoService.asignarAdministrador(idParqueadero, nuevoAdmin.getIdUsuario());
+                parqueaderoService.asignarAdministrador(idParqueadero, nuevoAdmin.getId());
                 model.addAttribute("mensaje", "Administrador asignado correctamente.");
             }
         } catch (Exception e) {
@@ -112,21 +106,14 @@ public class SuperAdminController {
     }
 
     @GetMapping("/editar/{id}")
-    public String mostrarFormularioEdicion(@PathVariable int id, Model model) {
+    public String mostrarFormularioEdicion(@PathVariable String id, Model model) {
         Usuario usuario = usuarioService.obtenerUsuarioPorId(id);
         model.addAttribute("usuario", usuario);
-
-        model.addAttribute("roles", List.of(
-                new Object[]{"SuperAdmin", 1},
-                new Object[]{"Administrador", 2},
-                new Object[]{"Cliente", 3}
-        ));
-
         return "superadmin/editar_usuario";
     }
 
     @PostMapping("/actualizar")
-    public String actualizarUsuario(@RequestParam int idUsuario,
+    public String actualizarUsuario(@RequestParam String idUsuario,
                                     @RequestParam String nombre,
                                     @RequestParam String correo,
                                     @RequestParam String cedula,
@@ -141,7 +128,7 @@ public class SuperAdminController {
     }
 
     @PostMapping("/cambiarEstadoUsuario")
-    public String cambiarEstadoUsuario(@RequestParam int idUsuario,
+    public String cambiarEstadoUsuario(@RequestParam String idUsuario,
                                        @RequestParam boolean habilitado,
                                        RedirectAttributes redirectAttributes) {
         try {
@@ -159,7 +146,7 @@ public class SuperAdminController {
         try {
             List<Parqueadero> parqueaderos = parqueaderoService.listarParqueaderos();
             model.addAttribute("parqueaderos", parqueaderos);
-            model.addAttribute("zonas", zonaService.obtenerZonas()); 
+            model.addAttribute("zonas", zonaService.obtenerZonas());
             model.addAttribute("mensaje", parqueaderos.isEmpty() ? "No hay parqueaderos registrados." : null);
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar los parqueaderos: " + e.getMessage());
@@ -169,16 +156,16 @@ public class SuperAdminController {
 
     @GetMapping("/parqueaderos/buscar")
     public String buscarParqueaderos(@RequestParam(required = false) String nombre,
-                                    @RequestParam(required = false) Integer idZona,
-                                    @RequestParam(required = false) String cedulaAdmin,
-                                    Model model) {
+                                     @RequestParam(required = false) String idZona,
+                                     @RequestParam(required = false) String cedulaAdmin,
+                                     Model model) {
         try {
             List<Parqueadero> resultados;
 
             if (nombre != null && !nombre.trim().isEmpty()) {
                 resultados = parqueaderoService.buscarPorNombre(nombre.trim());
                 model.addAttribute("mensaje", "Resultados para nombre: " + nombre);
-            } else if (idZona != null && idZona > 0) {
+            } else if (idZona != null && !idZona.trim().isEmpty()) {
                 resultados = parqueaderoService.buscarPorZona(idZona);
                 model.addAttribute("mensaje", "Resultados para zona seleccionada.");
             } else if (cedulaAdmin != null && !cedulaAdmin.trim().isEmpty()) {
@@ -199,10 +186,9 @@ public class SuperAdminController {
     }
 
     @PostMapping("/parqueaderos/cambiarEstado")
-    public String cambiarEstadoParqueadero(
-            @RequestParam int idParqueadero,
-            @RequestParam boolean habilitado,
-            RedirectAttributes redirectAttributes) {
+    public String cambiarEstadoParqueadero(@RequestParam String idParqueadero,
+                                           @RequestParam boolean habilitado,
+                                           RedirectAttributes redirectAttributes) {
         try {
             parqueaderoService.cambiarEstado(idParqueadero, habilitado);
             redirectAttributes.addFlashAttribute("mensaje",
@@ -231,7 +217,7 @@ public class SuperAdminController {
     }
 
     @PostMapping("/zonas/cambiarEstado")
-    public String cambiarEstadoZona(@RequestParam int idZona,
+    public String cambiarEstadoZona(@RequestParam String idZona,
                                     @RequestParam boolean habilitado,
                                     RedirectAttributes redirectAttributes) {
         try {
@@ -257,5 +243,4 @@ public class SuperAdminController {
         model.addAttribute("usuarios", usuarios);
         return "superadmin/usuarios";
     }
-
 }

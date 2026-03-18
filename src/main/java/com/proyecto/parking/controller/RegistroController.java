@@ -22,18 +22,15 @@ public class RegistroController {
                                    @RequestParam String cedula,
                                    @RequestParam("email") String correo,
                                    @RequestParam("password") String contrasena,
-                                   @RequestParam(required = false) String placa, 
+                                   @RequestParam(required = false) String placa,
                                    Model model) {
-
         try {
-            Integer rolPorDefecto = 1; 
-
             if (usuarioService.existeCorreo(correo)) {
                 model.addAttribute("error", "El correo ya está registrado. Intente con otro.");
                 return "registro_cliente";
             }
 
-            usuarioService.registrarUsuario(nombre, cedula, correo, contrasena, placa, rolPorDefecto);
+            usuarioService.registrarUsuario(nombre, cedula, correo, contrasena, placa, "Cliente");
 
             model.addAttribute("mensaje", "Registro exitoso. ¡Ya puedes iniciar sesión!");
             return "login";

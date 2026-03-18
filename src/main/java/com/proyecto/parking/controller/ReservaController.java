@@ -23,15 +23,15 @@ public class ReservaController {
     private ParqueaderoService parqueaderoService;
 
     @GetMapping("/{idParqueadero}")
-    public String mostrarFormularioReserva(@PathVariable("idParqueadero") int idParqueadero,
+    public String mostrarFormularioReserva(@PathVariable("idParqueadero") String idParqueadero,
                                            Model model) {
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
         model.addAttribute("parqueadero", parqueadero);
-        return "cliente/reserva"; 
+        return "cliente/reserva";
     }
 
     @PostMapping("/crear")
-    public String crearReserva(@RequestParam("idParqueadero") int idParqueadero,
+    public String crearReserva(@RequestParam("idParqueadero") String idParqueadero,
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
         try {
@@ -42,7 +42,7 @@ public class ReservaController {
                 return "redirect:/login";
             }
 
-            Reserva nuevaReserva = reservaService.crearReserva(cliente.getIdUsuario(), idParqueadero);
+            Reserva nuevaReserva = reservaService.crearReserva(cliente.getId(), idParqueadero);
             redirectAttributes.addFlashAttribute("mensaje",
                     "Reserva creada con éxito. Estado: " + nuevaReserva.getEstado());
 
@@ -52,5 +52,4 @@ public class ReservaController {
 
         return "redirect:/cliente";
     }
-
 }

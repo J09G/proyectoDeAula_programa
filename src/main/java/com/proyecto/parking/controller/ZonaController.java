@@ -22,7 +22,7 @@ public class ZonaController {
     private ParqueaderoService parqueaderoService;
 
     @GetMapping("/{idZona}")
-    public String mostrarZona(@PathVariable("idZona") int idZona, Model model) {
+    public String mostrarZona(@PathVariable("idZona") String idZona, Model model) {
         try {
             Zona zona = zonaService.obtenerZonaPorId(idZona);
             model.addAttribute("zona", zona);
@@ -35,6 +35,6 @@ public class ZonaController {
             return "cliente/index";
         }
 
-        return "cliente/zona"; 
+        return "cliente/zona";
     }
 }

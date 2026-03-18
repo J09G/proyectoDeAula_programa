@@ -28,7 +28,6 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-
     @Autowired
     private ParqueaderoService parqueaderoService;
 
@@ -43,21 +42,17 @@ public class AdminController {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
 
-            if (admin == null) {
-                return "redirect:/login";
-            }
-            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) {
-                return "redirect:/error/403";
-            }
+            if (admin == null) return "redirect:/login";
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
             if (parqueadero == null) {
                 model.addAttribute("error", "No tienes parqueadero asignado aún.");
                 return "admin/index";
             }
 
             if (!model.containsAttribute("reservas")) {
-                List<Reserva> reservas = reservaService.listarReservasParqueadero(parqueadero.getIdParqueadero());
+                List<Reserva> reservas = reservaService.listarReservasParqueadero(parqueadero.getId());
                 model.addAttribute("reservas", reservas);
             }
 
@@ -76,20 +71,16 @@ public class AdminController {
                                          RedirectAttributes redirectAttributes) {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
-            if (admin == null) {
-                return "redirect:/login";
-            }
-            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) {
-                return "redirect:/error/403";
-            }
+            if (admin == null) return "redirect:/login";
+            if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
             if (parqueadero == null) {
                 redirectAttributes.addFlashAttribute("error", "No tienes parqueadero asignado.");
                 return "redirect:/admin";
             }
 
-            List<Reserva> reservas = reservaService.buscarReservasPorCedulaYParqueadero(cedula, parqueadero.getIdParqueadero());
+            List<Reserva> reservas = reservaService.buscarReservasPorCedulaYParqueadero(cedula, parqueadero.getId());
             if (reservas.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "No se encontraron reservas para la cédula: " + cedula);
             } else {
@@ -114,17 +105,17 @@ public class AdminController {
                                     RedirectAttributes redirectAttributes) {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
 
             parqueaderoService.actualizarParqueadero(
-                    parqueadero.getIdParqueadero(),
+                    parqueadero.getId(),
                     nombre,
                     direccion,
                     horario,
                     tarifa,
                     parqueadero.getEspaciosTotales(),
                     parqueadero.getEspaciosDisponibles(),
-                    parqueadero.getZona().getIdZona(),
+                    parqueadero.getZona().getId(),
                     urlMaps
             );
 
@@ -143,7 +134,7 @@ public class AdminController {
                                      RedirectAttributes redirectAttributes) {
         try {
             Usuario admin = (Usuario) session.getAttribute("usuario");
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
 
             if (espacios > parqueadero.getEspaciosTotales()) {
                 redirectAttributes.addFlashAttribute("error", "Los espacios disponibles no pueden ser mayores que los espacios totales.");
@@ -151,14 +142,14 @@ public class AdminController {
             }
 
             parqueaderoService.actualizarParqueadero(
-                    parqueadero.getIdParqueadero(),
+                    parqueadero.getId(),
                     parqueadero.getNombre(),
                     parqueadero.getDireccion(),
                     parqueadero.getHorario(),
                     parqueadero.getTarifaHora(),
                     parqueadero.getEspaciosTotales(),
                     espacios,
-                    parqueadero.getZona().getIdZona(),
+                    parqueadero.getZona().getId(),
                     parqueadero.getUrlMaps()
             );
 
@@ -172,7 +163,7 @@ public class AdminController {
     }
 
     @PostMapping("/reserva/aceptar/{id}")
-    public String aceptarReserva(@PathVariable("id") int idReserva,
+    public String aceptarReserva(@PathVariable("id") String idReserva,
                                  RedirectAttributes redirectAttributes) {
         try {
             reservaService.cambiarEstadoReserva(idReserva, "ACEPTADA");
@@ -184,7 +175,7 @@ public class AdminController {
     }
 
     @PostMapping("/reserva/rechazar/{id}")
-    public String rechazarReserva(@PathVariable("id") int idReserva,
+    public String rechazarReserva(@PathVariable("id") String idReserva,
                                   RedirectAttributes redirectAttributes) {
         try {
             reservaService.cambiarEstadoReserva(idReserva, "RECHAZADA");
@@ -196,7 +187,7 @@ public class AdminController {
     }
 
     @PostMapping("/reserva/eliminar/{id}")
-    public String eliminarReserva(@PathVariable("id") int idReserva,
+    public String eliminarReserva(@PathVariable("id") String idReserva,
                                   RedirectAttributes redirectAttributes) {
         try {
             reservaService.eliminarReserva(idReserva);
@@ -214,15 +205,15 @@ public class AdminController {
             if (admin == null) return "redirect:/login";
             if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
             if (parqueadero == null) {
                 model.addAttribute("error", "No tienes parqueadero asignado.");
                 return "admin/registros";
             }
 
             model.addAttribute("parqueadero", parqueadero);
-            model.addAttribute("activos", registroParqueoService.listarActivosPorParqueadero(parqueadero.getIdParqueadero()));
-            model.addAttribute("historial", registroParqueoService.listarTodosPorParqueadero(parqueadero.getIdParqueadero()));
+            model.addAttribute("activos", registroParqueoService.listarActivosPorParqueadero(parqueadero.getId()));
+            model.addAttribute("historial", registroParqueoService.listarTodosPorParqueadero(parqueadero.getId()));
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar registros: " + e.getMessage());
         }
@@ -239,8 +230,8 @@ public class AdminController {
             if (admin == null) return "redirect:/login";
             if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getIdUsuario());
-            registroParqueoService.registrarEntrada(placa, cedula, parqueadero.getIdParqueadero());
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
+            registroParqueoService.registrarEntrada(placa, cedula, parqueadero.getId());
             redirectAttributes.addFlashAttribute("mensaje", "Entrada registrada correctamente para la placa " + placa.toUpperCase());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al registrar entrada: " + e.getMessage());
@@ -249,12 +240,12 @@ public class AdminController {
     }
 
     @PostMapping("/registros/salida/{idRegistro}")
-    public String registrarSalida(@PathVariable int idRegistro,
+    public String registrarSalida(@PathVariable String idRegistro,
                                   RedirectAttributes redirectAttributes) {
         try {
             RegistroParqueo registro = registroParqueoService.registrarSalida(idRegistro);
             redirectAttributes.addFlashAttribute("mensaje", "Salida registrada. Valor a pagar: $" + registro.getValorPagado());
-            redirectAttributes.addFlashAttribute("idFactura", registro.getIdRegistro());
+            redirectAttributes.addFlashAttribute("idFactura", registro.getId());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al registrar salida: " + e.getMessage());
         }
@@ -262,7 +253,7 @@ public class AdminController {
     }
 
     @GetMapping("/registros/factura/{idRegistro}")
-    public String verFactura(@PathVariable int idRegistro, Model model) {
+    public String verFactura(@PathVariable String idRegistro, Model model) {
         try {
             RegistroParqueo registro = registroParqueoService.obtenerPorId(idRegistro);
             model.addAttribute("registro", registro);
@@ -273,7 +264,7 @@ public class AdminController {
     }
 
     @GetMapping("/registros/factura/pdf/{idRegistro}")
-    public void descargarFacturaPdf(@PathVariable int idRegistro, HttpServletResponse response) throws IOException {
+    public void descargarFacturaPdf(@PathVariable String idRegistro, HttpServletResponse response) throws IOException {
         RegistroParqueo reg = registroParqueoService.obtenerPorId(idRegistro);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -291,7 +282,6 @@ public class AdminController {
             Font fontValor = new Font(Font.HELVETICA, 10, Font.NORMAL);
             Font fontTotal = new Font(Font.HELVETICA, 14, Font.BOLD);
 
-            // Encabezado
             Paragraph titulo = new Paragraph("ParkingApp", fontTitulo);
             titulo.setAlignment(Element.ALIGN_CENTER);
             doc.add(titulo);
@@ -306,13 +296,12 @@ public class AdminController {
 
             doc.add(new Paragraph(" "));
 
-            Paragraph facturaId = new Paragraph("Factura #" + reg.getIdRegistro(), fontLabel);
+            Paragraph facturaId = new Paragraph("Factura #" + reg.getId(), fontLabel);
             facturaId.setAlignment(Element.ALIGN_CENTER);
             doc.add(facturaId);
 
             doc.add(new Paragraph(" "));
 
-            // Tabla de datos
             PdfPTable tabla = new PdfPTable(2);
             tabla.setWidthPercentage(100);
             tabla.setWidths(new float[]{40f, 60f});
@@ -327,7 +316,7 @@ public class AdminController {
             }
 
             agregarFilaTabla(tabla, "Con reserva:",
-                    reg.getReserva() != null ? "Sí - Reserva #" + reg.getReserva().getIdReserva() : "No",
+                    reg.getReserva() != null ? "Sí - Reserva #" + reg.getReserva().getId() : "No",
                     fontLabel, fontValor);
             agregarFilaTabla(tabla, "Hora de entrada:", reg.getHoraEntrada().format(fmt), fontLabel, fontValor);
             agregarFilaTabla(tabla, "Hora de salida:", reg.getHoraSalida().format(fmt), fontLabel, fontValor);
@@ -338,10 +327,8 @@ public class AdminController {
             agregarFilaTabla(tabla, "Tarifa por hora:", "$" + reg.getParqueadero().getTarifaHora(), fontLabel, fontValor);
 
             doc.add(tabla);
-
             doc.add(new Paragraph(" "));
 
-            // Total
             Paragraph total = new Paragraph("TOTAL A PAGAR: $" + reg.getValorPagado(), fontTotal);
             total.setAlignment(Element.ALIGN_RIGHT);
             doc.add(total);
