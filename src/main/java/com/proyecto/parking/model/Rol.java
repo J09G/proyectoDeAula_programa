@@ -1,18 +1,15 @@
 package com.proyecto.parking.model;
 
-import jakarta.persistence.*; 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "rol")
+@Document(collection = "roles")
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idRol") 
-    private Integer idRol;
+    private String id;
 
-    @Column(name = "nombre", nullable = false, length = 45)
-    private String nombre; 
+    private String nombre;
 
     public Rol() {}
 
@@ -20,19 +17,9 @@ public class Rol {
         this.nombre = nombre;
     }
 
-    public Integer getIdRol() {
-        return idRol;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setIdRol(Integer idRol) {
-        this.idRol = idRol;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 }

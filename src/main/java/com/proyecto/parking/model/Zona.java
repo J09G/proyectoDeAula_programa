@@ -1,24 +1,19 @@
 package com.proyecto.parking.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "zona")
+@Document(collection = "zonas")
 public class Zona {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idZona")
-    private Integer idZona;
+    private String id;
 
-    @Column(name = "nombre_zona", nullable = false)
     private String nombreZona;
-
-    @Column(nullable = false)
     private boolean habilitado = true;
 
-    public Integer getIdZona() { return idZona; }
-    public void setIdZona(Integer idZona) { this.idZona = idZona; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getNombreZona() { return nombreZona; }
     public void setNombreZona(String nombreZona) { this.nombreZona = nombreZona; }

@@ -1,26 +1,16 @@
 package com.proyecto.parking.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "reserva")
+@Document(collection = "reservas")
 public class Reserva {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idReserva")
-    private Integer idReserva;
+    private String id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
     private EstadoReserva estado;
-
-    @ManyToOne
-    @JoinColumn(name = "idCliente", nullable = false)
     private Usuario cliente;
-
-    @ManyToOne
-    @JoinColumn(name = "idParqueadero", nullable = false)
     private Parqueadero parqueadero;
 
     public enum EstadoReserva {
@@ -28,7 +18,6 @@ public class Reserva {
         ACEPTADA,
         RECHAZADA
     }
-
 
     public Reserva() {}
 
@@ -38,8 +27,8 @@ public class Reserva {
         this.parqueadero = parqueadero;
     }
 
-    public Integer getIdReserva() { return idReserva; }
-    public void setIdReserva(Integer idReserva) { this.idReserva = idReserva; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public EstadoReserva getEstado() { return estado; }
     public void setEstado(EstadoReserva estado) { this.estado = estado; }

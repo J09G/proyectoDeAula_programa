@@ -1,54 +1,31 @@
 package com.proyecto.parking.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "registro_parqueo")
+@Document(collection = "registros_parqueo")
 public class RegistroParqueo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idRegistro")
-    private Integer idRegistro;
+    private String id;
 
-    @Column(nullable = false, length = 10)
     private String placa;
-
-    @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = true)
     private Usuario usuario;
-
-    @ManyToOne
-    @JoinColumn(name = "idParqueadero", nullable = false)
     private Parqueadero parqueadero;
-
-    @ManyToOne
-    @JoinColumn(name = "idReserva", nullable = true)
     private Reserva reserva;
-
-    @Column(nullable = false)
     private LocalDateTime horaEntrada;
-
-    @Column(nullable = true)
     private LocalDateTime horaSalida;
-
-    @Column(nullable = true)
     private Long tiempoMinutos;
-
-    @Column(nullable = true)
     private Double valorPagado;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private EstadoRegistro estado = EstadoRegistro.ACTIVO;
 
     public enum EstadoRegistro {
         ACTIVO, FINALIZADO
     }
 
-    public Integer getIdRegistro() { return idRegistro; }
-    public void setIdRegistro(Integer idRegistro) { this.idRegistro = idRegistro; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getPlaca() { return placa; }
     public void setPlaca(String placa) { this.placa = placa; }

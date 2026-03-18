@@ -1,53 +1,25 @@
 package com.proyecto.parking.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "parqueadero")
+@Document(collection = "parqueaderos")
 public class Parqueadero {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idParqueadero") 
-    private Integer idParqueadero;
+    private String id;
 
-    @Column(nullable = false, length = 45)
     private String nombre;
-
-    @Column(nullable = false, length = 100)
     private String direccion;
-
-    @Column(nullable = false, length = 100)
     private String horario;
-
-    @Column(name = "tarifa_hora", nullable = false)
     private Double tarifaHora;
-
-    @Column(name = "espacios_totales", nullable = false)
     private Integer espaciosTotales;
-
-    @Column(name = "espacios_disponibles", nullable = false)
     private Integer espaciosDisponibles;
-
-    @Column(name = "url_maps", length = 255)
     private String urlMaps;
-
-    @Column(name = "telefono", length = 20)
     private String telefono;
-
-    @Column(nullable = false)
     private Boolean habilitado = true;
-
-    @ManyToOne
-    @JoinColumn(name = "id_zona")
     private Zona zona;
-
-    @ManyToOne
-    @JoinColumn(name = "registrado_por")
     private Usuario registradoPor;
-
-    @ManyToOne
-    @JoinColumn(name = "id_administrador")
     private Usuario administrador;
 
     public Parqueadero() {}
@@ -70,9 +42,8 @@ public class Parqueadero {
         this.administrador = administrador;
     }
 
-    // Getters y Setters
-    public Integer getIdParqueadero() { return idParqueadero; }
-    public void setIdParqueadero(Integer idParqueadero) { this.idParqueadero = idParqueadero; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
