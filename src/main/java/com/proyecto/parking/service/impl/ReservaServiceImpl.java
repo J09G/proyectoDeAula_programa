@@ -69,7 +69,7 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> listarReservasParqueadero(String idParqueadero) {
-        return reservaRepository.findByParqueadero_Id(idParqueadero);
+        return reservaRepository.findByParqueadero_Id(idParqueadero, Sort.by(Sort.Direction.DESC, "_id"));
     }
 
     @Override

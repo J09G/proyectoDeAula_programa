@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ReservaRepository extends MongoRepository<Reserva, String> {
-    List<Reserva> findByParqueadero_Id(String idParqueadero);
+    List<Reserva> findByParqueadero_Id(String idParqueadero, Sort sort);
     List<Reserva> findByCliente_Id(String idCliente, Sort sort);
     List<Reserva> findByCliente_IdAndParqueadero_Id(String idCliente, String idParqueadero);
     List<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);

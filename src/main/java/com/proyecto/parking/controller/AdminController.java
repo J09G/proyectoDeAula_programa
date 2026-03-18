@@ -222,7 +222,6 @@ public class AdminController {
 
     @PostMapping("/registros/entrada")
     public String registrarEntrada(@RequestParam String placa,
-                                   @RequestParam(required = false) String cedula,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes) {
         try {
@@ -231,7 +230,7 @@ public class AdminController {
             if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
-            registroParqueoService.registrarEntrada(placa, cedula, parqueadero.getId());
+            registroParqueoService.registrarEntrada(placa, null, parqueadero.getId());
             redirectAttributes.addFlashAttribute("mensaje", "Entrada registrada correctamente para la placa " + placa.toUpperCase());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al registrar entrada: " + e.getMessage());
