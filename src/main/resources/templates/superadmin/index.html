@@ -5,6 +5,7 @@
   <title>ParkingApp - Superadministrador</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/superadmin.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
   <style>
     .forms-grid {
       display: grid;
@@ -52,7 +53,7 @@
           <input type="number" name="espacios_disponibles" placeholder="Espacios disponibles" required>
           <input type="url" name="url_maps" placeholder="URL de Google Maps (opcional)">
           <label>Zona:</label>
-          <select name="id_zona" required>
+          <select id="select-zona" name="id_zona" required>
             <option value="">Seleccionar Zona</option>
             <option th:each="zona : ${zonas}"
                     th:value="${zona.id}"
@@ -73,7 +74,7 @@
           <label>Contraseña:</label>
           <input type="password" name="contrasena" placeholder="Contraseña" required>
           <label>Seleccionar parqueadero:</label>
-          <select name="id_parqueadero" required>
+          <select id="select-parqueadero" name="id_parqueadero" required>
             <option value="" disabled selected>Seleccionar Parqueadero</option>
             <option th:each="parqueadero : ${parqueaderos}"
                     th:value="${parqueadero.id}"
@@ -88,5 +89,10 @@
   <footer class="footer">
     <p>© 2025 ParkingApp - Todos los derechos reservados</p>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script>
+    new TomSelect('#select-zona', { placeholder: 'Buscar zona...', allowEmptyOption: true });
+    new TomSelect('#select-parqueadero', { placeholder: 'Buscar parqueadero...', allowEmptyOption: true });
+  </script>
 </body>
 </html>
