@@ -162,9 +162,13 @@ for r in reservas_mysql:
     cliente_emb     = usuarios_doc.get(r["idCliente"])
     parqueadero_emb = parqueaderos_doc.get(r["idParqueadero"])
 
+    # Las reservas ACEPTADA en MySQL ya fueron procesadas en el sistema anterior
+    # Se importan como UTILIZADA para no interferir con el nuevo flujo
+    estado = "UTILIZADA" if r["estado"] == "ACEPTADA" else r["estado"]
+
     db.reservas.insert_one({
         "_id": str(ObjectId()),
-        "estado": r["estado"],
+        "estado": estado,
         "cliente": cliente_emb,
         "parqueadero": parqueadero_emb,
     })
