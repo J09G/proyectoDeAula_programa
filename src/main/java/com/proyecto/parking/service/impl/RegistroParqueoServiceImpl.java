@@ -58,7 +58,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
             registro.setUsuario(usuario);
 
             Optional<Reserva> reservaOpt = reservaRepository
-                    .findByClienteAndParqueaderoAndEstado(usuario, parqueadero, EstadoReserva.ACEPTADA);
+                    .findByCliente_IdAndParqueadero_IdAndEstado(usuario.getId(), parqueadero.getId(), EstadoReserva.ACEPTADA);
 
             if (reservaOpt.isPresent()) {
                 registro.setReserva(reservaOpt.get());
@@ -106,16 +106,12 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
 
     @Override
     public List<RegistroParqueo> listarActivosPorParqueadero(String idParqueadero) {
-        Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
-                .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
-        return registroRepository.findByParqueaderoAndEstado(parqueadero, EstadoRegistro.ACTIVO);
+        return registroRepository.findByParqueadero_IdAndEstado(idParqueadero, EstadoRegistro.ACTIVO);
     }
 
     @Override
     public List<RegistroParqueo> listarTodosPorParqueadero(String idParqueadero) {
-        Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
-                .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
-        return registroRepository.findByParqueadero(parqueadero);
+        return registroRepository.findByParqueadero_Id(idParqueadero);
     }
 
     @Override
