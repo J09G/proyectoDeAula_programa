@@ -13,6 +13,7 @@ import com.proyecto.parking.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Sort;
 import java.util.List;
 
 @Service
@@ -63,7 +64,7 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> listarReservasCliente(String idCliente) {
-        return reservaRepository.findByCliente_Id(idCliente);
+        return reservaRepository.findByCliente_Id(idCliente, Sort.by(Sort.Direction.DESC, "_id"));
     }
 
     @Override
