@@ -49,6 +49,10 @@ public class ReservaServiceImpl implements ReservaService {
             throw new RuntimeException("Ya tienes una reserva activa en este parqueadero.");
         }
 
+        if (parqueadero.getAdministrador() == null) {
+            throw new RuntimeException("Este parqueadero no tiene administrador asignado y no acepta reservas.");
+        }
+
         if (parqueadero.getEspaciosDisponibles() <= 0) {
             throw new RuntimeException("No hay espacios disponibles en este parqueadero.");
         }

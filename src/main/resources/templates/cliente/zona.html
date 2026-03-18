@@ -51,10 +51,11 @@
         </p>
 
         <div class="acciones">
-          <a th:if="${parqueadero.habilitado}"
+          <a th:if="${parqueadero.habilitado and parqueadero.administrador != null}"
              th:href="@{'/reserva/' + ${parqueadero.id}}"
              class="btn-primary">Reservar</a>
-          <span th:unless="${parqueadero.habilitado}" class="estado-deshabilitado">No disponible</span>
+          <span th:unless="${parqueadero.habilitado and parqueadero.administrador != null}"
+                class="estado-deshabilitado">No disponible</span>
         </div>
 
       </div>
