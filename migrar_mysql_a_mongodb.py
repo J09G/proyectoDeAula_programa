@@ -37,6 +37,9 @@ db = mongo_client[MONGO_DB]
 
 # ─── 1. ROLES ─────────────────────────────────────────────────────────────────
 
+db['registros'].drop()
+print("Coleccion registros limpiada")
+
 print("\n[1/5] Migrando roles...")
 cursor.execute("SELECT * FROM rol")
 roles_mysql = cursor.fetchall()
