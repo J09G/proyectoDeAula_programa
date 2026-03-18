@@ -1,7 +1,9 @@
 package com.proyecto.parking.service.impl;
 
+import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Rol;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.RolRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.UsuarioService;
@@ -18,6 +20,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private RolRepository rolRepository;
+
+    @Autowired
+    private ParqueaderoRepository parqueaderoRepository;
 
     @Override
     public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre) {
@@ -114,6 +119,15 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setHabilitado(habilitado);
         usuarioRepository.save(usuario);
+
+        // Si es administrador, también cambia el estado de su parqueadero
+        if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
+            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador(usuario);
+            if (parqueadero != null) {
+                parqueadero.setHabilitado(habilitado);
+                parqueaderoRepository.save(parqueadero);
+            }
+        }
     }
 
     @Override
