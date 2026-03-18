@@ -52,7 +52,7 @@
 
         <div class="acciones">
           <a th:if="${parqueadero.habilitado}"
-             th:href="@{'/reserva/' + ${parqueadero.idParqueadero}}"
+             th:href="@{'/reserva/' + ${parqueadero.id}}"
              class="btn-primary">Reservar</a>
           <span th:unless="${parqueadero.habilitado}" class="estado-deshabilitado">No disponible</span>
         </div>

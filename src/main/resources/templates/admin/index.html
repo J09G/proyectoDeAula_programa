@@ -44,7 +44,7 @@
         <div>
           <h3>Editar Información del Parqueadero</h3>
           <form th:action="@{/admin/editar}" method="post">
-            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.idUsuario}">
+            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.id}">
             <input type="text" name="nombre" placeholder="Nombre del parqueadero" th:value="${parqueadero?.nombre}" required>
             <input type="text" name="direccion" placeholder="Dirección" th:value="${parqueadero?.direccion}" required>
             <input type="text" name="horario" placeholder="Horario (ej: 7:00 AM - 10:00 PM)" th:value="${parqueadero?.horario}" required>
@@ -64,7 +64,7 @@
               <strong th:text="${parqueadero?.espaciosTotales}">0</strong> totales</p>
           </div>
           <form th:action="@{/admin/espacios}" method="post">
-            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.idUsuario}">
+            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.id}">
             <label>Actualizar espacios disponibles:</label>
             <input type="number" name="espacios" min="0"
                    th:value="${parqueadero?.espaciosDisponibles}" placeholder="Ej: 20">
@@ -101,7 +101,7 @@
           </thead>
           <tbody>
             <tr th:each="reserva : ${reservas}">
-              <td th:text="${reserva.idReserva}"></td>
+              <td th:text="${reserva.id}"></td>
               <td th:text="${reserva.cliente.nombre}"></td>
               <td th:text="${reserva.cliente.cedula}"></td>
               <td th:text="${reserva.cliente.placa != null ? reserva.cliente.placa : '-'}"></td>
@@ -112,15 +112,15 @@
                 }" th:text="${reserva.estado}"></span>
               </td>
               <td class="acciones-inline">
-                <form th:action="@{/admin/reserva/aceptar/{id}(id=${reserva.idReserva})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
+                <form th:action="@{/admin/reserva/aceptar/{id}(id=${reserva.id})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
                   <button type="submit" class="btn-accion btn-aceptar-sm"
                           th:disabled="${reserva.estado.name() != 'PENDIENTE'}">Aceptar</button>
                 </form>
-                <form th:action="@{/admin/reserva/rechazar/{id}(id=${reserva.idReserva})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
+                <form th:action="@{/admin/reserva/rechazar/{id}(id=${reserva.id})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
                   <button type="submit" class="btn-accion btn-rechazar-sm"
                           th:disabled="${reserva.estado.name() != 'PENDIENTE'}">Rechazar</button>
                 </form>
-                <form th:action="@{/admin/reserva/eliminar/{id}(id=${reserva.idReserva})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;"
+                <form th:action="@{/admin/reserva/eliminar/{id}(id=${reserva.id})}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;"
                       onsubmit="return confirm('¿Eliminar esta reserva?')">
                   <button type="submit" class="btn-accion btn-eliminar-sm">Eliminar</button>
                 </form>

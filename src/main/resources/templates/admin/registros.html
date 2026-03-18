@@ -75,7 +75,7 @@
           </thead>
           <tbody>
             <tr th:each="reg : ${activos}">
-              <td th:text="${reg.idRegistro}"></td>
+              <td th:text="${reg.id}"></td>
               <td><strong th:text="${reg.placa}"></strong></td>
               <td th:text="${reg.usuario != null ? reg.usuario.nombre + ' - ' + reg.usuario.cedula : 'Cliente de paso'}"></td>
               <td>
@@ -84,7 +84,7 @@
               </td>
               <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
               <td>
-                <form th:action="@{'/admin/registros/salida/' + ${reg.idRegistro}}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
+                <form th:action="@{'/admin/registros/salida/' + ${reg.id}}" method="post" style="display:inline; background:none; border:none; padding:0; margin:0;">
                   <button type="submit" class="btn-salida"
                           onclick="return confirm('¿Registrar salida del vehículo ' + this.closest('tr').querySelector('td:nth-child(2)').textContent + '?')">
                     Registrar Salida
@@ -125,7 +125,7 @@
           </thead>
           <tbody>
             <tr th:each="reg : ${historial}">
-              <td th:text="${reg.idRegistro}"></td>
+              <td th:text="${reg.id}"></td>
               <td><strong th:text="${reg.placa}"></strong></td>
               <td th:text="${reg.usuario != null ? reg.usuario.nombre : 'De paso'}"></td>
               <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
@@ -142,7 +142,7 @@
               </td>
               <td>
                 <a th:if="${reg.estado.name() == 'FINALIZADO'}"
-                   th:href="@{'/admin/registros/factura/' + ${reg.idRegistro}}"
+                   th:href="@{'/admin/registros/factura/' + ${reg.id}}"
                    class="btn btn-editar">Factura</a>
                 <span th:unless="${reg.estado.name() == 'FINALIZADO'}">-</span>
               </td>

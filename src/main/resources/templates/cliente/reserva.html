@@ -44,7 +44,7 @@
       </div>
 
       <form th:action="@{/reserva/crear}" method="post" class="form-reserva">
-        <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}" />
+        <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}" />
         <button type="submit" class="btn-primary">Confirmar Reserva</button>
       </form>
 

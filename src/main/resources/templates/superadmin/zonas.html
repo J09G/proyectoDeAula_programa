@@ -47,7 +47,7 @@
         </thead>
         <tbody>
           <tr th:each="zona : ${zonas}">
-            <td th:text="${zona.idZona}"></td>
+            <td th:text="${zona.id}"></td>
             <td th:text="${zona.nombreZona}"></td>
             <td>
               <span th:if="${zona.habilitado}" class="estado-activo">Activa</span>
@@ -55,7 +55,7 @@
             </td>
             <td>
               <form th:action="@{/superadmin/zonas/cambiarEstado}" method="post" style="display:inline;">
-                <input type="hidden" name="idZona" th:value="${zona.idZona}">
+                <input type="hidden" name="idZona" th:value="${zona.id}">
                 <input type="hidden" name="habilitado" th:value="${!zona.habilitado}">
                 <button type="submit" th:class="${zona.habilitado} ? 'btn btn-eliminar' : 'btn btn-editar'"
                         th:text="${zona.habilitado} ? 'Deshabilitar' : 'Habilitar'"></button>

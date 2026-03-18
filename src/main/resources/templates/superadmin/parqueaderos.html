@@ -37,7 +37,7 @@
       <select name="idZona">
         <option value="">Todas las zonas</option>
         <option th:each="zona : ${zonas}"
-                th:value="${zona.idZona}"
+                th:value="${zona.id}"
                 th:text="${zona.nombreZona}"></option>
       </select>
     </div>
@@ -92,7 +92,7 @@
               <form th:action="@{/superadmin/parqueaderos/cambiarEstado}" method="post"
                     style="display:inline; background:none; border:none; padding:0; margin:0;"
                     th:attr="onsubmit=${parqueadero.habilitado} ? 'return confirm(\'¿Deshabilitar este parqueadero?\')' : 'return confirm(\'¿Habilitar este parqueadero?\')'">
-                <input type="hidden" name="idParqueadero" th:value="${parqueadero.idParqueadero}">
+                <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}">
                 <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}">
                 <button type="submit"
                         th:class="${parqueadero.habilitado ? 'btn btn-eliminar' : 'btn btn-editar'}"

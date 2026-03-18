@@ -64,7 +64,7 @@
         <h2>ParkingApp</h2>
         <p th:text="${registro.parqueadero.nombre}"></p>
         <p th:text="${registro.parqueadero.direccion}"></p>
-        <p><strong>Factura #</strong><span th:text="${registro.idRegistro}"></span></p>
+        <p><strong>Factura #</strong><span th:text="${registro.id}"></span></p>
       </div>
 
       <div class="factura-body">
@@ -83,7 +83,7 @@
           </tr>
           <tr>
             <td>Con reserva:</td>
-            <td th:text="${registro.reserva != null ? 'Sí - Reserva #' + registro.reserva.idReserva : 'No'}"></td>
+            <td th:text="${registro.reserva != null ? 'Sí - Reserva #' + registro.reserva.id : 'No'}"></td>
           </tr>
           <tr>
             <td>Hora de Entrada:</td>
@@ -113,7 +113,7 @@
       </div>
 
       <div class="factura-acciones">
-        <a th:href="@{'/admin/registros/factura/pdf/' + ${registro.idRegistro}}" class="btn-primary">
+        <a th:href="@{'/admin/registros/factura/pdf/' + ${registro.id}}" class="btn-primary">
           Descargar PDF
         </a>
         <button onclick="window.print()" class="btn btn-editar">Imprimir</button>

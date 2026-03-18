@@ -27,7 +27,7 @@
       <p th:if="${#lists.isEmpty(zonas)}" class="mensaje-vacio">No hay zonas disponibles en este momento.</p>
       <div class="zonas-grid">
         <a th:each="zona : ${zonas}"
-           th:href="@{'/zona/' + ${zona.idZona}}"
+           th:href="@{'/zona/' + ${zona.id}}"
            class="zona-card">
           <img th:src="@{'/images/' + ${zona.nombreZona} + '.jpg'}"
                onerror="this.style.display='none'"
@@ -54,7 +54,7 @@
           </thead>
           <tbody>
             <tr th:each="reserva : ${reservas}">
-              <td th:text="${reserva.idReserva}"></td>
+              <td th:text="${reserva.id}"></td>
               <td th:text="${reserva.parqueadero.nombre}"></td>
               <td th:text="${reserva.parqueadero.zona.nombreZona}"></td>
               <td>

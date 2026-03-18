@@ -55,7 +55,7 @@
           <select name="id_zona" required>
             <option value="">Seleccionar Zona</option>
             <option th:each="zona : ${zonas}"
-                    th:value="${zona.idZona}"
+                    th:value="${zona.id}"
                     th:text="${zona.nombreZona}"></option>
           </select>
           <button type="submit" class="btn-primary">Registrar Parqueadero</button>
@@ -76,7 +76,7 @@
           <select name="id_parqueadero" required>
             <option value="" disabled selected>Seleccionar Parqueadero</option>
             <option th:each="parqueadero : ${parqueaderos}"
-                    th:value="${parqueadero.idParqueadero}"
+                    th:value="${parqueadero.id}"
                     th:text="${parqueadero.nombre}"></option>
           </select>
           <button type="submit" class="btn-primary">Asignar Administrador</button>

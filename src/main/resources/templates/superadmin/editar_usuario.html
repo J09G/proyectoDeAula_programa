@@ -18,7 +18,7 @@
     <h2>✏️ Editar Usuario</h2>
 
     <form th:action="@{/superadmin/actualizar}" method="post" class="form-editar">
-      <input type="hidden" name="idUsuario" th:value="${usuario.idUsuario}">
+      <input type="hidden" name="idUsuario" th:value="${usuario.id}">
 
       <label>Nombre:</label>
       <input type="text" name="nombre" th:value="${usuario.nombre}" required>
