@@ -52,7 +52,7 @@
 
       <div th:if="${!#lists.isEmpty(activos)}" class="form-buscar" style="margin-bottom: 15px;">
         <input type="text" id="buscarPlacaActivos" placeholder="Buscar por placa..."
-               oninput="filtrarTabla('buscarPlacaActivos', 'tablaActivos', 0)">
+               oninput="filtrarTabla('buscarPlacaActivos', 'tablaActivos', 1)">
       </div>
 
       <p th:if="${#lists.isEmpty(activos)}" class="no-data">No hay vehículos en el parqueadero en este momento.</p>
