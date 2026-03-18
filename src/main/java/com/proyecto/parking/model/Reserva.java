@@ -16,7 +16,8 @@ public class Reserva {
     public enum EstadoReserva {
         PENDIENTE,
         ACEPTADA,
-        RECHAZADA
+        RECHAZADA,
+        UTILIZADA
     }
 
     public Reserva() {}

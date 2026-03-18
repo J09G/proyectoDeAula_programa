@@ -65,7 +65,10 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
             List<Reserva> reservasAceptadas = reservaRepository
                     .findByCliente_IdAndParqueadero_IdAndEstado(usuario.getId(), parqueadero.getId(), EstadoReserva.ACEPTADA);
             if (!reservasAceptadas.isEmpty()) {
-                registro.setReserva(reservasAceptadas.get(0));
+                Reserva reserva = reservasAceptadas.get(0);
+                reserva.setEstado(Reserva.EstadoReserva.UTILIZADA);
+                reservaRepository.save(reserva);
+                registro.setReserva(reserva);
                 tieneReserva = true;
             }
         }
