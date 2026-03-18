@@ -48,17 +48,22 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         registro.setEstado(EstadoRegistro.ACTIVO);
 
         boolean tieneReserva = false;
+        Usuario usuario = null;
 
         if (cedula != null && !cedula.trim().isEmpty()) {
-            Usuario usuario = usuarioRepository.findByCedula(cedula.trim());
+            usuario = usuarioRepository.findByCedula(cedula.trim());
             if (usuario == null) {
                 throw new RuntimeException("No se encontró ningún usuario con la cédula: " + cedula);
             }
-            registro.setUsuario(usuario);
+        } else {
+            // Sin cédula: buscar usuario por placa para detectar reserva
+            usuario = usuarioRepository.findByPlaca(placa.toUpperCase());
+        }
 
+        if (usuario != null) {
+            registro.setUsuario(usuario);
             List<Reserva> reservasAceptadas = reservaRepository
                     .findByCliente_IdAndParqueadero_IdAndEstado(usuario.getId(), parqueadero.getId(), EstadoReserva.ACEPTADA);
-
             if (!reservasAceptadas.isEmpty()) {
                 registro.setReserva(reservasAceptadas.get(0));
                 tieneReserva = true;
