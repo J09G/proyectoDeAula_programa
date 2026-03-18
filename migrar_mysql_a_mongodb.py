@@ -1,5 +1,5 @@
 """
-Script de migración: MySQL (parking_sm4) → MongoDB Atlas (parking)
+Script de migracion: MySQL (parking_sm4) -> MongoDB Atlas (parking)
 
 Requisitos (instalar antes de correr):
     pip install mysql-connector-python pymongo
@@ -12,7 +12,7 @@ import mysql.connector
 from pymongo import MongoClient
 from bson import ObjectId
 
-# ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
+# ─── CONFIGURACION ────────────────────────────────────────────────────────────
 
 MYSQL = {
     "host": "localhost",
@@ -36,8 +36,6 @@ mongo_client = MongoClient(MONGO_URI)
 db = mongo_client[MONGO_DB]
 
 # ─── 1. ROLES ─────────────────────────────────────────────────────────────────
-# MySQL:   rol(idRol, nombre)
-# MongoDB: roles { _id, nombre }
 
 print("\n[1/5] Migrando roles...")
 cursor.execute("SELECT * FROM rol")
@@ -45,22 +43,19 @@ roles_mysql = cursor.fetchall()
 
 db.roles.drop()
 
-roles_map = {}       # idRol (int) → ObjectId de Mongo
-roles_doc = {}       # idRol (int) → documento completo para embeber
+roles_map = {}
+roles_doc = {}
 
 for r in roles_mysql:
-    oid = ObjectId()
+    oid = str(ObjectId())
     roles_map[r["idRol"]] = oid
     doc = {"_id": oid, "nombre": r["nombre"]}
     roles_doc[r["idRol"]] = doc
     db.roles.insert_one(doc.copy())
 
-print(f"  ✓ {len(roles_mysql)} roles migrados")
+print(f"  OK {len(roles_mysql)} roles migrados")
 
 # ─── 2. ZONAS ─────────────────────────────────────────────────────────────────
-# MySQL:   zona(idZona, nombre_zona)
-# MongoDB: zonas { _id, nombreZona, habilitado }
-# Nota: el modelo viejo no tenía "habilitado", se pone True por defecto.
 
 print("\n[2/5] Migrando zonas...")
 cursor.execute("SELECT * FROM zona")
@@ -72,7 +67,7 @@ zonas_map = {}
 zonas_doc = {}
 
 for z in zonas_mysql:
-    oid = ObjectId()
+    oid = str(ObjectId())
     zonas_map[z["idZona"]] = oid
     doc = {
         "_id": oid,
@@ -82,13 +77,9 @@ for z in zonas_mysql:
     zonas_doc[z["idZona"]] = doc
     db.zonas.insert_one(doc.copy())
 
-print(f"  ✓ {len(zonas_mysql)} zonas migradas")
+print(f"  OK {len(zonas_mysql)} zonas migradas")
 
 # ─── 3. USUARIOS ──────────────────────────────────────────────────────────────
-# MySQL:   usuario(idUsuario, nombre, correo, contrasena, cedula, placa, idRol)
-# MongoDB: usuarios { _id, nombre, correo, contrasena, cedula, placa,
-#                     habilitado, rol: {objeto Rol embebido} }
-# Nota: el modelo viejo no tenía "habilitado", se pone True por defecto.
 
 print("\n[3/5] Migrando usuarios...")
 cursor.execute("SELECT * FROM usuario")
@@ -100,7 +91,7 @@ usuarios_map = {}
 usuarios_doc = {}
 
 for u in usuarios_mysql:
-    oid = ObjectId()
+    oid = str(ObjectId())
     usuarios_map[u["idUsuario"]] = oid
 
     rol_embebido = roles_doc.get(u["idRol"])
@@ -118,15 +109,9 @@ for u in usuarios_mysql:
     usuarios_doc[u["idUsuario"]] = doc
     db.usuarios.insert_one(doc.copy())
 
-print(f"  ✓ {len(usuarios_mysql)} usuarios migrados")
+print(f"  OK {len(usuarios_mysql)} usuarios migrados")
 
 # ─── 4. PARQUEADEROS ──────────────────────────────────────────────────────────
-# MySQL:   parqueadero(idParqueadero, nombre, direccion, horario, tarifa_hora,
-#                      espacios_totales, espacios_disponibles, url_maps,
-#                      telefono, habilitado, id_zona, registrado_por, id_administrador)
-# MongoDB: parqueaderos { _id, nombre, ..., habilitado,
-#                         zona: {embebido}, registradoPor: {embebido},
-#                         administrador: {embebido|null} }
 
 print("\n[4/5] Migrando parqueaderos...")
 cursor.execute("SELECT * FROM parqueadero")
@@ -138,12 +123,12 @@ parqueaderos_map = {}
 parqueaderos_doc = {}
 
 for p in parqueaderos_mysql:
-    oid = ObjectId()
+    oid = str(ObjectId())
     parqueaderos_map[p["idParqueadero"]] = oid
 
     zona_emb       = zonas_doc.get(p["id_zona"])
     registrado_emb = usuarios_doc.get(p["registrado_por"])
-    admin_emb      = usuarios_doc.get(p["id_administrador"])  # puede ser None
+    admin_emb      = usuarios_doc.get(p["id_administrador"])
 
     doc = {
         "_id": oid,
@@ -163,11 +148,9 @@ for p in parqueaderos_mysql:
     parqueaderos_doc[p["idParqueadero"]] = doc
     db.parqueaderos.insert_one(doc.copy())
 
-print(f"  ✓ {len(parqueaderos_mysql)} parqueaderos migrados")
+print(f"  OK {len(parqueaderos_mysql)} parqueaderos migrados")
 
 # ─── 5. RESERVAS ──────────────────────────────────────────────────────────────
-# MySQL:   reserva(idReserva, estado, idCliente, idParqueadero)
-# MongoDB: reservas { _id, estado, cliente: {embebido}, parqueadero: {embebido} }
 
 print("\n[5/5] Migrando reservas...")
 cursor.execute("SELECT * FROM reserva")
@@ -176,17 +159,17 @@ reservas_mysql = cursor.fetchall()
 db.reservas.drop()
 
 for r in reservas_mysql:
-    cliente_emb    = usuarios_doc.get(r["idCliente"])
+    cliente_emb     = usuarios_doc.get(r["idCliente"])
     parqueadero_emb = parqueaderos_doc.get(r["idParqueadero"])
 
     db.reservas.insert_one({
-        "_id": ObjectId(),
+        "_id": str(ObjectId()),
         "estado": r["estado"],
         "cliente": cliente_emb,
         "parqueadero": parqueadero_emb,
     })
 
-print(f"  ✓ {len(reservas_mysql)} reservas migradas")
+print(f"  OK {len(reservas_mysql)} reservas migradas")
 
 # ─── CIERRE ───────────────────────────────────────────────────────────────────
 
@@ -194,7 +177,7 @@ cursor.close()
 mysql_conn.close()
 mongo_client.close()
 
-print("\n✅ Migración completada exitosamente.")
+print("\nMigracion completada exitosamente.")
 print(f"   Roles:        {len(roles_mysql)}")
 print(f"   Zonas:        {len(zonas_mysql)}")
 print(f"   Usuarios:     {len(usuarios_mysql)}")
