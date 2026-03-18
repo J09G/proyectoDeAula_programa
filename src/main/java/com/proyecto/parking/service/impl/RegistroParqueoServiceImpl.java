@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RegistroParqueoServiceImpl implements RegistroParqueoService {
@@ -57,11 +56,11 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
             }
             registro.setUsuario(usuario);
 
-            Optional<Reserva> reservaOpt = reservaRepository
+            List<Reserva> reservasAceptadas = reservaRepository
                     .findByCliente_IdAndParqueadero_IdAndEstado(usuario.getId(), parqueadero.getId(), EstadoReserva.ACEPTADA);
 
-            if (reservaOpt.isPresent()) {
-                registro.setReserva(reservaOpt.get());
+            if (!reservasAceptadas.isEmpty()) {
+                registro.setReserva(reservasAceptadas.get(0));
                 tieneReserva = true;
             }
         }

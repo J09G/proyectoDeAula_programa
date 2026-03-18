@@ -7,12 +7,11 @@ import com.proyecto.parking.model.Usuario;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ReservaRepository extends MongoRepository<Reserva, String> {
     List<Reserva> findByParqueadero_Id(String idParqueadero);
     List<Reserva> findByCliente_Id(String idCliente);
     List<Reserva> findByCliente_IdAndParqueadero_Id(String idCliente, String idParqueadero);
-    Optional<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);
+    List<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);
 }

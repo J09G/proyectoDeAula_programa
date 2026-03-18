@@ -38,9 +38,9 @@ public class ReservaServiceImpl implements ReservaService {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
-        boolean tieneActiva = reservaRepository
+        boolean tieneActiva = !reservaRepository
                 .findByCliente_IdAndParqueadero_IdAndEstado(cliente.getId(), parqueadero.getId(), EstadoReserva.PENDIENTE)
-                .isPresent();
+                .isEmpty();
         if (tieneActiva) {
             throw new RuntimeException("Ya tienes una reserva activa en este parqueadero.");
         }
