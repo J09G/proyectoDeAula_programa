@@ -49,10 +49,18 @@ db.roles.drop()
 roles_map = {}
 roles_doc = {}
 
+# Normalizar nombres de roles para que coincidan con lo que espera la app
+nombres_normalizados = {
+    "superadmin": "SuperAdmin",
+    "administrador": "Administrador",
+    "cliente": "Cliente",
+}
+
 for r in roles_mysql:
     oid = str(ObjectId())
     roles_map[r["idRol"]] = oid
-    doc = {"_id": oid, "nombre": r["nombre"]}
+    nombre = nombres_normalizados.get(r["nombre"].lower(), r["nombre"])
+    doc = {"_id": oid, "nombre": nombre}
     roles_doc[r["idRol"]] = doc
     db.roles.insert_one(doc.copy())
 

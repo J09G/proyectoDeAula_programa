@@ -19,31 +19,23 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        crearRolSiNoExiste("SuperAdmin");
-        crearRolSiNoExiste("Administrador");
-        crearRolSiNoExiste("Cliente");
-        crearSuperAdminSiNoExiste();
-    }
+        // Solo inicializa si no hay roles (base de datos vacía)
+        if (rolRepository.count() > 0) return;
 
-    private void crearRolSiNoExiste(String nombre) {
-        if (rolRepository.findByNombre(nombre) == null) {
-            rolRepository.save(new Rol(nombre));
-            System.out.println("Rol creado: " + nombre);
-        }
-    }
+        rolRepository.save(new Rol("SuperAdmin"));
+        rolRepository.save(new Rol("Administrador"));
+        rolRepository.save(new Rol("Cliente"));
 
-    private void crearSuperAdminSiNoExiste() {
-        if (usuarioRepository.findByCorreo("superadmin@parking.com") == null) {
-            Rol rol = rolRepository.findByNombre("SuperAdmin");
-            Usuario superAdmin = new Usuario();
-            superAdmin.setNombre("Super Admin");
-            superAdmin.setCedula("0000000000");
-            superAdmin.setCorreo("superadmin@parking.com");
-            superAdmin.setContrasena("superadmin123");
-            superAdmin.setRol(rol);
-            superAdmin.setHabilitado(true);
-            usuarioRepository.save(superAdmin);
-            System.out.println("SuperAdmin creado: superadmin@parking.com / superadmin123");
-        }
+        Rol rolSuperAdmin = rolRepository.findByNombre("SuperAdmin");
+        Usuario superAdmin = new Usuario();
+        superAdmin.setNombre("Super Admin");
+        superAdmin.setCedula("0000000000");
+        superAdmin.setCorreo("superadmin@parking.com");
+        superAdmin.setContrasena("superadmin123");
+        superAdmin.setRol(rolSuperAdmin);
+        superAdmin.setHabilitado(true);
+        usuarioRepository.save(superAdmin);
+
+        System.out.println("Datos iniciales creados.");
     }
 }
