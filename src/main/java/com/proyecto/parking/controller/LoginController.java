@@ -1,6 +1,8 @@
 package com.proyecto.parking.controller;
 
+import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,9 @@ public class LoginController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ParqueaderoService parqueaderoService;
 
     @GetMapping("/login")
     public String mostrarLogin(HttpSession session) {
@@ -42,9 +47,19 @@ public class LoginController {
                 return "login";
             }
 
+            String rol = usuario.getRol().getNombre().toLowerCase();
+
+            // Si es administrador, verificar que su parqueadero esté habilitado
+            if (rol.equals("administrador")) {
+                Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(usuario.getId());
+                if (parqueadero == null || !parqueadero.getHabilitado()) {
+                    model.addAttribute("error", "Tu parqueadero está deshabilitado. Contacta al superadministrador.");
+                    return "login";
+                }
+            }
+
             session.setAttribute("usuario", usuario);
 
-            String rol = usuario.getRol().getNombre().toLowerCase();
             switch (rol) {
                 case "cliente": return "redirect:/cliente";
                 case "administrador": return "redirect:/admin";
