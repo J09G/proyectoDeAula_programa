@@ -1,8 +1,6 @@
 package com.proyecto.parking.repository;
 
 import com.proyecto.parking.model.Parqueadero;
-import com.proyecto.parking.model.Usuario;
-import com.proyecto.parking.model.Zona;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
