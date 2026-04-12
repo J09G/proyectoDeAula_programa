@@ -16,8 +16,29 @@
     <div class="login-form">
       <h2>Iniciar Sesión</h2>
 
-      <p th:if="${error}" th:text="${error}" 
+      <p th:if="${param.error != null and param.error[0] == 'credenciales'}"
          style="color: red; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Correo o contraseña incorrectos.
+      </p>
+      <p th:if="${param.error != null and param.error[0] == 'deshabilitado'}"
+         style="color: red; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Tu cuenta está deshabilitada. Contacta al administrador.
+      </p>
+      <p th:if="${param.error != null and param.error[0] == 'parqueadero'}"
+         style="color: red; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Tu parqueadero está deshabilitado. Contacta al superadministrador.
+      </p>
+      <p th:if="${param.error != null and param.error[0] == 'bloqueado'}"
+         style="color: red; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Demasiados intentos fallidos. Intenta de nuevo en 30 minutos.
+      </p>
+      <p th:if="${param.logout != null}"
+         style="color: green; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Sesión cerrada correctamente.
+      </p>
+      <p th:if="${param.expired != null}"
+         style="color: orange; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Tu sesión expiró por inactividad. Inicia sesión nuevamente.
       </p>
 
       <form th:action="@{/login}" method="post">

@@ -6,7 +6,10 @@ import com.proyecto.parking.repository.RolRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -17,25 +20,37 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) {
-        // Solo inicializa si no hay roles (base de datos vacía)
-        if (rolRepository.count() > 0) return;
+        if (rolRepository.count() == 0) {
+            rolRepository.save(new Rol("SuperAdmin"));
+            rolRepository.save(new Rol("Administrador"));
+            rolRepository.save(new Rol("Cliente"));
 
-        rolRepository.save(new Rol("SuperAdmin"));
-        rolRepository.save(new Rol("Administrador"));
-        rolRepository.save(new Rol("Cliente"));
+            Rol rolSuperAdmin = rolRepository.findByNombre("SuperAdmin");
+            Usuario superAdmin = new Usuario();
+            superAdmin.setNombre("Super Admin");
+            superAdmin.setCedula("0000000000");
+            superAdmin.setCorreo("superadmin@parking.com");
+            superAdmin.setContrasena(passwordEncoder.encode("superadmin123"));
+            superAdmin.setRol(rolSuperAdmin);
+            superAdmin.setHabilitado(true);
+            usuarioRepository.save(superAdmin);
 
-        Rol rolSuperAdmin = rolRepository.findByNombre("SuperAdmin");
-        Usuario superAdmin = new Usuario();
-        superAdmin.setNombre("Super Admin");
-        superAdmin.setCedula("0000000000");
-        superAdmin.setCorreo("superadmin@parking.com");
-        superAdmin.setContrasena("superadmin123");
-        superAdmin.setRol(rolSuperAdmin);
-        superAdmin.setHabilitado(true);
-        usuarioRepository.save(superAdmin);
+            System.out.println("Datos iniciales creados.");
+        }
 
-        System.out.println("Datos iniciales creados.");
+        // Migrar contraseñas en texto plano a BCrypt
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        for (Usuario usuario : usuarios) {
+            String contrasena = usuario.getContrasena();
+            if (contrasena != null && !contrasena.startsWith("$2a$")) {
+                usuario.setContrasena(passwordEncoder.encode(contrasena));
+                usuarioRepository.save(usuario);
+            }
+        }
     }
 }

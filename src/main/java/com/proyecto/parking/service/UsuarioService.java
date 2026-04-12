@@ -9,8 +9,6 @@ public interface UsuarioService {
 
     void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre);
 
-    String validarLogin(String correo, String contrasena);
-
     Usuario obtenerUsuarioPorCorreo(String correo);
 
     List<Usuario> obtenerTodosLosUsuarios();

@@ -8,6 +8,7 @@ import com.proyecto.parking.repository.RolRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private ParqueaderoRepository parqueaderoRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre) {
@@ -40,7 +44,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setNombre(nombre);
         usuario.setCedula(cedula);
         usuario.setCorreo(correo);
-        usuario.setContrasena(contrasena);
+        usuario.setContrasena(passwordEncoder.encode(contrasena));
         usuario.setRol(rol);
 
         usuarioRepository.save(usuario);
@@ -62,7 +66,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setNombre(nombre);
         usuario.setCedula(cedula);
         usuario.setCorreo(correo);
-        usuario.setContrasena(contrasena);
+        usuario.setContrasena(passwordEncoder.encode(contrasena));
         usuario.setRol(rol);
 
         if (placa != null && !placa.trim().isEmpty()) {
@@ -70,15 +74,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         usuarioRepository.save(usuario);
-    }
-
-    @Override
-    public String validarLogin(String correo, String contrasena) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario != null && usuario.getContrasena().equals(contrasena)) {
-            return usuario.getRol().getNombre();
-        }
-        return null;
     }
 
     @Override
