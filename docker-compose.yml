@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: .
+    container_name: parking-backend
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb+srv://Jgomez:52134Jg2005@cluster0.br6d4qz.mongodb.net/parking?appName=Cluster0
+    expose:
+      - "8080"
+    networks:
+      - parking-network
+
+  frontend:
+    image: nginx:alpine
+    container_name: parking-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - parking-network
+
+networks:
+  parking-network:
+    driver: bridge
