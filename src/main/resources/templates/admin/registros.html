@@ -12,7 +12,10 @@
     <nav class="nav">
       <span class="user-info" th:text="${parqueadero != null ? parqueadero.nombre : 'Administrador'}"></span>
       <a th:href="@{/admin}" class="btn">Panel Principal</a>
-      <a th:href="@{/logout}" class="btn">Cerrar Sesión</a>
+      <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      </form>
+      <a href="#" class="btn" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar Sesión</a>
     </nav>
   </header>
 

@@ -57,6 +57,19 @@ body {
   transition: 0.2s;
   border: 1px solid rgba(255,255,255,0.25);
   font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-block;
+  -webkit-appearance: none;
+  appearance: none;
+  text-decoration: none;
+  line-height: normal;
+}
+
+.nav form {
+  display: inline;
+  margin: 0;
+  padding: 0;
 }
 
 .nav .btn:hover {

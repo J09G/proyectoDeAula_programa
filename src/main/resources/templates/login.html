@@ -38,6 +38,10 @@
       </p>
       <p th:if="${param.expired != null}"
          style="color: orange; font-weight: bold; text-align: center; margin-bottom: 10px;">
+        Tu sesión fue cerrada porque iniciaste sesión desde otro dispositivo.
+      </p>
+      <p th:if="${param.timeout != null}"
+         style="color: orange; font-weight: bold; text-align: center; margin-bottom: 10px;">
         Tu sesión expiró por inactividad. Inicia sesión nuevamente.
       </p>
 
