@@ -4,6 +4,8 @@ import com.proyecto.parking.model.Zona;
 import com.proyecto.parking.repository.ZonaRepository;
 import com.proyecto.parking.service.ZonaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.bson.Document;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +15,9 @@ public class ZonaServiceImpl implements ZonaService {
 
     @Autowired
     private ZonaRepository zonaRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Override
     public List<Zona> obtenerZonas() {
@@ -27,6 +32,9 @@ public class ZonaServiceImpl implements ZonaService {
     @Override
     public Zona obtenerZonaPorId(String idZona) {
         return zonaRepository.findById(idZona)
+                .or(() -> zonaRepository.findAll().stream()
+                        .filter(z -> idZona.equals(z.getId()))
+                        .findFirst())
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada con ID: " + idZona));
     }
 
@@ -40,7 +48,8 @@ public class ZonaServiceImpl implements ZonaService {
     @Override
     public void cambiarEstadoZona(String idZona, boolean habilitado) {
         Zona zona = obtenerZonaPorId(idZona);
-        zona.setHabilitado(habilitado);
-        zonaRepository.save(zona);
+        Document filter = new Document("nombreZona", zona.getNombreZona());
+        Document updateDoc = new Document("$set", new Document("habilitado", habilitado));
+        mongoTemplate.getDb().getCollection("zonas").updateOne(filter, updateDoc);
     }
 }

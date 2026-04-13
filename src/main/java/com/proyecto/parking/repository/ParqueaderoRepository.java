@@ -12,6 +12,12 @@ public interface ParqueaderoRepository extends MongoRepository<Parqueadero, Stri
     @Query("{ 'zona._id': ?0 }")
     List<Parqueadero> findByZona_Id(String idZona);
 
+    @Query("{ 'zona.nombreZona': ?0 }")
+    List<Parqueadero> findByZonaNombreZona(String nombreZona);
+
+    @Query("{ 'zona.nombreZona': ?0, 'habilitado': true }")
+    List<Parqueadero> findByZonaNombreZonaAndHabilitado(String nombreZona);
+
     @Query("{ 'administrador._id': ?0 }")
     Parqueadero findByAdministrador_Id(String idAdministrador);
 
@@ -22,4 +28,5 @@ public interface ParqueaderoRepository extends MongoRepository<Parqueadero, Stri
 
     @Query("{ 'administrador.cedula': { $regex: ?0, $options: 'i' } }")
     List<Parqueadero> findByAdministrador_CedulaContainingIgnoreCase(String cedula);
+
 }

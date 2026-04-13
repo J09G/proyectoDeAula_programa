@@ -3,6 +3,7 @@ package com.proyecto.parking.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -34,13 +35,15 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         }
 
         String errorParam;
-        String mensaje = exception.getMessage();
-        if (mensaje != null && mensaje.contains("deshabilitado")) {
+        if (exception instanceof DisabledException) {
             errorParam = "deshabilitado";
-        } else if (mensaje != null && mensaje.contains("parqueadero")) {
-            errorParam = "parqueadero";
         } else {
-            errorParam = "credenciales";
+            String mensaje = exception.getMessage();
+            if (mensaje != null && mensaje.contains("parqueadero")) {
+                errorParam = "parqueadero";
+            } else {
+                errorParam = "credenciales";
+            }
         }
 
         response.sendRedirect("/login?error=" + errorParam);

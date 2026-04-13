@@ -42,6 +42,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(usuario.getId());
             if (parqueadero == null || !parqueadero.getHabilitado()) {
                 request.getSession().invalidate();
+                request.getSession(true); // nueva sesión vacía para evitar redirección a ?timeout
                 response.sendRedirect("/login?error=parqueadero");
                 return;
             }

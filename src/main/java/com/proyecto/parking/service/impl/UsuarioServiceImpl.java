@@ -89,12 +89,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario obtenerUsuarioPorId(String idUsuario) {
         return usuarioRepository.findById(idUsuario)
+                .or(() -> usuarioRepository.findAll().stream()
+                        .filter(u -> idUsuario.equals(u.getId()))
+                        .findFirst())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @Override
     public void actualizarUsuario(String idUsuario, String nombre, String correo, String cedula) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
+                .or(() -> usuarioRepository.findAll().stream()
+                        .filter(u -> idUsuario.equals(u.getId()))
+                        .findFirst())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setNombre(nombre);

@@ -1,9 +1,12 @@
 package com.proyecto.parking.service.impl;
 
 import com.proyecto.parking.model.Parqueadero;
+import com.proyecto.parking.model.RegistroParqueo;
+import com.proyecto.parking.model.RegistroParqueo.EstadoRegistro;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.repository.RegistroParqueoRepository;
 import com.proyecto.parking.repository.ReservaRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.EmailService;
@@ -34,16 +37,33 @@ public class ReservaServiceImpl implements ReservaService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private RegistroParqueoRepository registroParqueoRepository;
+
     @Override
     public Reserva crearReserva(String idCliente, String idParqueadero) {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
-        boolean tieneActiva = !reservaRepository
+        boolean tieneRegistroActivo = !registroParqueoRepository
+                .findByUsuario_IdAndEstado(cliente.getId(), EstadoRegistro.ACTIVO)
+                .isEmpty();
+        if (tieneRegistroActivo) {
+            throw new RuntimeException("No puedes hacer una reserva mientras estás activo en un parqueadero.");
+        }
+
+        boolean tienePendiente = !reservaRepository
                 .findByCliente_IdAndParqueadero_IdAndEstado(cliente.getId(), parqueadero.getId(), EstadoReserva.PENDIENTE)
                 .isEmpty();
-        if (tieneActiva) {
-            throw new RuntimeException("Ya tienes una reserva activa en este parqueadero.");
+        if (tienePendiente) {
+            throw new RuntimeException("Ya tienes una reserva pendiente en este parqueadero.");
+        }
+
+        boolean tieneAceptada = !reservaRepository
+                .findByCliente_IdAndParqueadero_IdAndEstado(cliente.getId(), parqueadero.getId(), EstadoReserva.ACEPTADA)
+                .isEmpty();
+        if (tieneAceptada) {
+            throw new RuntimeException("Ya tienes una reserva aceptada en este parqueadero.");
         }
 
         if (parqueadero.getAdministrador() == null) {

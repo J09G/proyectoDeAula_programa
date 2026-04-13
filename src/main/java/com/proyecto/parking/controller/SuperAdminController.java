@@ -57,19 +57,17 @@ public class SuperAdminController {
                                        @RequestParam("url_maps") String urlMaps,
                                        @RequestParam String telefono,
                                        HttpSession session,
-                                       Model model) {
+                                       RedirectAttributes redirectAttributes) {
         try {
             Usuario superadmin = (Usuario) session.getAttribute("usuario");
             parqueaderoService.registrarParqueadero(nombre, direccion, horario, tarifa,
                     espaciosTotales, espaciosDisponibles, idZona, superadmin.getId(), urlMaps, telefono);
-            model.addAttribute("mensaje", "Parqueadero registrado correctamente.");
+            redirectAttributes.addFlashAttribute("mensaje", "Parqueadero registrado correctamente.");
         } catch (Exception e) {
-            model.addAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
         }
 
-        model.addAttribute("zonas", zonaService.obtenerZonas());
-        model.addAttribute("parqueaderos", parqueaderoService.listarParqueaderos());
-        return "superadmin/index";
+        return "redirect:/superadmin";
     }
 
     @PostMapping("/asignarAdmin")
@@ -147,7 +145,9 @@ public class SuperAdminController {
             List<Parqueadero> parqueaderos = parqueaderoService.listarParqueaderos();
             model.addAttribute("parqueaderos", parqueaderos);
             model.addAttribute("zonas", zonaService.obtenerZonas());
-            model.addAttribute("mensaje", parqueaderos.isEmpty() ? "No hay parqueaderos registrados." : null);
+            if (parqueaderos.isEmpty()) {
+                model.addAttribute("mensaje", "No hay parqueaderos registrados.");
+            }
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar los parqueaderos: " + e.getMessage());
         }
