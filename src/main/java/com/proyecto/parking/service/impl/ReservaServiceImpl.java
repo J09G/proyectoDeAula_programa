@@ -81,7 +81,7 @@ public class ReservaServiceImpl implements ReservaService {
 
         return reservaRepository.save(nueva);
     }
-
+ 
     @Override
     public List<Reserva> listarReservasCliente(String idCliente) {
         return reservaRepository.findByCliente_Id(idCliente, Sort.by(Sort.Direction.DESC, "_id"));
@@ -111,7 +111,7 @@ public class ReservaServiceImpl implements ReservaService {
         reserva.setEstado(estadoNuevo);
 
         if (estadoNuevo == EstadoReserva.ACEPTADA) {
-            Parqueadero parqueadero = reserva.getParqueadero();
+            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(reserva.getParqueadero().getId());
             if (parqueadero.getEspaciosDisponibles() <= 0) {
                 throw new RuntimeException("No hay espacios disponibles para aceptar la reserva.");
             }

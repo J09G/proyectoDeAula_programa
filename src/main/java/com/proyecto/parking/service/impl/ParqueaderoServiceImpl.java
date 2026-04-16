@@ -83,7 +83,10 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario) {
-        return parqueaderoRepository.findByAdministrador_Id(idUsuario);
+        return parqueaderoRepository.findAll().stream()
+                .filter(p -> p.getAdministrador() != null && idUsuario.equals(p.getAdministrador().getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -100,7 +103,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
                 .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
                 .orElse(null);
         if (zona == null) return java.util.Collections.emptyList();
-        return parqueaderoRepository.findByZonaNombreZonaAndHabilitado(zona.getNombreZona());
+        return parqueaderoRepository.findByZona_NombreZonaAndHabilitado(zona.getNombreZona(), true);
     }
 
     @Override
@@ -142,7 +145,16 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public Parqueadero guardarParqueadero(Parqueadero parqueadero) {
-        return parqueaderoRepository.save(parqueadero);
+        java.util.List<Document> orConditions = new java.util.ArrayList<>();
+        orConditions.add(new Document("_id", parqueadero.getId()));
+        try {
+            orConditions.add(new Document("_id", new ObjectId(parqueadero.getId())));
+        } catch (IllegalArgumentException ignored) {}
+
+        Document filter = new Document("$or", orConditions);
+        Document updateDoc = new Document("$set", new Document("espaciosDisponibles", parqueadero.getEspaciosDisponibles()));
+        mongoTemplate.getDb().getCollection("parqueaderos").updateOne(filter, updateDoc);
+        return parqueadero;
     }
 
     @Override
@@ -156,7 +168,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
                 .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
                 .orElse(null);
         if (zona == null) return java.util.Collections.emptyList();
-        return parqueaderoRepository.findByZonaNombreZona(zona.getNombreZona());
+        return parqueaderoRepository.findByZona_NombreZona(zona.getNombreZona());
     }
 
     @Override

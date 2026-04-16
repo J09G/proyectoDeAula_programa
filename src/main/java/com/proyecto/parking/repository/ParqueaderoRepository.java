@@ -9,19 +9,14 @@ import java.util.List;
 @Repository
 public interface ParqueaderoRepository extends MongoRepository<Parqueadero, String> {
 
-    @Query("{ 'zona._id': ?0 }")
     List<Parqueadero> findByZona_Id(String idZona);
 
-    @Query("{ 'zona.nombreZona': ?0 }")
-    List<Parqueadero> findByZonaNombreZona(String nombreZona);
+    List<Parqueadero> findByZona_NombreZona(String nombreZona);
 
-    @Query("{ 'zona.nombreZona': ?0, 'habilitado': true }")
-    List<Parqueadero> findByZonaNombreZonaAndHabilitado(String nombreZona);
+    List<Parqueadero> findByZona_NombreZonaAndHabilitado(String nombreZona, boolean habilitado);
 
-    @Query("{ 'administrador._id': ?0 }")
     Parqueadero findByAdministrador_Id(String idAdministrador);
 
-    @Query("{ 'registradoPor._id': ?0 }")
     Parqueadero findByRegistradoPor_Id(String idRegistradoPor);
 
     List<Parqueadero> findByNombreContainingIgnoreCase(String nombre);

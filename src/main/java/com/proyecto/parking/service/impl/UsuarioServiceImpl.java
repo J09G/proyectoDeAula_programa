@@ -7,7 +7,10 @@ import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.RolRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.UsuarioService;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Override
     public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre) {
@@ -97,17 +103,16 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void actualizarUsuario(String idUsuario, String nombre, String correo, String cedula) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .or(() -> usuarioRepository.findAll().stream()
-                        .filter(u -> idUsuario.equals(u.getId()))
-                        .findFirst())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        java.util.List<Document> orUsuario = new java.util.ArrayList<>();
+        orUsuario.add(new Document("_id", idUsuario));
+        try { orUsuario.add(new Document("_id", new ObjectId(idUsuario))); } catch (IllegalArgumentException ignored) {}
 
-        usuario.setNombre(nombre);
-        usuario.setCorreo(correo);
-        usuario.setCedula(cedula);
-
-        usuarioRepository.save(usuario);
+        mongoTemplate.getDb().getCollection("usuarios").updateOne(
+                new Document("$or", orUsuario),
+                new Document("$set", new Document("nombre", nombre)
+                        .append("correo", correo)
+                        .append("cedula", cedula))
+        );
     }
 
     @Override
@@ -118,15 +123,23 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("No se puede deshabilitar al SuperAdministrador.");
         }
 
-        usuario.setHabilitado(habilitado);
-        usuarioRepository.save(usuario);
+        java.util.List<Document> orUsuario = new java.util.ArrayList<>();
+        orUsuario.add(new Document("_id", idUsuario));
+        try { orUsuario.add(new Document("_id", new ObjectId(idUsuario))); } catch (IllegalArgumentException ignored) {}
+        mongoTemplate.getDb().getCollection("usuarios")
+                .updateOne(new Document("$or", orUsuario), new Document("$set", new Document("habilitado", habilitado)));
 
         // Si es administrador, también cambia el estado de su parqueadero
         if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
-            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
+            Parqueadero parqueadero = parqueaderoRepository.findAll().stream()
+                    .filter(p -> p.getAdministrador() != null && idUsuario.equals(p.getAdministrador().getId()))
+                    .findFirst().orElse(null);
             if (parqueadero != null) {
-                parqueadero.setHabilitado(habilitado);
-                parqueaderoRepository.save(parqueadero);
+                java.util.List<Document> orParq = new java.util.ArrayList<>();
+                orParq.add(new Document("_id", parqueadero.getId()));
+                try { orParq.add(new Document("_id", new ObjectId(parqueadero.getId()))); } catch (IllegalArgumentException ignored) {}
+                mongoTemplate.getDb().getCollection("parqueaderos")
+                        .updateOne(new Document("$or", orParq), new Document("$set", new Document("habilitado", habilitado)));
             }
         }
     }

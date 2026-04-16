@@ -10,6 +10,7 @@ import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.RegistroParqueoRepository;
 import com.proyecto.parking.repository.ReservaRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
+import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.RegistroParqueoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
 
     @Autowired
     private ParqueaderoRepository parqueaderoRepository;
+
+    @Autowired
+    private ParqueaderoService parqueaderoService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -78,7 +82,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
                 throw new RuntimeException("No hay espacios disponibles en el parqueadero.");
             }
             parqueadero.setEspaciosDisponibles(parqueadero.getEspaciosDisponibles() - 1);
-            parqueaderoRepository.save(parqueadero);
+            parqueaderoService.guardarParqueadero(parqueadero);
         }
 
         return registroRepository.save(registro);
@@ -104,9 +108,12 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         registro.setValorPagado(Math.round(valor * 100.0) / 100.0);
         registro.setEstado(EstadoRegistro.FINALIZADO);
 
-        Parqueadero parqueadero = registro.getParqueadero();
+        Parqueadero parqueadero = parqueaderoRepository.findAll().stream()
+                .filter(p -> registro.getParqueadero().getId().equals(p.getId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
         parqueadero.setEspaciosDisponibles(parqueadero.getEspaciosDisponibles() + 1);
-        parqueaderoRepository.save(parqueadero);
+        parqueaderoService.guardarParqueadero(parqueadero);
 
         return registroRepository.save(registro);
     }

@@ -12,14 +12,11 @@ import java.util.Optional;
 @Repository
 public interface RegistroParqueoRepository extends MongoRepository<RegistroParqueo, String> {
 
-    @Query("{ 'parqueadero._id': ?0 }")
     List<RegistroParqueo> findByParqueadero_Id(String idParqueadero);
 
-    @Query("{ 'parqueadero._id': ?0, 'estado': ?1 }")
     List<RegistroParqueo> findByParqueadero_IdAndEstado(String idParqueadero, EstadoRegistro estado);
 
     Optional<RegistroParqueo> findByPlacaAndEstado(String placa, EstadoRegistro estado);
 
-    @Query("{ 'usuario._id': ?0, 'estado': ?1 }")
     List<RegistroParqueo> findByUsuario_IdAndEstado(String idUsuario, EstadoRegistro estado);
 }
