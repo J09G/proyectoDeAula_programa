@@ -3,6 +3,7 @@ package com.proyecto.parking.controller;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.ReservaService;
 import jakarta.servlet.http.HttpSession;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/reserva")
@@ -22,16 +24,21 @@ public class ReservaController {
     @Autowired
     private ParqueaderoService parqueaderoService;
 
+    @Autowired
+    private ComentarioService comentarioService;
+
     @GetMapping("/{idParqueadero}")
     public String mostrarFormularioReserva(@PathVariable("idParqueadero") String idParqueadero,
                                            Model model) {
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
         model.addAttribute("parqueadero", parqueadero);
+        model.addAttribute("comentarios", comentarioService.listarPorParqueadero(idParqueadero));
         return "cliente/reserva";
     }
 
     @PostMapping("/crear")
     public String crearReserva(@RequestParam("idParqueadero") String idParqueadero,
+                               @RequestParam("fechaReserva") String fechaReservaStr,
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
         try {
@@ -42,7 +49,8 @@ public class ReservaController {
                 return "redirect:/login";
             }
 
-            Reserva nuevaReserva = reservaService.crearReserva(cliente.getId(), idParqueadero);
+            LocalDateTime fechaReserva = LocalDateTime.parse(fechaReservaStr);
+            Reserva nuevaReserva = reservaService.crearReserva(cliente.getId(), idParqueadero, fechaReserva);
             redirectAttributes.addFlashAttribute("mensaje",
                     "Reserva creada con éxito. Estado: " + nuevaReserva.getEstado());
 

@@ -1,5 +1,6 @@
 package com.proyecto.parking.model;
 
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -12,8 +13,11 @@ public class RegistroParqueo {
     private String id;
 
     private String placa;
+    @DBRef(lazy = true)
     private Usuario usuario;
+    @DBRef(lazy = true)
     private Parqueadero parqueadero;
+    @DBRef(lazy = true)
     private Reserva reserva;
     private LocalDateTime horaEntrada;
     private LocalDateTime horaSalida;

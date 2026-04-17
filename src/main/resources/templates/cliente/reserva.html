@@ -48,10 +48,44 @@
 
       <form th:action="@{/reserva/crear}" method="post" class="form-reserva">
         <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}" />
-        <button type="submit" class="btn-primary">Confirmar Reserva</button>
+        <div class="form-group">
+          <label for="fechaReserva"><strong>Fecha y hora de llegada:</strong></label>
+          <input type="datetime-local" id="fechaReserva" name="fechaReserva" required
+                 style="padding:10px; border-radius:8px; border:1px solid #ccc; font-size:1rem; width:100%; margin-top:6px;" />
+          <small style="color:#7f8c8d;">Selecciona cuándo planeas llegar al parqueadero.</small>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top:12px;">Confirmar Reserva</button>
       </form>
 
       <p th:if="${parqueadero == null}" class="mensaje-error">No se encontró el parqueadero.</p>
+
+      <!-- Comentarios -->
+      <div class="comentarios-section" th:if="${parqueadero != null}" style="margin-top:30px;">
+        <h3>Comentarios del parqueadero</h3>
+
+        <div th:if="${mensajeComentario}" class="alert alert-success" th:text="${mensajeComentario}"></div>
+        <div th:if="${errorComentario}" class="alert alert-error" th:text="${errorComentario}"></div>
+
+        <form th:action="@{/comentario/crear}" method="post" style="margin-bottom:20px;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}"/>
+          <textarea name="texto" rows="3" placeholder="Escribe tu comentario sobre este parqueadero..."
+                    required maxlength="500"
+                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:0.95rem; resize:vertical;"></textarea>
+          <button type="submit" class="btn-primary" style="margin-top:8px;">Publicar comentario</button>
+        </form>
+
+        <p th:if="${#lists.isEmpty(comentarios)}" style="color:#7f8c8d;">Aún no hay comentarios. ¡Sé el primero!</p>
+
+        <div th:each="c : ${comentarios}" style="background:#f8f9fa; border-radius:10px; padding:14px; margin-bottom:12px; border-left:4px solid #1565C0;">
+          <p style="margin:0 0 6px 0;">
+            <strong th:text="${c.cliente.nombre}">Cliente</strong>
+            <span style="color:#7f8c8d; font-size:0.85rem; margin-left:10px;"
+                  th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+          </p>
+          <p style="margin:0;" th:text="${c.texto}">Comentario</p>
+        </div>
+      </div>
     </div>
   </main>
 

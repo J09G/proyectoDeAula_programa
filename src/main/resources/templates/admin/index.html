@@ -98,6 +98,7 @@
               <th>Cliente</th>
               <th>Cédula</th>
               <th>Placa</th>
+              <th>Fecha Reserva</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -108,6 +109,7 @@
               <td th:text="${reserva.cliente.nombre}"></td>
               <td th:text="${reserva.cliente.cedula}"></td>
               <td th:text="${reserva.cliente.placa != null ? reserva.cliente.placa : '-'}"></td>
+              <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
               <td>
                 <span th:class="${
                   reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :
@@ -131,6 +133,21 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- Comentarios del parqueadero -->
+    <section th:if="${parqueadero != null}">
+      <h3>Comentarios de clientes</h3>
+      <p th:if="${#lists.isEmpty(comentarios)}" class="no-data">No hay comentarios aún.</p>
+      <div th:each="c : ${comentarios}"
+           style="background:#f8f9fa; border-radius:10px; padding:14px; margin-bottom:12px; border-left:4px solid #1565C0;">
+        <p style="margin:0 0 6px 0;">
+          <strong th:text="${c.cliente.nombre}">Cliente</strong>
+          <span style="color:#7f8c8d; font-size:0.85rem; margin-left:10px;"
+                th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+        </p>
+        <p style="margin:0;" th:text="${c.texto}">Comentario</p>
       </div>
     </section>
   </main>

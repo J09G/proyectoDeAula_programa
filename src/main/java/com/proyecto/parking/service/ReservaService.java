@@ -1,11 +1,12 @@
 package com.proyecto.parking.service;
 
 import com.proyecto.parking.model.Reserva;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservaService {
 
-    Reserva crearReserva(String idCliente, String idParqueadero);
+    Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva);
 
     List<Reserva> listarReservasCliente(String idCliente);
 

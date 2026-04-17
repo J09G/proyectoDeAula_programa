@@ -52,6 +52,7 @@
               <th>#</th>
               <th>Parqueadero</th>
               <th>Zona</th>
+              <th>Fecha Reserva</th>
               <th>Estado</th>
             </tr>
           </thead>
@@ -60,6 +61,7 @@
               <td th:text="${reserva.id}"></td>
               <td th:text="${reserva.parqueadero.nombre}"></td>
               <td th:text="${reserva.parqueadero.zona.nombreZona}"></td>
+              <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
               <td>
                 <span th:class="${
                   reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :

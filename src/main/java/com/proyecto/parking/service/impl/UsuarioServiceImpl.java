@@ -131,9 +131,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Si es administrador, también cambia el estado de su parqueadero
         if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
-            Parqueadero parqueadero = parqueaderoRepository.findAll().stream()
-                    .filter(p -> p.getAdministrador() != null && idUsuario.equals(p.getAdministrador().getId()))
-                    .findFirst().orElse(null);
+            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
             if (parqueadero != null) {
                 java.util.List<Document> orParq = new java.util.ArrayList<>();
                 orParq.add(new Document("_id", parqueadero.getId()));

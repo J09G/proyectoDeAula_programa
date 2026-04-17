@@ -108,9 +108,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         registro.setValorPagado(Math.round(valor * 100.0) / 100.0);
         registro.setEstado(EstadoRegistro.FINALIZADO);
 
-        Parqueadero parqueadero = parqueaderoRepository.findAll().stream()
-                .filter(p -> registro.getParqueadero().getId().equals(p.getId()))
-                .findFirst()
+        Parqueadero parqueadero = parqueaderoRepository.findById(registro.getParqueadero().getId())
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
         parqueadero.setEspaciosDisponibles(parqueadero.getEspaciosDisponibles() + 1);
         parqueaderoService.guardarParqueadero(parqueadero);

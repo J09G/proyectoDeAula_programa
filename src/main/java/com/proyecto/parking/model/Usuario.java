@@ -1,5 +1,6 @@
 package com.proyecto.parking.model;
 
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -14,6 +15,7 @@ public class Usuario {
     private String correo;
     private String contrasena;
     private String cedula;
+    @DBRef(lazy = true)
     private Rol rol;
     private String placa;
     private boolean habilitado = true;

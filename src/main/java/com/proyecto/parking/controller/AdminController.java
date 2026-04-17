@@ -8,6 +8,7 @@ import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.RegistroParqueo;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.RegistroParqueoService;
 import com.proyecto.parking.service.ReservaService;
@@ -27,6 +28,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    @Autowired
+    private ComentarioService comentarioService;
 
     @Autowired
     private ParqueaderoService parqueaderoService;
@@ -57,6 +61,7 @@ public class AdminController {
             }
 
             model.addAttribute("parqueadero", parqueadero);
+            model.addAttribute("comentarios", comentarioService.listarPorParqueadero(parqueadero.getId()));
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar el panel del administrador: " + e.getMessage());

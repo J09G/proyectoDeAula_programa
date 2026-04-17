@@ -83,10 +83,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario) {
-        return parqueaderoRepository.findAll().stream()
-                .filter(p -> p.getAdministrador() != null && idUsuario.equals(p.getAdministrador().getId()))
-                .findFirst()
-                .orElse(null);
+        return parqueaderoRepository.findByAdministrador_Id(idUsuario);
     }
 
     @Override
@@ -99,11 +96,7 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public List<Parqueadero> obtenerParqueaderosPorZona(String idZona) {
-        Zona zona = zonaRepository.findById(idZona)
-                .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
-                .orElse(null);
-        if (zona == null) return java.util.Collections.emptyList();
-        return parqueaderoRepository.findByZona_NombreZonaAndHabilitado(zona.getNombreZona(), true);
+        return parqueaderoRepository.findByZona_IdAndHabilitado(idZona, true);
     }
 
     @Override
@@ -164,15 +157,16 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public List<Parqueadero> buscarPorZona(String idZona) {
-        Zona zona = zonaRepository.findById(idZona)
-                .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
-                .orElse(null);
-        if (zona == null) return java.util.Collections.emptyList();
-        return parqueaderoRepository.findByZona_NombreZona(zona.getNombreZona());
+        return parqueaderoRepository.findByZona_Id(idZona);
     }
 
     @Override
     public List<Parqueadero> buscarPorCedulaAdmin(String cedula) {
-        return parqueaderoRepository.findByAdministrador_CedulaContainingIgnoreCase(cedula);
+        List<Usuario> admins = usuarioRepository.findByCedulaContaining(cedula);
+        if (admins.isEmpty()) return java.util.Collections.emptyList();
+        return admins.stream()
+                .map(admin -> parqueaderoRepository.findByAdministrador_Id(admin.getId()))
+                .filter(p -> p != null)
+                .toList();
     }
 }

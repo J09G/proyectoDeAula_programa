@@ -1,7 +1,6 @@
 package com.proyecto.parking.service.impl;
 
 import com.proyecto.parking.model.Parqueadero;
-import com.proyecto.parking.model.RegistroParqueo;
 import com.proyecto.parking.model.RegistroParqueo.EstadoRegistro;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Sort;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -41,7 +41,7 @@ public class ReservaServiceImpl implements ReservaService {
     private RegistroParqueoRepository registroParqueoRepository;
 
     @Override
-    public Reserva crearReserva(String idCliente, String idParqueadero) {
+    public Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva) {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
@@ -78,6 +78,7 @@ public class ReservaServiceImpl implements ReservaService {
         nueva.setCliente(cliente);
         nueva.setParqueadero(parqueadero);
         nueva.setEstado(EstadoReserva.PENDIENTE);
+        nueva.setFechaReserva(fechaReserva);
 
         return reservaRepository.save(nueva);
     }
