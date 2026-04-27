@@ -3,7 +3,6 @@ package com.proyecto.parking.repository;
 import com.proyecto.parking.model.RegistroParqueo;
 import com.proyecto.parking.model.RegistroParqueo.EstadoRegistro;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

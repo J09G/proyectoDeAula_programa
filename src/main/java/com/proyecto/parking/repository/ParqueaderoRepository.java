@@ -14,8 +14,6 @@ public interface ParqueaderoRepository extends MongoRepository<Parqueadero, Stri
 
     Parqueadero findByAdministrador_Id(String idAdministrador);
 
-    Parqueadero findByRegistradoPor_Id(String idRegistradoPor);
-
     List<Parqueadero> findByNombreContainingIgnoreCase(String nombre);
 
 }
