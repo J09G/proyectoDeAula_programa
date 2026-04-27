@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SSL certs (never commit private keys) ###
+certs/
