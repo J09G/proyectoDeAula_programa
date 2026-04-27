@@ -2,39 +2,97 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Editar Usuario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Usuario - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/superadmin.css}">
 </head>
 <body>
-  <header class="header">
-    <div class="logo"><h1>ParkingApp</h1></div>
-    <nav class="nav">
-      <a th:href="@{/superadmin/usuarios}" class="btn">⬅ Volver</a>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Gestión</span>
+      </div>
+      <a th:href="@{/superadmin}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75v-5.25h-7.5V21.75H3.75A.75.75 0 013 21V9.75z"/>
+        </svg>
+        Inicio
+      </a>
+      <a th:href="@{/superadmin/parqueaderos}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
+        </svg>
+        Parqueaderos
+      </a>
+      <a th:href="@{/superadmin/usuarios}" class="sb-link active">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+        </svg>
+        Usuarios
+      </a>
+      <a th:href="@{/superadmin/zonas}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+        </svg>
+        Zonas
+      </a>
     </nav>
-  </header>
 
-  <main class="content">
-    <h2>✏️ Editar Usuario</h2>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">S</div>
+        <span class="sb-user-name">Superadministrador</span>
+      </div>
+    </div>
+  </aside>
 
-    <form th:action="@{/superadmin/actualizar}" method="post" class="form-editar">
-      <input type="hidden" name="idUsuario" th:value="${usuario.id}">
+  <!-- Contenido principal -->
+  <div class="main-area">
+    <header class="topbar">
+      <span class="topbar-title">Editar usuario</span>
+      <div class="topbar-right">
+        <a th:href="@{/superadmin/usuarios}" class="btn">← Volver</a>
+      </div>
+    </header>
 
-      <label>Nombre:</label>
-      <input type="text" name="nombre" th:value="${usuario.nombre}" required>
+    <div class="page-body">
+      <div class="page-header">
+        <h1>Editar usuario</h1>
+        <p>Modifica los datos del usuario seleccionado.</p>
+      </div>
 
-      <label>Correo:</label>
-      <input type="email" name="correo" th:value="${usuario.correo}" required>
+      <div class="card" style="max-width:480px;">
+        <h3 style="margin-bottom:20px;" th:text="${usuario.nombre}">Usuario</h3>
+        <form th:action="@{/superadmin/actualizar}" method="post">
+          <input type="hidden" name="idUsuario" th:value="${usuario.id}">
 
-      <label>Cédula:</label>
-      <input type="text" name="cedula" th:value="${usuario.cedula}" required>
+          <label>Nombre</label>
+          <input type="text" name="nombre" th:value="${usuario.nombre}" required>
 
-      <button type="submit" class="btn-primary">Guardar Cambios</button>
-    </form>
-  </main>
+          <label>Correo electrónico</label>
+          <input type="email" name="correo" th:value="${usuario.correo}" required>
 
-  <footer class="footer">
-    <p>© 2025 ParkingApp</p>
-  </footer>
+          <label>Cédula</label>
+          <input type="text" name="cedula" th:value="${usuario.cedula}" required>
+
+          <button type="submit" class="btn-primary">Guardar cambios</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>

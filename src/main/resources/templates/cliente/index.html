@@ -2,81 +2,125 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ParkingApp - Cliente</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/cliente.css}">
 </head>
 <body>
-  <header class="header">
-    <div class="logo"><h1>ParkingApp</h1></div>
-    <nav class="nav">
-      <span class="user-info" th:text="${usuario != null ? usuario.nombre : 'Cliente'}">Cliente</span>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Navegación</span>
+      </div>
+      <a th:href="@{/cliente}" class="sb-link active">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75v-5.25h-7.5V21.75H3.75A.75.75 0 013 21V9.75z"/>
+        </svg>
+        Zonas disponibles
+      </a>
+      <a href="#mis-reservas" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
+        </svg>
+        Mis reservas
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">C</div>
+        <span class="sb-user-name" th:text="${usuario != null ? usuario.nombre : 'Cliente'}">Cliente</span>
+      </div>
       <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       </form>
-      <a href="#" class="btn" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar Sesión</a>
-    </nav>
-  </header>
+      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
 
-  <main class="cliente-dashboard">
-    <h2>Bienvenido a ParkingApp</h2>
-    <p>Selecciona una zona para ver los parqueaderos disponibles y reservar tu espacio.</p>
+  <!-- Contenido principal -->
+  <div class="main-area">
+    <header class="topbar">
+      <span class="topbar-title">Panel del cliente</span>
+    </header>
 
-    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-
-    <section>
-      <h3>Zonas Disponibles</h3>
-      <p th:if="${#lists.isEmpty(zonas)}" class="mensaje-vacio">No hay zonas disponibles en este momento.</p>
-      <div class="zonas-grid">
-        <a th:each="zona : ${zonas}"
-           th:href="@{'/zona/' + ${zona.id}}"
-           class="zona-card">
-          <img th:src="@{'/images/' + ${zona.nombreZona} + '.jpg'}"
-               onerror="this.style.display='none'"
-               alt="Zona"
-               class="zona-img">
-          <span class="zona-nombre" th:text="${zona.nombreZona}">Nombre Zona</span>
-        </a>
+    <div class="page-body">
+      <div class="page-header">
+        <h1>Bienvenido a ParkingApp</h1>
+        <p>Selecciona una zona para ver los parqueaderos disponibles y reservar tu espacio.</p>
       </div>
-    </section>
 
-    <section>
-      <h3>Mis Reservas</h3>
-      <p th:if="${#lists.isEmpty(reservas)}" class="mensaje-vacio">Aún no tienes reservas registradas.</p>
+      <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+      <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
 
-      <div class="tabla-responsive" th:if="${!#lists.isEmpty(reservas)}">
-        <table class="tabla-reservas">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Parqueadero</th>
-              <th>Zona</th>
-              <th>Fecha Reserva</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="reserva : ${reservas}">
-              <td th:text="${reserva.id}"></td>
-              <td th:text="${reserva.parqueadero.nombre}"></td>
-              <td th:text="${reserva.parqueadero.zona.nombreZona}"></td>
-              <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
-              <td>
-                <span th:class="${
-                  reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :
-                  (reserva.estado.name() == 'ACEPTADA' ? 'estado-aceptada' : 'estado-rechazada')
-                }" th:text="${reserva.estado}"></span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+      <!-- Zonas -->
+      <section>
+        <h3>Zonas disponibles</h3>
+        <p th:if="${#lists.isEmpty(zonas)}" class="mensaje-vacio">No hay zonas disponibles en este momento.</p>
+        <div class="zonas-grid">
+          <a th:each="zona : ${zonas}"
+             th:href="@{'/zona/' + ${zona.id}}"
+             class="zona-card"
+             th:style="'background-image: url(/images/' + ${zona.nombreZona} + '.jpg)'">
+            <div class="zona-card-overlay">
+              <span class="zona-nombre" th:text="${zona.nombreZona}">Nombre Zona</span>
+            </div>
+          </a>
+        </div>
+      </section>
 
-  <footer class="footer">
-    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
-  </footer>
+      <!-- Mis reservas -->
+      <section id="mis-reservas">
+        <h3>Mis reservas</h3>
+        <p th:if="${#lists.isEmpty(reservas)}" class="mensaje-vacio">Aún no tienes reservas registradas.</p>
+
+        <div class="tabla-responsive" th:if="${!#lists.isEmpty(reservas)}">
+          <table class="tabla-reservas">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Parqueadero</th>
+                <th>Zona</th>
+                <th>Fecha Reserva</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="reserva : ${reservas}">
+                <td th:text="${reserva.id}"></td>
+                <td th:text="${reserva.parqueadero.nombre}"></td>
+                <td th:text="${reserva.parqueadero.zona.nombreZona}"></td>
+                <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                <td>
+                  <span th:class="${
+                    reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :
+                    (reserva.estado.name() == 'ACEPTADA' ? 'estado-aceptada' : 'estado-rechazada')
+                  }" th:text="${reserva.estado}"></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>

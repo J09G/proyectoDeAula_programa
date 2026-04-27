@@ -2,42 +2,67 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>ParkingApp - Registro Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkingApp - Registro</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <header class="header">
-    <div class="logo">
-      <h1>ParkingApp</h1>
-    </div>
-  </header>
+<div class="auth-wrap">
 
-  <main>
-    <div class="register-container">
-      <h2>Registro de Cliente</h2>
-      
-      <p th:if="${error}" th:text="${error}" style="color: red; font-weight: bold;"></p>
-      <p th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold;"></p>
+  <!-- Panel izquierdo -->
+  <div class="auth-side">
+    <div class="auth-side-brand">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      <span>ParkingApp</span>
+    </div>
+    <h2>Únete a<br>ParkingApp</h2>
+    <p>Crea tu cuenta y comienza a reservar espacios de parqueo en las mejores zonas de Cartagena.</p>
+    <ul class="auth-features">
+      <li><span class="dot">✓</span> Registro gratuito</li>
+      <li><span class="dot">✓</span> Reserva en segundos</li>
+      <li><span class="dot">✓</span> Soporte 24/7</li>
+    </ul>
+  </div>
+
+  <!-- Panel derecho -->
+  <div class="auth-form-panel">
+    <div class="auth-form-inner">
+      <h2>Crear cuenta</h2>
+      <p class="auth-sub">Completa tus datos para registrarte</p>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+      <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
 
       <form th:action="@{/registro/cliente}" method="post">
-        <input type="text" name="nombre" placeholder="Nombre completo" required>
-        <input type="text" name="cedula" placeholder="Cédula" required>
-        <input type="text" name="placa" placeholder="Placa del vehículo" required>
-        <input type="email" name="email" placeholder="Correo electrónico" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <input type="password" name="confirmPassword" placeholder="Confirmar contraseña" required>
-        <button type="submit" class="btn-primary">Registrarse</button>
+        <label>Nombre completo</label>
+        <input type="text" name="nombre" placeholder="Juan Pérez" required>
+
+        <label>Cédula</label>
+        <input type="text" name="cedula" placeholder="123456789" required>
+
+        <label>Placa del vehículo</label>
+        <input type="text" name="placa" placeholder="ABC-123" required>
+
+        <label>Correo electrónico</label>
+        <input type="email" name="email" placeholder="tu@correo.com" required>
+
+        <label>Contraseña</label>
+        <input type="password" name="password" placeholder="Mínimo 6 caracteres" required>
+
+        <label>Confirmar contraseña</label>
+        <input type="password" name="confirmPassword" placeholder="Repite tu contraseña" required>
+
+        <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
+          Crear cuenta
+        </button>
       </form>
 
-      <p class="login-link">
-        ¿Ya tienes cuenta? 
-        <a th:href="@{/login}">Inicia sesión aquí</a>
+      <p class="auth-form-link">
+        ¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión aquí</a>
       </p>
     </div>
-  </main>
+  </div>
 
-  <footer class="footer">
-    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
-  </footer>
+</div>
 </body>
 </html>

@@ -2,132 +2,179 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Factura - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
   <style>
-    .factura-container {
-      max-width: 600px;
-      margin: 30px auto;
-      border: 2px solid #333;
-      border-radius: 8px;
-      padding: 30px;
+    .factura-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .factura-box {
       background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
     }
-    .factura-header {
+    .factura-head {
+      background: var(--brand);
+      color: #fff;
       text-align: center;
-      border-bottom: 2px solid #333;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+      padding: 28px 24px;
     }
-    .factura-header h2 { margin: 0; font-size: 1.8rem; }
-    .factura-header p { margin: 4px 0; color: #555; }
-    .factura-body table { width: 100%; border-collapse: collapse; }
-    .factura-body td { padding: 10px 8px; border-bottom: 1px solid #eee; }
-    .factura-body td:first-child { font-weight: bold; width: 45%; }
+    .factura-head h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .factura-head p  { font-size: 0.875rem; opacity: .85; margin: 2px 0; }
+    .factura-num { font-size: 0.8rem; opacity: .75; margin-top: 8px; }
+    .factura-table { width: 100%; border-collapse: collapse; }
+    .factura-table td { padding: 12px 24px; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem; }
+    .factura-table td:first-child { font-weight: 600; color: var(--gray-700); width: 46%; }
+    .factura-table td:last-child  { color: var(--gray-800); }
+    .factura-table tr:last-child td { border-bottom: none; }
     .factura-total {
-      text-align: right;
-      font-size: 1.4rem;
-      font-weight: bold;
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 2px solid #333;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      background: var(--gray-50);
+      border-top: 2px solid var(--gray-200);
     }
-    .factura-acciones {
-      text-align: center;
-      margin-top: 25px;
-      display: flex;
-      gap: 15px;
-      justify-content: center;
+    .factura-total-label { font-size: 0.875rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: .05em; }
+    .factura-total-value { font-size: 1.5rem; font-weight: 700; color: var(--gray-900); }
+    .factura-actions {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      margin-top: 24px; flex-wrap: wrap;
     }
     @media print {
-      .factura-acciones { display: none; }
-      header, footer { display: none; }
+      .sidebar, .topbar, .factura-actions, .main-area > .topbar { display: none !important; }
+      .main-area { margin-left: 0 !important; }
+      .page-body { padding: 0 !important; }
     }
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="logo"><h1>ParkingApp</h1></div>
-    <nav class="nav">
-      <a th:href="@{/admin/registros}" class="btn">Volver</a>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Registros</span>
+      </div>
+      <a th:href="@{/admin/registros}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+        </svg>
+        Entradas y salidas
+      </a>
+      <a th:href="@{/admin}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75v-5.25h-7.5V21.75H3.75A.75.75 0 013 21V9.75z"/>
+        </svg>
+        Panel principal
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">A</div>
+        <span class="sb-user-name">Administrador</span>
+      </div>
       <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       </form>
-      <a href="#" class="btn" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar Sesión</a>
-    </nav>
-  </header>
+      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
 
-  <main class="content">
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-
-    <div th:if="${registro}" class="factura-container" id="factura">
-
-      <div class="factura-header">
-        <h2>ParkingApp</h2>
-        <p th:text="${registro.parqueadero.nombre}"></p>
-        <p th:text="${registro.parqueadero.direccion}"></p>
-        <p><strong>Factura #</strong><span th:text="${registro.id}"></span></p>
+  <!-- Contenido principal -->
+  <div class="main-area">
+    <header class="topbar">
+      <span class="topbar-title">Factura de parqueo</span>
+      <div class="topbar-right">
+        <a th:href="@{/admin/registros}" class="btn">← Volver</a>
       </div>
+    </header>
 
-      <div class="factura-body">
-        <table>
-          <tr>
-            <td>Placa:</td>
-            <td th:text="${registro.placa}"></td>
-          </tr>
-          <tr>
-            <td>Cliente:</td>
-            <td th:text="${registro.usuario != null ? registro.usuario.nombre : 'Cliente de paso'}"></td>
-          </tr>
-          <tr th:if="${registro.usuario != null}">
-            <td>Cédula:</td>
-            <td th:text="${registro.usuario.cedula}"></td>
-          </tr>
-          <tr>
-            <td>Con reserva:</td>
-            <td th:text="${registro.reserva != null ? 'Sí - Reserva #' + registro.reserva.id : 'No'}"></td>
-          </tr>
-          <tr>
-            <td>Hora de Entrada:</td>
-            <td th:text="${#temporals.format(registro.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
-          </tr>
-          <tr>
-            <td>Hora de Salida:</td>
-            <td th:text="${#temporals.format(registro.horaSalida, 'dd/MM/yyyy HH:mm')}"></td>
-          </tr>
-          <tr>
-            <td>Tiempo de Parqueo:</td>
-            <td>
-              <span th:with="horas=${registro.tiempoMinutos / 60}, mins=${registro.tiempoMinutos % 60}">
-                <span th:text="${horas}"></span>h <span th:text="${mins}"></span>min
-              </span>
-            </td>
-          </tr>
-          <tr>
-            <td>Tarifa por hora:</td>
-            <td th:text="'$' + ${registro.parqueadero.tarifaHora}"></td>
-          </tr>
-        </table>
+    <div class="page-body">
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-        <div class="factura-total">
-          TOTAL A PAGAR: $<span th:text="${registro.valorPagado}"></span>
+      <div th:if="${registro}" class="factura-wrap" id="factura">
+        <div class="factura-box">
+
+          <div class="factura-head">
+            <h2>ParkingApp</h2>
+            <p th:text="${registro.parqueadero.nombre}"></p>
+            <p th:text="${registro.parqueadero.direccion}"></p>
+            <p class="factura-num">Factura #<span th:text="${registro.id}"></span></p>
+          </div>
+
+          <table class="factura-table">
+            <tr>
+              <td>Placa</td>
+              <td th:text="${registro.placa}"></td>
+            </tr>
+            <tr>
+              <td>Cliente</td>
+              <td th:text="${registro.usuario != null ? registro.usuario.nombre : 'Cliente de paso'}"></td>
+            </tr>
+            <tr th:if="${registro.usuario != null}">
+              <td>Cédula</td>
+              <td th:text="${registro.usuario.cedula}"></td>
+            </tr>
+            <tr>
+              <td>Con reserva</td>
+              <td th:text="${registro.reserva != null ? 'Sí - Reserva #' + registro.reserva.id : 'No'}"></td>
+            </tr>
+            <tr>
+              <td>Hora de entrada</td>
+              <td th:text="${#temporals.format(registro.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+            </tr>
+            <tr>
+              <td>Hora de salida</td>
+              <td th:text="${#temporals.format(registro.horaSalida, 'dd/MM/yyyy HH:mm')}"></td>
+            </tr>
+            <tr>
+              <td>Tiempo de parqueo</td>
+              <td>
+                <span th:with="horas=${registro.tiempoMinutos / 60}, mins=${registro.tiempoMinutos % 60}">
+                  <span th:text="${horas}"></span>h <span th:text="${mins}"></span>min
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Tarifa por hora</td>
+              <td th:text="'$' + ${registro.parqueadero.tarifaHora}"></td>
+            </tr>
+          </table>
+
+          <div class="factura-total">
+            <span class="factura-total-label">Total a pagar</span>
+            <span class="factura-total-value">$<span th:text="${registro.valorPagado}"></span></span>
+          </div>
+        </div>
+
+        <div class="factura-actions">
+          <a th:href="@{'/admin/registros/factura/pdf/' + ${registro.id}}" class="btn-primary">
+            Descargar PDF
+          </a>
+          <button onclick="window.print()" class="btn-secundario">Imprimir</button>
+          <a th:href="@{/admin/registros}" class="btn">Volver</a>
         </div>
       </div>
-
-      <div class="factura-acciones">
-        <a th:href="@{'/admin/registros/factura/pdf/' + ${registro.id}}" class="btn-primary">
-          Descargar PDF
-        </a>
-        <button onclick="window.print()" class="btn btn-editar">Imprimir</button>
-        <a th:href="@{/admin/registros}" class="btn">Volver</a>
-      </div>
-
     </div>
-  </main>
+  </div>
 
-  <footer class="footer">
-    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
-  </footer>
+</div>
 </body>
 </html>

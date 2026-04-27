@@ -2,95 +2,150 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmar Reserva - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/cliente.css}">
 </head>
 <body>
-  <header class="header">
-    <div class="logo"><h1>ParkingApp</h1></div>
-    <nav class="nav">
-      <span class="user-info">Cliente</span>
-      <a th:href="@{/cliente}" class="btn">Volver</a>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Navegación</span>
+      </div>
+      <a th:href="@{/cliente}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75v-5.25h-7.5V21.75H3.75A.75.75 0 013 21V9.75z"/>
+        </svg>
+        Zonas disponibles
+      </a>
+      <a th:href="@{/cliente}" class="sb-link active">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
+        </svg>
+        Confirmar reserva
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">C</div>
+        <span class="sb-user-name">Cliente</span>
+      </div>
       <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       </form>
-      <a href="#" class="btn" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar Sesión</a>
-    </nav>
-  </header>
+      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
 
-  <main>
-    <div class="reserva-detalle">
-      <h2>Confirmar Reserva</h2>
+  <!-- Contenido principal -->
+  <div class="main-area">
+    <header class="topbar">
+      <span class="topbar-title">Confirmar Reserva</span>
+      <div class="topbar-right">
+        <a th:href="@{/cliente}" class="btn">← Volver</a>
+      </div>
+    </header>
 
-      <div class="parqueadero-info" th:if="${parqueadero != null}">
-        <h3 th:text="${parqueadero.nombre}">Nombre del parqueadero</h3>
-
-        <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
-        <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}"></span></p>
-        <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
-        <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span> / hora</p>
-        <p>
-          <strong>Espacios disponibles:</strong>
-          <span th:text="${parqueadero.espaciosDisponibles}"></span> de
-          <span th:text="${parqueadero.espaciosTotales}"></span>
-        </p>
-        <p>
-          <strong>Estado:</strong>
-          <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
-                th:text="${parqueadero.habilitado ? 'Disponible' : 'No disponible'}"></span>
-        </p>
-        <p th:if="${parqueadero.urlMaps != null}">
-          <strong>Ubicación:</strong>
-          <a th:href="${parqueadero.urlMaps}" target="_blank" class="link-maps">Ver en Google Maps</a>
-        </p>
+    <div class="page-body">
+      <div class="page-header">
+        <h1>Confirmar Reserva</h1>
+        <p>Revisa la información del parqueadero y elige tu fecha de llegada.</p>
       </div>
 
-      <form th:action="@{/reserva/crear}" method="post" class="form-reserva">
-        <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}" />
-        <div class="form-group">
-          <label for="fechaReserva"><strong>Fecha y hora de llegada:</strong></label>
-          <input type="datetime-local" id="fechaReserva" name="fechaReserva" required
-                 style="padding:10px; border-radius:8px; border:1px solid #ccc; font-size:1rem; width:100%; margin-top:6px;" />
-          <small style="color:#7f8c8d;">Selecciona cuándo planeas llegar al parqueadero.</small>
+      <p th:if="${parqueadero == null}" class="alert alert-error">No se encontró el parqueadero.</p>
+
+      <div th:if="${parqueadero != null}">
+        <!-- Layout dos columnas: info + formulario -->
+        <div class="reserva-detalle" style="margin-bottom: 28px;">
+          <!-- Información del parqueadero -->
+          <div class="parqueadero-info">
+            <h3 th:text="${parqueadero.nombre}">Nombre del parqueadero</h3>
+            <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
+            <p><strong>Zona:</strong> <span th:text="${parqueadero.zona.nombreZona}"></span></p>
+            <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
+            <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span> / hora</p>
+            <p>
+              <strong>Espacios disponibles:</strong>
+              <span th:text="${parqueadero.espaciosDisponibles}"></span> de
+              <span th:text="${parqueadero.espaciosTotales}"></span>
+            </p>
+            <p>
+              <strong>Estado:</strong>
+              <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
+                    th:text="${parqueadero.habilitado ? 'Disponible' : 'No disponible'}"></span>
+            </p>
+            <p th:if="${parqueadero.urlMaps != null}">
+              <a th:href="${parqueadero.urlMaps}" target="_blank" class="link-maps">Ver en Google Maps →</a>
+            </p>
+          </div>
+
+          <!-- Formulario de reserva -->
+          <div class="form-reserva">
+            <h3>Selecciona tu fecha de llegada</h3>
+            <form th:action="@{/reserva/crear}" method="post">
+              <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}" />
+              <label for="fechaReserva">Fecha y hora de llegada</label>
+              <input type="datetime-local" id="fechaReserva" name="fechaReserva" required />
+              <small>Selecciona cuándo planeas llegar al parqueadero.</small>
+              <br>
+              <button type="submit" class="btn-primary" style="margin-top:16px; width:100%;">
+                Confirmar Reserva
+              </button>
+            </form>
+          </div>
         </div>
-        <button type="submit" class="btn-primary" style="margin-top:12px;">Confirmar Reserva</button>
-      </form>
 
-      <p th:if="${parqueadero == null}" class="mensaje-error">No se encontró el parqueadero.</p>
+        <!-- Comentarios -->
+        <div class="comentarios-section">
+          <h3>Comentarios del parqueadero</h3>
 
-      <!-- Comentarios -->
-      <div class="comentarios-section" th:if="${parqueadero != null}" style="margin-top:30px;">
-        <h3>Comentarios del parqueadero</h3>
+          <div th:if="${mensajeComentario}" class="alert alert-success" th:text="${mensajeComentario}"></div>
+          <div th:if="${errorComentario}"   class="alert alert-error"   th:text="${errorComentario}"></div>
 
-        <div th:if="${mensajeComentario}" class="alert alert-success" th:text="${mensajeComentario}"></div>
-        <div th:if="${errorComentario}" class="alert alert-error" th:text="${errorComentario}"></div>
+          <form th:action="@{/comentario/crear}" method="post" style="margin-bottom:20px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}"/>
+            <label>Escribe tu comentario</label>
+            <textarea name="texto" rows="3"
+                      placeholder="¿Qué opinas de este parqueadero?"
+                      required maxlength="500"></textarea>
+            <button type="submit" class="btn-primary">Publicar comentario</button>
+          </form>
 
-        <form th:action="@{/comentario/crear}" method="post" style="margin-bottom:20px;">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-          <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}"/>
-          <textarea name="texto" rows="3" placeholder="Escribe tu comentario sobre este parqueadero..."
-                    required maxlength="500"
-                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:0.95rem; resize:vertical;"></textarea>
-          <button type="submit" class="btn-primary" style="margin-top:8px;">Publicar comentario</button>
-        </form>
-
-        <p th:if="${#lists.isEmpty(comentarios)}" style="color:#7f8c8d;">Aún no hay comentarios. ¡Sé el primero!</p>
-
-        <div th:each="c : ${comentarios}" style="background:#f8f9fa; border-radius:10px; padding:14px; margin-bottom:12px; border-left:4px solid #1565C0;">
-          <p style="margin:0 0 6px 0;">
-            <strong th:text="${c.cliente.nombre}">Cliente</strong>
-            <span style="color:#7f8c8d; font-size:0.85rem; margin-left:10px;"
-                  th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+          <p th:if="${#lists.isEmpty(comentarios)}" style="color:var(--gray-400); font-size:0.875rem;">
+            Aún no hay comentarios. ¡Sé el primero!
           </p>
-          <p style="margin:0;" th:text="${c.texto}">Comentario</p>
+
+          <div th:each="c : ${comentarios}" class="comentario-item">
+            <div class="comentario-meta">
+              <span class="comentario-autor" th:text="${c.cliente.nombre}">Cliente</span>
+              <span class="comentario-fecha"
+                    th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+            </div>
+            <p class="comentario-texto" th:text="${c.texto}">Comentario</p>
+          </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
-  <footer class="footer">
-    <p>© 2025 ParkingApp - Todos los derechos reservados</p>
-  </footer>
+</div>
 </body>
 </html>

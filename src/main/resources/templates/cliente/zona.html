@@ -2,73 +2,121 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="'ParkingApp - ' + ${zona.nombreZona}">ParkingApp - Zona</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/cliente.css}">
 </head>
 <body>
+<div class="app-shell">
 
-<header class="header">
-  <div class="logo"><h1>ParkingApp</h1></div>
-  <nav class="nav">
-    <span class="user-info">Cliente</span>
-    <a th:href="@{/cliente}" class="btn">Volver</a>
-    <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    </form>
-    <a href="#" class="btn" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar Sesión</a>
-  </nav>
-</header>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
 
-<main class="cliente-dashboard">
-  <h2 th:text="'Parqueaderos en ' + ${zona.nombreZona}">Parqueaderos</h2>
-  <p>Selecciona un parqueadero disponible para reservar tu espacio.</p>
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Navegación</span>
+      </div>
+      <a th:href="@{/cliente}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75v-5.25h-7.5V21.75H3.75A.75.75 0 013 21V9.75z"/>
+        </svg>
+        Zonas disponibles
+      </a>
+      <a th:href="@{/cliente}" class="sb-link active">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
+        </svg>
+        Parqueaderos
+      </a>
+    </nav>
 
-  <section>
-    <p th:if="${#lists.isEmpty(parqueaderos)}" class="mensaje-vacio">
-      No hay parqueaderos registrados en esta zona.
-    </p>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">C</div>
+        <span class="sb-user-name">Cliente</span>
+      </div>
+      <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      </form>
+      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
 
-    <div class="parqueaderos-grid">
-      <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
+  <!-- Contenido principal -->
+  <div class="main-area">
+    <header class="topbar">
+      <span class="topbar-title" th:text="'Zona: ' + ${zona.nombreZona}">Zona</span>
+      <div class="topbar-right">
+        <a th:href="@{/cliente}" class="btn">← Volver</a>
+      </div>
+    </header>
 
-        <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
+    <div class="page-body">
+      <div class="page-header">
+        <h1 th:text="'Parqueaderos en ' + ${zona.nombreZona}">Parqueaderos</h1>
+        <p>Selecciona un parqueadero disponible para reservar tu espacio.</p>
+      </div>
 
-        <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
-        <p th:if="${parqueadero.telefono}"><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}"></span></p>
-        <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
-        <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span>/hora</p>
-        <p>
-          <strong>Espacios:</strong>
-          <span th:text="${parqueadero.espaciosDisponibles}"></span> disponibles de
-          <span th:text="${parqueadero.espaciosTotales}"></span>
-        </p>
-        <p>
-          <strong>Estado:</strong>
-          <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
-                th:text="${parqueadero.habilitado ? 'Disponible' : 'No disponible'}"></span>
-        </p>
-        <p th:if="${parqueadero.urlMaps}">
-          <strong>Ubicación:</strong>
-          <a th:href="${parqueadero.urlMaps}" class="btn-link" target="_blank">Ver en Google Maps</a>
-        </p>
+      <p th:if="${#lists.isEmpty(parqueaderos)}" class="mensaje-vacio">
+        No hay parqueaderos registrados en esta zona.
+      </p>
 
-        <div class="acciones">
-          <a th:if="${parqueadero.habilitado and parqueadero.administrador != null}"
-             th:href="@{'/reserva/' + ${parqueadero.id}}"
-             class="btn-primary">Reservar</a>
-          <span th:unless="${parqueadero.habilitado and parqueadero.administrador != null}"
-                class="estado-deshabilitado">No disponible</span>
+      <div class="parqueaderos-grid">
+        <div th:each="parqueadero : ${parqueaderos}" class="parqueadero-card">
+          <h4 th:text="${parqueadero.nombre}">Nombre del Parqueadero</h4>
+
+          <p><strong>Dirección:</strong> <span th:text="${parqueadero.direccion}"></span></p>
+          <p th:if="${parqueadero.telefono}"><strong>Teléfono:</strong> <span th:text="${parqueadero.telefono}"></span></p>
+          <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
+          <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span>/hora</p>
+          <p>
+            <strong>Espacios disponibles:</strong>
+            <span th:text="${parqueadero.espaciosDisponibles}"></span> de
+            <span th:text="${parqueadero.espaciosTotales}"></span>
+          </p>
+
+          <!-- Barra de ocupación -->
+          <div class="occ-bar-wrap">
+            <div class="occ-bar"
+                 th:style="${parqueadero.espaciosTotales > 0 ?
+                   'width:' + (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) * 100 / parqueadero.espaciosTotales + '%' :
+                   'width:0%'}">
+            </div>
+          </div>
+
+          <p>
+            <strong>Estado:</strong>
+            <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"
+                  th:text="${parqueadero.habilitado ? 'Disponible' : 'No disponible'}"></span>
+          </p>
+          <p th:if="${parqueadero.urlMaps}">
+            <a th:href="${parqueadero.urlMaps}" class="link-maps" target="_blank">Ver en Google Maps →</a>
+          </p>
+
+          <div class="acciones">
+            <a th:if="${parqueadero.habilitado and parqueadero.administrador != null}"
+               th:href="@{'/reserva/' + ${parqueadero.id}}"
+               class="btn-primary">Reservar</a>
+            <span th:unless="${parqueadero.habilitado and parqueadero.administrador != null}"
+                  class="estado-deshabilitado">No disponible</span>
+          </div>
         </div>
-
       </div>
     </div>
-  </section>
-</main>
+  </div>
 
-<footer class="footer">
-  <p>© 2025 ParkingApp - Todos los derechos reservados</p>
-</footer>
-
+</div>
 </body>
 </html>
