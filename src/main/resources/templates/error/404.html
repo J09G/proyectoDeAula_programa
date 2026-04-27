@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso Denegado - ParkingApp</title>
+  <title>Página no encontrada - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
     .error-wrap {
@@ -25,7 +25,7 @@
     .error-icon {
       width: 72px;
       height: 72px;
-      background: #FEE2E2;
+      background: #FEF3C7;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -35,8 +35,7 @@
     .error-icon svg {
       width: 36px;
       height: 36px;
-      color: #DC2626;
-      fill: #DC2626;
+      fill: #D97706;
     }
     .error-code {
       font-size: 4rem;
@@ -90,14 +89,14 @@
     </div>
 
     <div class="error-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
     </div>
 
-    <p class="error-code">403</p>
-    <h1 class="error-title">Acceso Denegado</h1>
+    <p class="error-code">404</p>
+    <h1 class="error-title">Página no encontrada</h1>
     <p class="error-message">
-      No tienes permiso para acceder a esta página.<br>
-      Si crees que esto es un error, contacta al administrador.
+      La página que buscas no existe o fue movida.<br>
+      Verifica la dirección o regresa al inicio.
     </p>
 
     <div class="error-actions">
