@@ -9,9 +9,10 @@
 </head>
 <body>
 <div class="app-shell">
+  <div class="sb-overlay" id="sbOverlay"></div>
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
       <div class="sb-brand-icon">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
@@ -85,6 +86,9 @@
   <!-- Contenido principal -->
   <div class="main-area">
     <header class="topbar">
+      <button class="sb-hamburger" id="sbHamburger" aria-label="Abrir menú">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
       <span class="topbar-title" th:text="${parqueadero != null ? parqueadero.nombre : 'Panel de Administración'}">Panel de Administración</span>
     </header>
 
@@ -239,5 +243,6 @@
   </div>
 
 </div>
+  <script th:src="@{/js/app.js}"></script>
 </body>
 </html>
