@@ -1,0 +1,5 @@
+Backend:
+docker.io/josephgomezt/parking-backend:1.0
+
+Frontend:
+docker.io/josephgomezt/parking-frontend:1.0
