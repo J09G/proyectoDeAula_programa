@@ -7,10 +7,7 @@ import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.RolRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.UsuarioService;
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,39 +28,17 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
     @Override
     public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String rolNombre) {
-        if (usuarioRepository.existsByCorreo(correo)) {
-            throw new RuntimeException("El correo ya está registrado");
-        }
-        if (usuarioRepository.existsByCedula(cedula)) {
-            throw new RuntimeException("La cédula ya está registrada");
-        }
-
-        Rol rol = rolRepository.findByNombre(rolNombre);
-        if (rol == null) throw new RuntimeException("Rol no encontrado: " + rolNombre);
-
-        Usuario usuario = new Usuario();
-        usuario.setNombre(nombre);
-        usuario.setCedula(cedula);
-        usuario.setCorreo(correo);
-        usuario.setContrasena(passwordEncoder.encode(contrasena));
-        usuario.setRol(rol);
-
-        usuarioRepository.save(usuario);
+        registrarUsuario(nombre, cedula, correo, contrasena, null, rolNombre);
     }
 
     @Override
     public void registrarUsuario(String nombre, String cedula, String correo, String contrasena, String placa, String rolNombre) {
-        if (usuarioRepository.existsByCorreo(correo)) {
+        if (usuarioRepository.existsByCorreo(correo))
             throw new RuntimeException("El correo ya está registrado");
-        }
-        if (usuarioRepository.existsByCedula(cedula)) {
+        if (usuarioRepository.existsByCedula(cedula))
             throw new RuntimeException("La cédula ya está registrada");
-        }
 
         Rol rol = rolRepository.findByNombre(rolNombre);
         if (rol == null) throw new RuntimeException("Rol no encontrado: " + rolNombre);
@@ -74,10 +49,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setCorreo(correo);
         usuario.setContrasena(passwordEncoder.encode(contrasena));
         usuario.setRol(rol);
-
-        if (placa != null && !placa.trim().isEmpty()) {
+        if (placa != null && !placa.trim().isEmpty())
             usuario.setPlaca(placa.trim());
-        }
 
         usuarioRepository.save(usuario);
     }
@@ -95,24 +68,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario obtenerUsuarioPorId(String idUsuario) {
         return usuarioRepository.findById(idUsuario)
-                .or(() -> usuarioRepository.findAll().stream()
-                        .filter(u -> idUsuario.equals(u.getId()))
-                        .findFirst())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @Override
     public void actualizarUsuario(String idUsuario, String nombre, String correo, String cedula) {
-        java.util.List<Document> orUsuario = new java.util.ArrayList<>();
-        orUsuario.add(new Document("_id", idUsuario));
-        try { orUsuario.add(new Document("_id", new ObjectId(idUsuario))); } catch (IllegalArgumentException ignored) {}
-
-        mongoTemplate.getDb().getCollection("usuarios").updateOne(
-                new Document("$or", orUsuario),
-                new Document("$set", new Document("nombre", nombre)
-                        .append("correo", correo)
-                        .append("cedula", cedula))
-        );
+        Usuario usuario = obtenerUsuarioPorId(idUsuario);
+        usuario.setNombre(nombre);
+        usuario.setCorreo(correo);
+        usuario.setCedula(cedula);
+        usuarioRepository.save(usuario);
     }
 
     @Override
@@ -123,21 +88,14 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("No se puede deshabilitar al SuperAdministrador.");
         }
 
-        java.util.List<Document> orUsuario = new java.util.ArrayList<>();
-        orUsuario.add(new Document("_id", idUsuario));
-        try { orUsuario.add(new Document("_id", new ObjectId(idUsuario))); } catch (IllegalArgumentException ignored) {}
-        mongoTemplate.getDb().getCollection("usuarios")
-                .updateOne(new Document("$or", orUsuario), new Document("$set", new Document("habilitado", habilitado)));
+        usuario.setHabilitado(habilitado);
+        usuarioRepository.save(usuario);
 
-        // Si es administrador, también cambia el estado de su parqueadero
         if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
             Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
             if (parqueadero != null) {
-                java.util.List<Document> orParq = new java.util.ArrayList<>();
-                orParq.add(new Document("_id", parqueadero.getId()));
-                try { orParq.add(new Document("_id", new ObjectId(parqueadero.getId()))); } catch (IllegalArgumentException ignored) {}
-                mongoTemplate.getDb().getCollection("parqueaderos")
-                        .updateOne(new Document("$or", orParq), new Document("$set", new Document("habilitado", habilitado)));
+                parqueadero.setHabilitado(habilitado);
+                parqueaderoRepository.save(parqueadero);
             }
         }
     }

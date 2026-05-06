@@ -7,10 +7,7 @@ import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.repository.ZonaRepository;
 import com.proyecto.parking.service.ParqueaderoService;
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,20 +24,15 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
     @Override
     public Parqueadero registrarParqueadero(String nombre, String direccion, String horario,
                                             double tarifa, int espaciosTotales, int espaciosDisponibles,
                                             String idZona, String registradoPor, String urlMaps, String telefono) {
 
         Zona zona = zonaRepository.findById(idZona)
-                .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada."));
 
         Usuario superadmin = usuarioRepository.findById(registradoPor)
-                .or(() -> usuarioRepository.findAll().stream().filter(u -> registradoPor.equals(u.getId())).findFirst())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
 
         Parqueadero parqueadero = new Parqueadero();
@@ -66,7 +58,6 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
         Parqueadero parqueadero = obtenerParqueaderoPorId(idParqueadero);
         Zona zona = zonaRepository.findById(idZona)
-                .or(() -> zonaRepository.findAll().stream().filter(z -> idZona.equals(z.getId())).findFirst())
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada."));
 
         parqueadero.setNombre(nombre);
@@ -102,9 +93,6 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     @Override
     public Parqueadero obtenerParqueaderoPorId(String idParqueadero) {
         return parqueaderoRepository.findById(idParqueadero)
-                .or(() -> parqueaderoRepository.findAll().stream()
-                        .filter(p -> idParqueadero.equals(p.getId()))
-                        .findFirst())
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
     }
 
@@ -125,29 +113,14 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
 
     @Override
     public void cambiarEstado(String idParqueadero, boolean habilitado) {
-        java.util.List<Document> orConditions = new java.util.ArrayList<>();
-        orConditions.add(new Document("_id", idParqueadero));
-        try {
-            orConditions.add(new Document("_id", new ObjectId(idParqueadero)));
-        } catch (IllegalArgumentException ignored) {}
-
-        Document filter = new Document("$or", orConditions);
-        Document updateDoc = new Document("$set", new Document("habilitado", habilitado));
-        mongoTemplate.getDb().getCollection("parqueaderos").updateOne(filter, updateDoc);
+        Parqueadero parqueadero = obtenerParqueaderoPorId(idParqueadero);
+        parqueadero.setHabilitado(habilitado);
+        parqueaderoRepository.save(parqueadero);
     }
 
     @Override
     public Parqueadero guardarParqueadero(Parqueadero parqueadero) {
-        java.util.List<Document> orConditions = new java.util.ArrayList<>();
-        orConditions.add(new Document("_id", parqueadero.getId()));
-        try {
-            orConditions.add(new Document("_id", new ObjectId(parqueadero.getId())));
-        } catch (IllegalArgumentException ignored) {}
-
-        Document filter = new Document("$or", orConditions);
-        Document updateDoc = new Document("$set", new Document("espaciosDisponibles", parqueadero.getEspaciosDisponibles()));
-        mongoTemplate.getDb().getCollection("parqueaderos").updateOne(filter, updateDoc);
-        return parqueadero;
+        return parqueaderoRepository.save(parqueadero);
     }
 
     @Override
