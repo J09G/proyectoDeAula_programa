@@ -230,6 +230,14 @@ public class SuperAdminController {
         return "redirect:/superadmin/zonas";
     }
 
+    @GetMapping("/dashboard")
+    public String mostrarDashboard(HttpSession session) {
+        Usuario superadmin = (Usuario) session.getAttribute("usuario");
+        if (superadmin == null) return "redirect:/login";
+        if (!superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) return "redirect:/error/403";
+        return "superadmin/dashboard";
+    }
+
     @GetMapping("/buscarUsuario")
     public String buscarUsuario(@RequestParam("cedula") String cedula, Model model) {
         List<Usuario> usuarios = usuarioService.buscarPorCedula(cedula);
