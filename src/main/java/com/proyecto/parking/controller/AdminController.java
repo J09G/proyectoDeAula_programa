@@ -12,6 +12,7 @@ import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.RegistroParqueoService;
 import com.proyecto.parking.service.ReservaService;
+import com.proyecto.parking.service.ZonaService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class AdminController {
     @Autowired
     private RegistroParqueoService registroParqueoService;
 
+    @Autowired
+    private ZonaService zonaService;
+
     @GetMapping("")
     public String mostrarPanelAdmin(HttpSession session, Model model) {
         try {
@@ -51,7 +55,7 @@ public class AdminController {
 
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(admin.getId());
             if (parqueadero == null) {
-                model.addAttribute("error", "No tienes parqueadero asignado aún.");
+                model.addAttribute("zonas", zonaService.obtenerZonas());
                 return "admin/index";
             }
 
@@ -68,6 +72,37 @@ public class AdminController {
         }
 
         return "admin/index";
+    }
+
+    @PostMapping("/registrarParqueadero")
+    public String registrarParqueadero(@RequestParam String nombre,
+                                       @RequestParam String direccion,
+                                       @RequestParam String horario,
+                                       @RequestParam double tarifa,
+                                       @RequestParam("espacios_totales") int espaciosTotales,
+                                       @RequestParam("espacios_disponibles") int espaciosDisponibles,
+                                       @RequestParam("id_zona") String idZona,
+                                       @RequestParam(value = "telefono", required = false) String telefono,
+                                       @RequestParam(value = "url_maps", required = false) String urlMaps,
+                                       HttpSession session,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            Usuario admin = (Usuario) session.getAttribute("usuario");
+            if (admin == null) return "redirect:/login";
+
+            Parqueadero parqueadero = parqueaderoService.registrarParqueadero(
+                    nombre, direccion, horario, tarifa,
+                    espaciosTotales, espaciosDisponibles,
+                    idZona, admin.getId(), urlMaps, telefono);
+
+            parqueaderoService.asignarAdministrador(parqueadero.getId(), admin.getId());
+            parqueaderoService.cambiarEstado(parqueadero.getId(), true);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Parqueadero registrado correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
+        }
+        return "redirect:/admin";
     }
 
     @GetMapping("/reservas/buscar")

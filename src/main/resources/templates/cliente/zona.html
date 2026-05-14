@@ -86,18 +86,17 @@
           <p><strong>Horario:</strong> <span th:text="${parqueadero.horario}"></span></p>
           <p><strong>Tarifa:</strong> $<span th:text="${parqueadero.tarifaHora}"></span>/hora</p>
           <p>
-            <strong>Espacios disponibles:</strong>
-            <span th:text="${parqueadero.espaciosDisponibles}"></span> de
-            <span th:text="${parqueadero.espaciosTotales}"></span>
+            <strong>Espacios:</strong>
+            <span th:text="${parqueadero.espaciosDisponibles}"></span> libres de
+            <span th:text="${parqueadero.espaciosTotales}"></span> totales
           </p>
 
-          <!-- Barra de ocupación -->
-          <div class="occ-bar-wrap">
-            <div class="occ-bar"
-                 th:style="${parqueadero.espaciosTotales > 0 ?
-                   'width:' + (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) * 100 / parqueadero.espaciosTotales + '%' :
-                   'width:0%'}">
-            </div>
+          <!-- Grid de cubiculos -->
+          <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
+            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+              <div th:class="${i <= (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) ? 'cubiculo ocupado' : 'cubiculo libre'}"
+                   th:text="${i}"></div>
+            </th:block>
           </div>
 
           <p>

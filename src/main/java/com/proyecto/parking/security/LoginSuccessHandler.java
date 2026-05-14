@@ -40,9 +40,9 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         if (rol.equals("administrador")) {
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(usuario.getId());
-            if (parqueadero == null || !parqueadero.getHabilitado()) {
+            if (parqueadero != null && !parqueadero.getHabilitado()) {
                 request.getSession().invalidate();
-                request.getSession(true); // nueva sesión vacía para evitar redirección a ?timeout
+                request.getSession(true);
                 response.sendRedirect("/login?error=parqueadero");
                 return;
             }

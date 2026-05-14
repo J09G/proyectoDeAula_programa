@@ -51,20 +51,26 @@
 .parqueadero-card p strong { color: var(--gray-800); }
 .parqueadero-card .acciones { margin-top: 12px; }
 
-/* Occupancy bar */
-.occ-bar-wrap {
-  background: var(--gray-100);
-  border-radius: 99px;
-  height: 6px;
-  overflow: hidden;
-  margin-top: 4px;
+/* Cubicle grid (client view) */
+.cubiculos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0 4px;
 }
-.occ-bar {
-  height: 100%;
-  background: var(--brand);
-  border-radius: 99px;
-  transition: width .3s;
+.cubiculo {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border: 1.5px solid;
 }
+.cubiculo.libre    { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+.cubiculo.ocupado  { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 
 /* ── Reservation detail page ───────────────────────────────── */
 .reserva-detalle {

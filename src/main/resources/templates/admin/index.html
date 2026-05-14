@@ -103,6 +103,39 @@
         <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
       </div>
 
+      <!-- Registro de parqueadero (solo cuando el admin no tiene uno asignado) -->
+      <div th:if="${parqueadero == null}" class="card" style="max-width:640px; margin-bottom:32px;">
+        <h3 style="margin-bottom:20px;">Registra tu parqueadero</h3>
+        <p style="margin-bottom:20px; color:var(--gray-500); font-size:0.875rem;">
+          Aun no tienes un parqueadero asignado. Completa el formulario para registrar el tuyo.
+        </p>
+        <form th:action="@{/admin/registrarParqueadero}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <label>Nombre del parqueadero</label>
+          <input type="text" name="nombre" placeholder="Nombre del parqueadero" required>
+          <label>Telefono</label>
+          <input type="text" name="telefono" placeholder="Ej: 3001234567">
+          <label>Direccion</label>
+          <input type="text" name="direccion" placeholder="Direccion" required>
+          <label>Horario</label>
+          <input type="text" name="horario" placeholder="Ej: 7:00 AM - 10:00 PM" required>
+          <label>Tarifa por hora ($)</label>
+          <input type="number" name="tarifa" placeholder="Tarifa por hora" step="0.01" min="0" required>
+          <label>Espacios totales</label>
+          <input type="number" name="espacios_totales" placeholder="Total de espacios" min="1" required>
+          <label>Espacios disponibles</label>
+          <input type="number" name="espacios_disponibles" placeholder="Espacios disponibles" min="0" required>
+          <label>Zona</label>
+          <select name="id_zona" required>
+            <option value="">-- Selecciona una zona --</option>
+            <option th:each="zona : ${zonas}" th:value="${zona.id}" th:text="${zona.nombreZona}"></option>
+          </select>
+          <label>URL de Google Maps (opcional)</label>
+          <input type="url" name="url_maps" placeholder="https://maps.google.com/...">
+          <button type="submit" class="btn-primary" style="margin-top:8px;">Registrar parqueadero</button>
+        </form>
+      </div>
+
       <!-- KPIs -->
       <div class="kpi-grid">
         <div class="kpi-card kpi-brand">
@@ -146,13 +179,19 @@
 
         <!-- Actualizar espacios -->
         <div class="card" id="espacios">
-          <h3 style="margin-bottom:20px;">Espacios disponibles</h3>
-          <div class="spaces-display">
-            <p class="spaces-num" th:text="${parqueadero?.espaciosDisponibles}">0</p>
-            <p class="spaces-sub">disponibles de
-              <strong th:text="${parqueadero?.espaciosTotales}">0</strong> totales
-            </p>
+          <h3 style="margin-bottom:16px;">Espacios disponibles</h3>
+          <div class="cubiculos-legend">
+            <span><span class="legend-dot libre"></span>Libre</span>
+            <span><span class="legend-dot ocupado"></span>Ocupado</span>
           </div>
+          <div th:if="${parqueadero != null and parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
+            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+              <div th:class="${i <= (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) ? 'cubiculo ocupado' : 'cubiculo libre'}"
+                   th:text="${i}"></div>
+            </th:block>
+          </div>
+          <p style="font-size:0.825rem; color:var(--gray-500); margin-bottom:16px;"
+             th:text="${parqueadero?.espaciosDisponibles} + ' libres de ' + ${parqueadero?.espaciosTotales} + ' totales'"></p>
           <form th:action="@{/admin/espacios}" method="post">
             <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.id}">
             <label>Actualizar espacios disponibles</label>
