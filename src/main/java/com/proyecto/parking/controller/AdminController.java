@@ -103,10 +103,12 @@ public class AdminController {
             }
 
             Set<Integer> ocupados = calcularEspaciosOcupados(id);
+            Set<Integer> pendientes = calcularEspaciosPendientes(id);
 
             model.addAttribute("parqueadero", parqueadero);
             model.addAttribute("comentarios", comentarioService.listarPorParqueadero(id));
             model.addAttribute("espaciosOcupados", ocupados);
+            model.addAttribute("espaciosPendientes", pendientes);
             model.addAttribute("zonas", zonaService.obtenerZonas());
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar el parqueadero: " + e.getMessage());
@@ -245,11 +247,13 @@ public class AdminController {
         try {
             Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(id);
             Set<Integer> ocupados = calcularEspaciosOcupados(id);
+            Set<Integer> pendientes = calcularEspaciosPendientes(id);
 
             model.addAttribute("parqueadero", parqueadero);
             model.addAttribute("activos", registroParqueoService.listarActivosPorParqueadero(id));
             model.addAttribute("historial", registroParqueoService.listarTodosPorParqueadero(id));
             model.addAttribute("espaciosOcupados", ocupados);
+            model.addAttribute("espaciosPendientes", pendientes);
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar registros: " + e.getMessage());
         }
@@ -380,14 +384,13 @@ public class AdminController {
         }
     }
 
-    /* ── Utilidad: espacios ocupados ─────────────────────────── */
+    /* ── Utilidades: espacios ocupados y pendientes ─────────── */
 
     private Set<Integer> calcularEspaciosOcupados(String idParqueadero) {
         Set<Integer> ocupados = new HashSet<>();
 
         reservaService.listarReservasParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE
-                          || r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
                 .filter(r -> r.getEspacioReservado() != null)
                 .map(Reserva::getEspacioReservado)
                 .forEach(ocupados::add);
@@ -398,6 +401,16 @@ public class AdminController {
                 .forEach(ocupados::add);
 
         return ocupados;
+    }
+
+    private Set<Integer> calcularEspaciosPendientes(String idParqueadero) {
+        Set<Integer> pendientes = new HashSet<>();
+        reservaService.listarReservasParqueadero(idParqueadero).stream()
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
+                .filter(r -> r.getEspacioReservado() != null)
+                .map(Reserva::getEspacioReservado)
+                .forEach(pendientes::add);
+        return pendientes;
     }
 
     private void agregarFilaTabla(PdfPTable tabla, String label, String valor,

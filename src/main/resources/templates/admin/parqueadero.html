@@ -159,11 +159,13 @@
           <h3 style="margin-bottom:16px;">Espacios y estado</h3>
           <div class="cubiculos-legend">
             <span><span class="legend-dot libre"></span>Libre</span>
+            <span><span class="legend-dot pendiente"></span>Pendiente</span>
             <span><span class="legend-dot ocupado"></span>Ocupado</span>
           </div>
           <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
             <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
-              <div th:class="${espaciosOcupados.contains(i)} ? 'cubiculo ocupado' : 'cubiculo libre'"
+              <div th:class="${espaciosOcupados.contains(i)} ? 'cubiculo ocupado' :
+                             (${espaciosPendientes.contains(i)} ? 'cubiculo pendiente' : 'cubiculo libre')"
                    th:text="${i}"></div>
             </th:block>
           </div>

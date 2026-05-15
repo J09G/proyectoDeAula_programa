@@ -99,6 +99,7 @@
 
           <div class="cubiculos-legend" style="margin-bottom:8px;">
             <span><span class="legend-dot libre"></span>Libre</span>
+            <span><span class="legend-dot pendiente"></span>Pendiente</span>
             <span><span class="legend-dot ocupado"></span>Ocupado</span>
           </div>
           <p style="font-size:0.8rem; color:var(--gray-500); margin-bottom:10px;">
@@ -109,7 +110,9 @@
             <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
               <div th:if="${espaciosOcupados.contains(i)}"
                    class="cubiculo ocupado" th:text="${i}"></div>
-              <div th:unless="${espaciosOcupados.contains(i)}"
+              <div th:if="${!espaciosOcupados.contains(i) and espaciosPendientes.contains(i)}"
+                   class="cubiculo pendiente" th:text="${i}"></div>
+              <div th:if="${!espaciosOcupados.contains(i) and !espaciosPendientes.contains(i)}"
                    class="cubiculo libre cubiculo-selectable"
                    th:text="${i}"
                    th:attr="data-num=${i}"
