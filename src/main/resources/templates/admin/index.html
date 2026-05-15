@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParkingApp - Administrador</title>
+  <title>ParkingApp - Mis Parqueaderos</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -22,54 +22,20 @@
 
     <nav class="sb-nav">
       <div class="sb-section">
-        <span class="sb-section-label">Reservas</span>
+        <span class="sb-section-label">Panel</span>
       </div>
-      <a href="#reservas" class="sb-link active">
+      <a th:href="@{/admin}" class="sb-link active">
         <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"/>
         </svg>
-        Solicitudes
-      </a>
-      <a href="#buscar" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-        </svg>
-        Buscar por cédula
-      </a>
-
-      <div class="sb-divider"></div>
-      <div class="sb-section">
-        <span class="sb-section-label">Mi parqueadero</span>
-      </div>
-      <a href="#editar" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
-        </svg>
-        Editar información
-      </a>
-      <a href="#espacios" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
-        </svg>
-        Espacios disponibles
-      </a>
-
-      <div class="sb-divider"></div>
-      <div class="sb-section">
-        <span class="sb-section-label">Registros</span>
-      </div>
-      <a th:href="@{/admin/registros}" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
-        </svg>
-        Entradas y salidas
+        Mis parqueaderos
       </a>
     </nav>
 
     <div class="sb-footer">
       <div class="sb-user">
         <div class="sb-avatar">A</div>
-        <span class="sb-user-name" th:text="${parqueadero != null ? parqueadero.nombre : 'Administrador'}">Administrador</span>
+        <span class="sb-user-name">Administrador</span>
       </div>
       <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -89,13 +55,18 @@
       <button class="sb-hamburger" id="sbHamburger" aria-label="Abrir menú">
         <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
       </button>
-      <span class="topbar-title" th:text="${parqueadero != null ? parqueadero.nombre : 'Panel de Administración'}">Panel de Administración</span>
+      <span class="topbar-title">Mis parqueaderos</span>
+      <div class="topbar-right">
+        <button class="btn-primary" onclick="document.getElementById('form-nuevo').classList.toggle('hidden')">
+          + Registrar nuevo
+        </button>
+      </div>
     </header>
 
     <div class="page-body">
       <div class="page-header">
-        <h1 th:text="${parqueadero != null ? parqueadero.nombre : 'Panel de Administración'}">Panel de Administración</h1>
-        <p>Gestiona la información de tu parqueadero y las solicitudes de reserva.</p>
+        <h1>Mis parqueaderos</h1>
+        <p>Gestiona todos tus parqueaderos desde aquí.</p>
       </div>
 
       <div class="mensajes">
@@ -103,20 +74,17 @@
         <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
       </div>
 
-      <!-- Registro de parqueadero (solo cuando el admin no tiene uno asignado) -->
-      <div th:if="${parqueadero == null}" class="card" style="max-width:640px; margin-bottom:32px;">
-        <h3 style="margin-bottom:20px;">Registra tu parqueadero</h3>
-        <p style="margin-bottom:20px; color:var(--gray-500); font-size:0.875rem;">
-          Aun no tienes un parqueadero asignado. Completa el formulario para registrar el tuyo.
-        </p>
+      <!-- Formulario registrar nuevo parqueadero -->
+      <div id="form-nuevo" class="card hidden" style="max-width:640px; margin-bottom:32px;">
+        <h3 style="margin-bottom:20px;">Registrar nuevo parqueadero</h3>
         <form th:action="@{/admin/registrarParqueadero}" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <label>Nombre del parqueadero</label>
           <input type="text" name="nombre" placeholder="Nombre del parqueadero" required>
-          <label>Telefono</label>
+          <label>Teléfono</label>
           <input type="text" name="telefono" placeholder="Ej: 3001234567">
-          <label>Direccion</label>
-          <input type="text" name="direccion" placeholder="Direccion" required>
+          <label>Dirección</label>
+          <input type="text" name="direccion" placeholder="Dirección" required>
           <label>Horario</label>
           <input type="text" name="horario" placeholder="Ej: 7:00 AM - 10:00 PM" required>
           <label>Tarifa por hora ($)</label>
@@ -132,156 +100,58 @@
           </select>
           <label>URL de Google Maps (opcional)</label>
           <input type="url" name="url_maps" placeholder="https://maps.google.com/...">
-          <button type="submit" class="btn-primary" style="margin-top:8px;">Registrar parqueadero</button>
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button type="submit" class="btn-primary">Registrar</button>
+            <button type="button" class="btn" onclick="document.getElementById('form-nuevo').classList.add('hidden')">Cancelar</button>
+          </div>
         </form>
       </div>
 
-      <!-- KPIs -->
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-brand">
-          <p class="kpi-label">Espacios ocupados</p>
-          <p class="kpi-value" th:text="${parqueadero != null ? parqueadero.espaciosTotales - parqueadero.espaciosDisponibles : 0}">0</p>
-          <p class="kpi-sub" th:text="'de ' + (${parqueadero != null ? parqueadero.espaciosTotales : 0}) + ' totales'">de 0 totales</p>
-        </div>
-        <div class="kpi-card kpi-warn">
-          <p class="kpi-label">Reservas pendientes</p>
-          <p class="kpi-value" th:text="${reservas != null ? #lists.size(reservas.?[estado.name() == 'PENDIENTE']) : 0}">0</p>
-          <p class="kpi-sub">en espera de acción</p>
-        </div>
-        <div class="kpi-card kpi-success">
-          <p class="kpi-label">Reservas aceptadas</p>
-          <p class="kpi-value" th:text="${reservas != null ? #lists.size(reservas.?[estado.name() == 'ACEPTADA']) : 0}">0</p>
-          <p class="kpi-sub">este período</p>
+      <!-- Lista de parqueaderos -->
+      <p th:if="${#lists.isEmpty(parqueaderos)}" class="no-data">
+        No tienes parqueaderos registrados. Usa el botón "Registrar nuevo" para añadir uno.
+      </p>
+
+      <div class="parqueaderos-admin-grid">
+        <div th:each="p : ${parqueaderos}" class="card parqueadero-admin-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <h3 th:text="${p.nombre}" style="margin:0;"></h3>
+            <span th:class="${p.habilitado ? 'badge-ok' : 'badge-off'}"
+                  th:text="${p.habilitado ? 'Activo' : 'Inactivo'}"></span>
+          </div>
+          <p style="font-size:0.875rem; color:var(--gray-500); margin-bottom:4px;">
+            <strong>Zona:</strong> <span th:text="${p.zona.nombreZona}"></span>
+          </p>
+          <p style="font-size:0.875rem; color:var(--gray-500); margin-bottom:4px;">
+            <strong>Dirección:</strong> <span th:text="${p.direccion}"></span>
+          </p>
+          <p style="font-size:0.875rem; color:var(--gray-500); margin-bottom:16px;">
+            <strong>Espacios:</strong>
+            <span th:text="${p.espaciosDisponibles}"></span> libres de
+            <span th:text="${p.espaciosTotales}"></span> totales
+          </p>
+          <a th:if="${p.habilitado}"
+             th:href="@{/admin/parqueadero/{id}(id=${p.id})}" class="btn-primary" style="display:inline-block; text-decoration:none;">
+            Gestionar →
+          </a>
+          <span th:unless="${p.habilitado}" class="btn-disabled">
+            Deshabilitado por SuperAdmin
+          </span>
         </div>
       </div>
 
-      <!-- Editar info + Espacios en grid -->
-      <div class="info-grid" style="margin-bottom:32px;">
-
-        <!-- Editar información -->
-        <div class="card" id="editar">
-          <h3 style="margin-bottom:20px;">Editar información del parqueadero</h3>
-          <form th:action="@{/admin/editar}" method="post">
-            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.id}">
-            <label>Nombre del parqueadero</label>
-            <input type="text" name="nombre" placeholder="Nombre del parqueadero" th:value="${parqueadero?.nombre}" required>
-            <label>Dirección</label>
-            <input type="text" name="direccion" placeholder="Dirección" th:value="${parqueadero?.direccion}" required>
-            <label>Horario</label>
-            <input type="text" name="horario" placeholder="Ej: 7:00 AM - 10:00 PM" th:value="${parqueadero?.horario}" required>
-            <label>Tarifa por hora ($)</label>
-            <input type="number" name="tarifa" placeholder="Tarifa por hora" th:value="${parqueadero?.tarifaHora}" step="0.01" required>
-            <label>URL de Google Maps (opcional)</label>
-            <input type="url" name="urlMaps" placeholder="https://maps.google.com/..." th:value="${parqueadero?.urlMaps}">
-            <button type="submit" class="btn-primary">Guardar cambios</button>
-          </form>
-        </div>
-
-        <!-- Actualizar espacios -->
-        <div class="card" id="espacios">
-          <h3 style="margin-bottom:16px;">Espacios disponibles</h3>
-          <div class="cubiculos-legend">
-            <span><span class="legend-dot libre"></span>Libre</span>
-            <span><span class="legend-dot ocupado"></span>Ocupado</span>
-          </div>
-          <div th:if="${parqueadero != null and parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
-            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
-              <div th:class="${i <= (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) ? 'cubiculo ocupado' : 'cubiculo libre'}"
-                   th:text="${i}"></div>
-            </th:block>
-          </div>
-          <p style="font-size:0.825rem; color:var(--gray-500); margin-bottom:16px;"
-             th:text="${parqueadero?.espaciosDisponibles} + ' libres de ' + ${parqueadero?.espaciosTotales} + ' totales'"></p>
-          <form th:action="@{/admin/espacios}" method="post">
-            <input type="hidden" name="adminId" th:value="${parqueadero?.administrador?.id}">
-            <label>Actualizar espacios disponibles</label>
-            <input type="number" name="espacios" min="0"
-                   th:value="${parqueadero?.espaciosDisponibles}" placeholder="Ej: 20">
-            <button type="submit" class="btn-primary">Actualizar</button>
-          </form>
-        </div>
-
-      </div>
-
-      <!-- Solicitudes de Reserva -->
-      <section id="reservas">
-        <h3>Solicitudes de reserva</h3>
-
-        <div id="buscar" class="form-buscar" style="margin-bottom:20px;">
-          <form th:action="@{/admin/reservas/buscar}" method="get" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
-            <input type="text" name="cedula" placeholder="Buscar por cédula del cliente..." style="max-width:320px; flex:1; margin-bottom:0;">
-            <button type="submit" class="btn-primary">Buscar</button>
-            <a th:href="@{/admin}" class="btn-secundario">Ver todas</a>
-          </form>
-        </div>
-
-        <p th:if="${#lists.isEmpty(reservas)}" class="no-data">No hay solicitudes de reserva.</p>
-
-        <div class="tabla-responsive" th:if="${!#lists.isEmpty(reservas)}">
-          <table class="tabla-datos">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Cédula</th>
-                <th>Placa</th>
-                <th>Fecha Reserva</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="reserva : ${reservas}">
-                <td th:text="${reserva.id}"></td>
-                <td th:text="${reserva.cliente.nombre}"></td>
-                <td th:text="${reserva.cliente.cedula}"></td>
-                <td th:text="${reserva.cliente.placa != null ? reserva.cliente.placa : '-'}"></td>
-                <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
-                <td>
-                  <span th:class="${
-                    reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :
-                    (reserva.estado.name() == 'ACEPTADA' ? 'estado-aceptada' : 'estado-rechazada')
-                  }" th:text="${reserva.estado}"></span>
-                </td>
-                <td class="acciones-inline">
-                  <form th:action="@{/admin/reserva/aceptar/{id}(id=${reserva.id})}" method="post"
-                        style="display:inline; background:none; border:none; padding:0; margin:0;">
-                    <button type="submit" class="btn-accion btn-aceptar-sm"
-                            th:disabled="${reserva.estado.name() != 'PENDIENTE'}">Aceptar</button>
-                  </form>
-                  <form th:action="@{/admin/reserva/rechazar/{id}(id=${reserva.id})}" method="post"
-                        style="display:inline; background:none; border:none; padding:0; margin:0;">
-                    <button type="submit" class="btn-accion btn-rechazar-sm"
-                            th:disabled="${reserva.estado.name() != 'PENDIENTE'}">Rechazar</button>
-                  </form>
-                  <form th:action="@{/admin/reserva/eliminar/{id}(id=${reserva.id})}" method="post"
-                        style="display:inline; background:none; border:none; padding:0; margin:0;"
-                        onsubmit="return confirm('¿Eliminar esta reserva?')">
-                    <button type="submit" class="btn-accion btn-eliminar-sm">Eliminar</button>
-                  </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Comentarios -->
-      <section th:if="${parqueadero != null}">
-        <h3>Comentarios de clientes</h3>
-        <p th:if="${#lists.isEmpty(comentarios)}" class="no-data">No hay comentarios aún.</p>
-        <div th:each="c : ${comentarios}" class="comment-card">
-          <div class="comment-meta">
-            <span class="comment-author" th:text="${c.cliente.nombre}">Cliente</span>
-            <span class="comment-date" th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
-          </div>
-          <p class="comment-body" th:text="${c.texto}">Comentario</p>
-        </div>
-      </section>
     </div>
   </div>
 
 </div>
-  <script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script>
+  // Mostrar form si viene de error de registro (no se cerró)
+  const flashError = /*[[${error}]]*/ null;
+  if (flashError) {
+    const f = document.getElementById('form-nuevo');
+    if (f) f.classList.remove('hidden');
+  }
+</script>
 </body>
 </html>

@@ -1,4 +1,13 @@
 /* ── Admin dashboard ───────────────────────────────────────── */
+.btn-disabled {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: var(--gray-200);
+  color: var(--gray-500);
+  font-size: 0.875rem;
+  cursor: not-allowed;
+}
 .admin-dashboard { /* no extra styles needed — page-body handles it */ }
 
 /* Info grid (edit + spaces) */
@@ -72,3 +81,23 @@
 
 /* Registros form */
 .form-entrada { max-width: 480px; }
+
+/* Parking lot list (admin index) */
+.parqueaderos-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.parqueadero-admin-card { display: flex; flex-direction: column; }
+
+/* Badges */
+.badge-ok  { background: #d1fae5; color: #065f46; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.badge-off { background: #fee2e2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+/* Hidden utility */
+.hidden { display: none !important; }
+
+/* Clickable cubicle */
+.cubiculo-selectable { cursor: pointer; transition: transform .12s; }
+.cubiculo-selectable:hover { transform: scale(1.15); }
+.cubiculo-activo { outline: 3px solid var(--brand); outline-offset: 2px; }
