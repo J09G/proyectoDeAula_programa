@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'ParkingApp - ' + ${parqueadero.nombre}">ParkingApp - Parqueadero</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+  <div class="sb-overlay" id="sbOverlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      </div>
+      <span class="sb-brand-name">ParkingApp</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">
+        <span class="sb-section-label">Navegación</span>
+      </div>
+      <a th:href="@{/admin}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Mis parqueaderos
+      </a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <span class="sb-section-label">Reservas</span>
+      </div>
+      <a href="#reservas" class="sb-link active">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
+        </svg>
+        Solicitudes
+      </a>
+      <a href="#buscar" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
+        Buscar por cédula
+      </a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <span class="sb-section-label">Mi parqueadero</span>
+      </div>
+      <a href="#editar" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
+        </svg>
+        Editar información
+      </a>
+      <a href="#espacios" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+        </svg>
+        Espacios
+      </a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <span class="sb-section-label">Registros</span>
+      </div>
+      <a th:href="@{/admin/parqueadero/{id}/registros(id=${parqueadero.id})}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+        </svg>
+        Entradas y salidas
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">A</div>
+        <span class="sb-user-name" th:text="${parqueadero.nombre}">Parqueadero</span>
+      </div>
+      <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      </form>
+      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <button class="sb-hamburger" id="sbHamburger" aria-label="Abrir menú">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+      <span class="topbar-title" th:text="${parqueadero.nombre}">Parqueadero</span>
+      <div class="topbar-right">
+        <a th:href="@{/admin}" class="btn">← Mis parqueaderos</a>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="page-header">
+        <h1 th:text="${parqueadero.nombre}">Parqueadero</h1>
+        <p th:text="${parqueadero.direccion + ' · ' + parqueadero.zona.nombreZona}"></p>
+      </div>
+
+      <div class="mensajes">
+        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-brand">
+          <p class="kpi-label">Espacios ocupados</p>
+          <p class="kpi-value" th:text="${parqueadero.espaciosTotales - parqueadero.espaciosDisponibles}">0</p>
+          <p class="kpi-sub" th:text="'de ' + ${parqueadero.espaciosTotales} + ' totales'">de 0 totales</p>
+        </div>
+        <div class="kpi-card kpi-warn">
+          <p class="kpi-label">Reservas pendientes</p>
+          <p class="kpi-value" th:text="${#lists.size(reservas.?[estado.name() == 'PENDIENTE'])}">0</p>
+          <p class="kpi-sub">en espera de acción</p>
+        </div>
+        <div class="kpi-card kpi-success">
+          <p class="kpi-label">Reservas aceptadas</p>
+          <p class="kpi-value" th:text="${#lists.size(reservas.?[estado.name() == 'ACEPTADA'])}">0</p>
+          <p class="kpi-sub">este período</p>
+        </div>
+      </div>
+
+      <!-- Editar info + Espacios -->
+      <div class="info-grid" style="margin-bottom:32px;">
+
+        <div class="card" id="editar">
+          <h3 style="margin-bottom:20px;">Editar información</h3>
+          <form th:action="@{/admin/parqueadero/{id}/editar(id=${parqueadero.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <label>Nombre</label>
+            <input type="text" name="nombre" th:value="${parqueadero.nombre}" required>
+            <label>Dirección</label>
+            <input type="text" name="direccion" th:value="${parqueadero.direccion}" required>
+            <label>Horario</label>
+            <input type="text" name="horario" th:value="${parqueadero.horario}" required>
+            <label>Tarifa por hora ($)</label>
+            <input type="number" name="tarifa" th:value="${parqueadero.tarifaHora}" step="0.01" required>
+            <label>URL de Google Maps (opcional)</label>
+            <input type="url" name="urlMaps" th:value="${parqueadero.urlMaps}">
+            <button type="submit" class="btn-primary">Guardar cambios</button>
+          </form>
+        </div>
+
+        <div class="card" id="espacios">
+          <h3 style="margin-bottom:16px;">Espacios y estado</h3>
+          <div class="cubiculos-legend">
+            <span><span class="legend-dot libre"></span>Libre</span>
+            <span><span class="legend-dot ocupado"></span>Ocupado</span>
+          </div>
+          <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
+            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+              <div th:class="${espaciosOcupados.contains(i)} ? 'cubiculo ocupado' : 'cubiculo libre'"
+                   th:text="${i}"></div>
+            </th:block>
+          </div>
+          <p style="font-size:0.825rem; color:var(--gray-500); margin-bottom:16px;"
+             th:text="${parqueadero.espaciosDisponibles} + ' libres de ' + ${parqueadero.espaciosTotales} + ' totales'"></p>
+          <form th:action="@{/admin/parqueadero/{id}/espacios(id=${parqueadero.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <label>Espacios totales</label>
+            <input type="number" name="espaciosTotales" min="1" th:value="${parqueadero.espaciosTotales}" required>
+            <label>Espacios disponibles</label>
+            <input type="number" name="espaciosDisponibles" min="0" th:value="${parqueadero.espaciosDisponibles}" required>
+            <button type="submit" class="btn-primary" style="margin-top:8px;">Actualizar espacios</button>
+          </form>
+          <hr style="margin:16px 0; border:none; border-top:1px solid var(--gray-200);">
+          <p style="font-size:0.875rem; font-weight:600; margin-bottom:8px;">Estado del parqueadero</p>
+          <form th:action="@{/admin/parqueadero/{id}/estado(id=${parqueadero.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}"/>
+            <button type="submit"
+                    th:class="${parqueadero.habilitado ? 'btn-rechazar-sm' : 'btn-aceptar-sm'}"
+                    th:text="${parqueadero.habilitado ? 'Deshabilitar parqueadero' : 'Habilitar parqueadero'}"
+                    style="width:100%; padding:10px;"></button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Solicitudes de reserva -->
+      <section id="reservas">
+        <h3>Solicitudes de reserva</h3>
+
+        <div id="buscar" class="form-buscar" style="margin-bottom:20px;">
+          <form th:action="@{/admin/parqueadero/{id}/reservas/buscar(id=${parqueadero.id})}" method="get"
+                style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+            <input type="text" name="cedula" placeholder="Buscar por cédula del cliente..."
+                   style="max-width:320px; flex:1; margin-bottom:0;">
+            <button type="submit" class="btn-primary">Buscar</button>
+            <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn-secundario">Ver todas</a>
+          </form>
+        </div>
+
+        <p th:if="${#lists.isEmpty(reservas)}" class="no-data">No hay solicitudes de reserva.</p>
+
+        <div class="tabla-responsive" th:if="${!#lists.isEmpty(reservas)}">
+          <table class="tabla-datos">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Cédula</th>
+                <th>Placa</th>
+                <th>Espacio</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="reserva : ${reservas}">
+                <td th:text="${reserva.cliente.nombre}"></td>
+                <td th:text="${reserva.cliente.cedula}"></td>
+                <td th:text="${reserva.cliente.placa != null ? reserva.cliente.placa : '-'}"></td>
+                <td th:text="${reserva.espacioReservado != null ? '#' + reserva.espacioReservado : '-'}"></td>
+                <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                <td>
+                  <span th:class="${reserva.estado.name() == 'PENDIENTE' ? 'estado-pendiente' :
+                                   (reserva.estado.name() == 'ACEPTADA' ? 'estado-aceptada' : 'estado-rechazada')}"
+                        th:text="${reserva.estado}"></span>
+                </td>
+                <td class="acciones-inline">
+                  <!-- PENDIENTE: aceptar / rechazar -->
+                  <th:block th:if="${reserva.estado.name() == 'PENDIENTE'}">
+                    <form th:action="@{/admin/parqueadero/{id}/reserva/aceptar/{rid}(id=${parqueadero.id},rid=${reserva.id})}"
+                          method="post" style="display:inline;">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <button type="submit" class="btn-accion btn-aceptar-sm">Aceptar</button>
+                    </form>
+                    <form th:action="@{/admin/parqueadero/{id}/reserva/rechazar/{rid}(id=${parqueadero.id},rid=${reserva.id})}"
+                          method="post" style="display:inline;">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <button type="submit" class="btn-accion btn-rechazar-sm">Rechazar</button>
+                    </form>
+                  </th:block>
+                  <!-- ACEPTADA: registrar entrada -->
+                  <th:block th:if="${reserva.estado.name() == 'ACEPTADA'}">
+                    <form th:action="@{/admin/parqueadero/{id}/registros/entrada(id=${parqueadero.id})}"
+                          method="post" style="display:inline-flex; gap:4px; align-items:center; flex-wrap:wrap;">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="cedula" th:value="${reserva.cliente.cedula}"/>
+                      <input type="hidden" name="espacioReservado" th:value="${reserva.espacioReservado != null ? reserva.espacioReservado : 0}"/>
+                      <input type="text" name="placa"
+                             th:value="${reserva.cliente.placa}"
+                             placeholder="Placa"
+                             style="width:80px; margin-bottom:0;"
+                             required>
+                      <button type="submit" class="btn-accion btn-aceptar-sm">Entrada</button>
+                    </form>
+                  </th:block>
+                  <!-- Eliminar siempre disponible -->
+                  <form th:action="@{/admin/parqueadero/{id}/reserva/eliminar/{rid}(id=${parqueadero.id},rid=${reserva.id})}"
+                        method="post" style="display:inline;"
+                        onsubmit="return confirm('¿Eliminar esta reserva?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn-accion btn-eliminar-sm">Eliminar</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Comentarios -->
+      <section style="margin-top:32px;">
+        <h3>Comentarios de clientes</h3>
+        <p th:if="${#lists.isEmpty(comentarios)}" class="no-data">No hay comentarios aún.</p>
+        <div th:each="c : ${comentarios}" class="comment-card">
+          <div class="comment-meta">
+            <span class="comment-author" th:text="${c.cliente.nombre}">Cliente</span>
+            <span class="comment-date" th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+          </div>
+          <p class="comment-body" th:text="${c.texto}">Comentario</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

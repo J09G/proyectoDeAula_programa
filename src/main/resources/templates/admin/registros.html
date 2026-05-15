@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registros de Parqueo - ParkingApp</title>
+  <title th:text="'Registros - ' + ${parqueadero.nombre}">Registros - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -11,7 +11,6 @@
 <div class="app-shell">
   <div class="sb-overlay" id="sbOverlay"></div>
 
-  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
       <div class="sb-brand-icon">
@@ -22,31 +21,26 @@
 
     <nav class="sb-nav">
       <div class="sb-section">
-        <span class="sb-section-label">Reservas</span>
+        <span class="sb-section-label">Navegación</span>
       </div>
       <a th:href="@{/admin}" class="sb-link">
+        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Mis parqueaderos
+      </a>
+      <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="sb-link">
         <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
         </svg>
-        Solicitudes
-      </a>
-
-      <div class="sb-divider"></div>
-      <div class="sb-section">
-        <span class="sb-section-label">Mi parqueadero</span>
-      </div>
-      <a th:href="@{/admin}" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
-        </svg>
-        Editar información
+        Panel del parqueadero
       </a>
 
       <div class="sb-divider"></div>
       <div class="sb-section">
         <span class="sb-section-label">Registros</span>
       </div>
-      <a th:href="@{/admin/registros}" class="sb-link active">
+      <a th:href="@{/admin/parqueadero/{id}/registros(id=${parqueadero.id})}" class="sb-link active">
         <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
         </svg>
@@ -57,7 +51,7 @@
     <div class="sb-footer">
       <div class="sb-user">
         <div class="sb-avatar">A</div>
-        <span class="sb-user-name" th:text="${parqueadero != null ? parqueadero.nombre : 'Administrador'}">Administrador</span>
+        <span class="sb-user-name" th:text="${parqueadero.nombre}">Parqueadero</span>
       </div>
       <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -71,43 +65,68 @@
     </div>
   </aside>
 
-  <!-- Contenido principal -->
   <div class="main-area">
     <header class="topbar">
       <button class="sb-hamburger" id="sbHamburger" aria-label="Abrir menú">
         <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
       </button>
-      <span class="topbar-title">Registro de Parqueo</span>
+      <span class="topbar-title" th:text="'Registros - ' + ${parqueadero.nombre}">Registros</span>
       <div class="topbar-right">
-        <a th:href="@{/admin}" class="btn">← Panel principal</a>
+        <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn">← Panel</a>
       </div>
     </header>
 
     <div class="page-body">
       <div class="page-header">
         <h1>Registro de Parqueo</h1>
-        <p>Registra entradas y salidas de vehículos del parqueadero.</p>
+        <p th:text="${parqueadero.nombre} + ' · Registra entradas y salidas de vehículos.'"></p>
       </div>
 
-      <!-- Mensajes -->
       <div class="mensajes">
         <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
         <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
         <div th:if="${idFactura}" class="alert alert-success">
-          Salida registrada exitosamente.
-          <a th:href="@{'/admin/registros/factura/' + ${idFactura}}" class="btn-link-factura">Ver Factura →</a>
+          Salida registrada.
+          <a th:href="@{/admin/parqueadero/{id}/registros/factura/{rid}(id=${parqueadero.id},rid=${idFactura})}"
+             class="btn-link-factura">Ver Factura →</a>
         </div>
       </div>
 
-      <!-- Registrar Entrada -->
+      <!-- Registrar Entrada con selección de cubículo -->
       <section>
-        <div class="card" style="max-width:520px;">
-          <h3 style="margin-bottom:20px;">Registrar entrada de vehículo</h3>
-          <form th:action="@{/admin/registros/entrada}" method="post" class="form-entrada">
+        <div class="card" style="max-width:640px;">
+          <h3 style="margin-bottom:16px;">Registrar entrada de vehículo</h3>
+
+          <div class="cubiculos-legend" style="margin-bottom:8px;">
+            <span><span class="legend-dot libre"></span>Libre</span>
+            <span><span class="legend-dot ocupado"></span>Ocupado</span>
+          </div>
+          <p style="font-size:0.8rem; color:var(--gray-500); margin-bottom:10px;">
+            Haz clic en un cubículo libre para seleccionarlo.
+          </p>
+
+          <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid" style="margin-bottom:16px;">
+            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+              <div th:if="${espaciosOcupados.contains(i)}"
+                   class="cubiculo ocupado" th:text="${i}"></div>
+              <div th:unless="${espaciosOcupados.contains(i)}"
+                   class="cubiculo libre cubiculo-selectable"
+                   th:text="${i}"
+                   th:attr="data-num=${i}"
+                   onclick="seleccionarCubiculo(this)"></div>
+            </th:block>
+          </div>
+
+          <form th:action="@{/admin/parqueadero/{id}/registros/entrada(id=${parqueadero.id})}" method="post" class="form-entrada">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="espacioReservado" id="espacioSeleccionado" value="0">
             <label>Placa del vehículo</label>
             <input type="text" name="placa" placeholder="Ej: ABC-123" required
                    oninput="this.value = this.value.toUpperCase()">
-            <button type="submit" class="btn-primary">Registrar entrada</button>
+            <p id="espacioLabel" style="font-size:0.875rem; color:var(--gray-500); margin-bottom:8px;">
+              Espacio seleccionado: <strong id="espacioTexto">Ninguno</strong>
+            </p>
+            <button type="submit" class="btn-primary" id="btnEntrada" disabled>Registrar entrada</button>
           </form>
         </div>
       </section>
@@ -125,13 +144,13 @@
                  style="max-width:280px; margin-bottom:0;">
         </div>
 
-        <p th:if="${#lists.isEmpty(activos)}" class="no-data">No hay vehículos en el parqueadero en este momento.</p>
+        <p th:if="${#lists.isEmpty(activos)}" class="no-data">No hay vehículos en el parqueadero.</p>
 
         <div class="tabla-responsive" th:if="${!#lists.isEmpty(activos)}">
           <table class="tabla-datos" id="tablaActivos">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Espacio</th>
                 <th>Placa</th>
                 <th>Cliente</th>
                 <th>Con Reserva</th>
@@ -141,21 +160,20 @@
             </thead>
             <tbody>
               <tr th:each="reg : ${activos}">
-                <td th:text="${reg.id}"></td>
+                <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '-'}"></td>
                 <td><strong th:text="${reg.placa}"></strong></td>
                 <td th:text="${reg.usuario != null ? reg.usuario.nombre + ' - ' + reg.usuario.cedula : 'Cliente de paso'}"></td>
                 <td>
-                  <span th:if="${reg.reserva != null}"   class="badge-reserva">Sí</span>
+                  <span th:if="${reg.reserva != null}"    class="badge-reserva">Sí</span>
                   <span th:unless="${reg.reserva != null}" class="badge-sin-reserva">No</span>
                 </td>
                 <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
                 <td>
-                  <form th:action="@{'/admin/registros/salida/' + ${reg.id}}" method="post"
-                        style="display:inline; background:none; border:none; padding:0; margin:0;">
+                  <form th:action="@{/admin/parqueadero/{id}/registros/salida/{rid}(id=${parqueadero.id},rid=${reg.id})}"
+                        method="post" style="display:inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <button type="submit" class="btn-salida"
-                            onclick="return confirm('¿Registrar salida del vehículo?')">
-                      Registrar salida
-                    </button>
+                            onclick="return confirm('¿Registrar salida del vehículo?')">Registrar salida</button>
                   </form>
                 </td>
               </tr>
@@ -180,7 +198,7 @@
           <table class="tabla-datos" id="tablaHistorial">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Espacio</th>
                 <th>Placa</th>
                 <th>Cliente</th>
                 <th>Entrada</th>
@@ -193,7 +211,7 @@
             </thead>
             <tbody>
               <tr th:each="reg : ${historial}">
-                <td th:text="${reg.id}"></td>
+                <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '-'}"></td>
                 <td><strong th:text="${reg.placa}"></strong></td>
                 <td th:text="${reg.usuario != null ? reg.usuario.nombre : 'De paso'}"></td>
                 <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
@@ -205,12 +223,12 @@
                 </td>
                 <td th:text="${reg.valorPagado != null ? '$' + reg.valorPagado : '-'}"></td>
                 <td>
-                  <span th:if="${reg.estado.name() == 'ACTIVO'}"    class="estado-activo">Activo</span>
+                  <span th:if="${reg.estado.name() == 'ACTIVO'}"     class="estado-activo">Activo</span>
                   <span th:unless="${reg.estado.name() == 'ACTIVO'}" class="estado-finalizado">Finalizado</span>
                 </td>
                 <td>
                   <a th:if="${reg.estado.name() == 'FINALIZADO'}"
-                     th:href="@{'/admin/registros/factura/' + ${reg.id}}"
+                     th:href="@{/admin/parqueadero/{id}/registros/factura/{rid}(id=${parqueadero.id},rid=${reg.id})}"
                      class="btn-editar">Factura</a>
                   <span th:unless="${reg.estado.name() == 'FINALIZADO'}">-</span>
                 </td>
@@ -225,18 +243,28 @@
 </div>
 
 <script>
+  let espacioActual = null;
+
+  function seleccionarCubiculo(el) {
+    if (espacioActual) espacioActual.classList.remove('cubiculo-activo');
+    espacioActual = el;
+    el.classList.add('cubiculo-activo');
+    const num = el.getAttribute('data-num');
+    document.getElementById('espacioSeleccionado').value = num;
+    document.getElementById('espacioTexto').textContent = '#' + num;
+    document.getElementById('btnEntrada').disabled = false;
+  }
+
   function filtrarTabla(inputId, tablaId, columna) {
     const filtro = document.getElementById(inputId).value.toUpperCase();
     const tabla  = document.getElementById(tablaId);
     const filas  = tabla.getElementsByTagName('tr');
     for (let i = 1; i < filas.length; i++) {
       const celda = filas[i].getElementsByTagName('td')[columna];
-      if (celda) {
-        filas[i].style.display = celda.textContent.toUpperCase().includes(filtro) ? '' : 'none';
-      }
+      if (celda) filas[i].style.display = celda.textContent.toUpperCase().includes(filtro) ? '' : 'none';
     }
   }
 </script>
-  <script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/app.js}"></script>
 </body>
 </html>
