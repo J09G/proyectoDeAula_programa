@@ -6,6 +6,7 @@
   <title>Confirmar Reserva - ParkingApp</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/cliente.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
 <body>
 <div class="app-shell">
@@ -102,14 +103,40 @@
 
           <!-- Formulario de reserva -->
           <div class="form-reserva">
-            <h3>Selecciona tu fecha de llegada</h3>
+            <h3>Selecciona tu espacio y fecha</h3>
+
+            <div class="cubiculos-legend" style="margin-bottom:8px;">
+              <span><span class="legend-dot libre"></span>Libre</span>
+              <span><span class="legend-dot ocupado"></span>Ocupado</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--gray-500); margin-bottom:10px;">
+              Haz clic en un cubículo libre para seleccionarlo.
+            </p>
+
+            <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid" style="margin-bottom:16px;">
+              <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+                <div th:if="${espaciosOcupados.contains(i)}"
+                     class="cubiculo ocupado" th:text="${i}"></div>
+                <div th:unless="${espaciosOcupados.contains(i)}"
+                     class="cubiculo libre cubiculo-selectable"
+                     th:text="${i}"
+                     th:attr="data-num=${i}"
+                     onclick="seleccionarCubiculo(this)"></div>
+              </th:block>
+            </div>
+
             <form th:action="@{/reserva/crear}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <input type="hidden" name="idParqueadero" th:value="${parqueadero.id}" />
+              <input type="hidden" name="espacioReservado" id="espacioSeleccionado" value="0">
+              <p id="espacioLabel" style="font-size:0.875rem; color:var(--gray-500); margin-bottom:10px;">
+                Espacio seleccionado: <strong id="espacioTexto">Ninguno</strong>
+              </p>
               <label for="fechaReserva">Fecha y hora de llegada</label>
               <input type="datetime-local" id="fechaReserva" name="fechaReserva" required />
               <small>Selecciona cuándo planeas llegar al parqueadero.</small>
               <br>
-              <button type="submit" class="btn-primary" style="margin-top:16px; width:100%;">
+              <button type="submit" class="btn-primary" id="btnReserva" disabled style="margin-top:16px; width:100%;">
                 Confirmar Reserva
               </button>
             </form>
@@ -152,5 +179,18 @@
 
 </div>
   <script th:src="@{/js/app.js}"></script>
+  <script>
+    let espacioActual = null;
+
+    function seleccionarCubiculo(el) {
+      if (espacioActual) espacioActual.classList.remove('cubiculo-activo');
+      espacioActual = el;
+      el.classList.add('cubiculo-activo');
+      const num = el.getAttribute('data-num');
+      document.getElementById('espacioSeleccionado').value = num;
+      document.getElementById('espacioTexto').textContent = '#' + num;
+      document.getElementById('btnReserva').disabled = false;
+    }
+  </script>
 </body>
 </html>

@@ -34,10 +34,10 @@
         Correo o contraseña incorrectos.
       </div>
       <div th:if="${param.error != null and param.error[0] == 'deshabilitado'}" class="alert alert-error">
-        Tu cuenta está deshabilitada. Contacta al administrador.
+        Tu cuenta está deshabilitada. Contacta al SuperAdministrador.
       </div>
       <div th:if="${param.error != null and param.error[0] == 'parqueadero'}" class="alert alert-error">
-        Tu parqueadero está deshabilitado. Contacta al superadministrador.
+        Tu parqueadero está deshabilitado. Contacta al SuperAdministrador.
       </div>
       <div th:if="${param.error != null and param.error[0] == 'bloqueado'}" class="alert alert-error">
         Demasiados intentos fallidos. Intenta de nuevo en 30 minutos.

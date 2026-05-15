@@ -91,14 +91,6 @@
             <span th:text="${parqueadero.espaciosTotales}"></span> totales
           </p>
 
-          <!-- Grid de cubiculos -->
-          <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
-            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
-              <div th:class="${i <= (parqueadero.espaciosTotales - parqueadero.espaciosDisponibles) ? 'cubiculo ocupado' : 'cubiculo libre'}"
-                   th:text="${i}"></div>
-            </th:block>
-          </div>
-
           <p>
             <strong>Estado:</strong>
             <span th:class="${parqueadero.habilitado ? 'estado-habilitado' : 'estado-deshabilitado'}"

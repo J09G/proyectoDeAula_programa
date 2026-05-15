@@ -86,7 +86,7 @@
     <div class="page-body">
       <div class="page-header">
         <h1>Panel del Superadministrador</h1>
-        <p>Registra parqueaderos, asigna administradores y gestiona el sistema.</p>
+        <p>Registra administradores y gestiona el sistema desde aquí.</p>
       </div>
 
       <div class="mensajes">
@@ -96,55 +96,20 @@
 
       <div class="forms-grid">
 
-        <!-- Registrar Parqueadero -->
+        <!-- Registrar Administrador -->
         <div class="register-section">
-          <h3>Registrar nuevo parqueadero</h3>
-          <form th:action="@{/superadmin/registrarParqueadero}" method="post">
-            <label>Nombre del parqueadero</label>
-            <input type="text" name="nombre" placeholder="Nombre del parqueadero" required>
-            <label>Teléfono</label>
-            <input type="text" name="telefono" placeholder="Teléfono de contacto">
-            <label>Dirección</label>
-            <input type="text" name="direccion" placeholder="Dirección" required>
-            <label>Horario</label>
-            <input type="text" name="horario" placeholder="Ej: 7:00 AM - 10:00 PM" required>
-            <label>Tarifa por hora ($)</label>
-            <input type="number" name="tarifa" placeholder="Tarifa por hora" step="0.01" required>
-            <label>Espacios totales</label>
-            <input type="number" name="espacios_totales" placeholder="Espacios totales" required>
-            <label>Espacios disponibles</label>
-            <input type="number" name="espacios_disponibles" placeholder="Espacios disponibles" required>
-            <label>URL de Google Maps (opcional)</label>
-            <input type="url" name="url_maps" placeholder="https://maps.google.com/...">
-            <label>Zona</label>
-            <select name="id_zona" required>
-              <option value="">Seleccionar Zona</option>
-              <option th:each="zona : ${zonas}"
-                      th:value="${zona.id}"
-                      th:text="${zona.nombreZona}"></option>
-            </select>
-            <button type="submit" class="btn-primary">Registrar parqueadero</button>
-          </form>
-        </div>
-
-        <!-- Asignar Administrador -->
-        <div class="register-section">
-          <h3>Asignar administrador</h3>
-          <form th:action="@{/superadmin/asignarAdmin}" method="post">
-            <label>Correo del administrador</label>
-            <input type="email" name="correo" placeholder="correo@ejemplo.com" required>
-            <label>Cédula del administrador</label>
+          <h3>Registrar nuevo administrador</h3>
+          <form th:action="@{/superadmin/registrarAdministrador}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <label>Nombre completo</label>
+            <input type="text" name="nombre" placeholder="Nombre del administrador" required>
+            <label>Cédula</label>
             <input type="text" name="cedula" placeholder="Número de cédula" required>
+            <label>Correo electrónico</label>
+            <input type="email" name="correo" placeholder="correo@ejemplo.com" required>
             <label>Contraseña</label>
             <input type="password" name="contrasena" placeholder="Contraseña" required>
-            <label>Seleccionar parqueadero</label>
-            <select name="id_parqueadero" required>
-              <option value="" disabled selected>Seleccionar Parqueadero</option>
-              <option th:each="parqueadero : ${parqueaderos}"
-                      th:value="${parqueadero.id}"
-                      th:text="${parqueadero.nombre}"></option>
-            </select>
-            <button type="submit" class="btn-primary">Asignar administrador</button>
+            <button type="submit" class="btn-primary">Registrar administrador</button>
           </form>
         </div>
 
