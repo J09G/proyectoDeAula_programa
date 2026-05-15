@@ -32,69 +32,28 @@ public class SuperAdminController {
     @GetMapping("")
     public String mostrarPanelSuperadmin(Model model, HttpSession session) {
         Usuario superadmin = (Usuario) session.getAttribute("usuario");
-
         if (superadmin == null) return "redirect:/login";
         if (!superadmin.getRol().getNombre().equalsIgnoreCase("SuperAdmin")) return "redirect:/error/403";
-
-        try {
-            model.addAttribute("zonas", zonaService.obtenerZonas());
-            model.addAttribute("parqueaderos", parqueaderoService.listarParqueaderos());
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar el panel del SuperAdmin: " + e.getMessage());
-        }
-
         return "superadmin/index";
     }
 
-    @PostMapping("/registrarParqueadero")
-    public String registrarParqueadero(@RequestParam String nombre,
-                                       @RequestParam String direccion,
-                                       @RequestParam String horario,
-                                       @RequestParam double tarifa,
-                                       @RequestParam("espacios_totales") int espaciosTotales,
-                                       @RequestParam("espacios_disponibles") int espaciosDisponibles,
-                                       @RequestParam("id_zona") String idZona,
-                                       @RequestParam("url_maps") String urlMaps,
-                                       @RequestParam String telefono,
-                                       HttpSession session,
-                                       RedirectAttributes redirectAttributes) {
+    @PostMapping("/registrarAdministrador")
+    public String registrarAdministrador(@RequestParam String nombre,
+                                         @RequestParam String cedula,
+                                         @RequestParam String correo,
+                                         @RequestParam String contrasena,
+                                         RedirectAttributes redirectAttributes) {
         try {
-            Usuario superadmin = (Usuario) session.getAttribute("usuario");
-            parqueaderoService.registrarParqueadero(nombre, direccion, horario, tarifa,
-                    espaciosTotales, espaciosDisponibles, idZona, superadmin.getId(), urlMaps, telefono);
-            redirectAttributes.addFlashAttribute("mensaje", "Parqueadero registrado correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
-        }
-
-        return "redirect:/superadmin";
-    }
-
-    @PostMapping("/asignarAdmin")
-    public String asignarAdministrador(@RequestParam String correo,
-                                       @RequestParam String cedula,
-                                       @RequestParam String contrasena,
-                                       @RequestParam("id_parqueadero") String idParqueadero,
-                                       Model model) {
-        try {
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
-
-            if (parqueadero.getAdministrador() != null) {
-                model.addAttribute("error", "Este parqueadero ya tiene un administrador asignado.");
-            } else {
-                String nombreAdmin = "Administrador " + idParqueadero;
-                usuarioService.registrarUsuario(nombreAdmin, cedula, correo, contrasena, "Administrador");
-                Usuario nuevoAdmin = usuarioService.obtenerUsuarioPorCorreo(correo);
-                parqueaderoService.asignarAdministrador(idParqueadero, nuevoAdmin.getId());
-                model.addAttribute("mensaje", "Administrador asignado correctamente.");
+            if (usuarioService.existeCorreo(correo)) {
+                redirectAttributes.addFlashAttribute("error", "Ya existe un usuario con ese correo.");
+                return "redirect:/superadmin";
             }
+            usuarioService.registrarUsuario(nombre, cedula, correo, contrasena, "Administrador");
+            redirectAttributes.addFlashAttribute("mensaje", "Administrador registrado correctamente.");
         } catch (Exception e) {
-            model.addAttribute("error", "Error al asignar administrador: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al registrar administrador: " + e.getMessage());
         }
-
-        model.addAttribute("zonas", zonaService.obtenerZonas());
-        model.addAttribute("parqueaderos", parqueaderoService.listarParqueaderos());
-        return "superadmin/index";
+        return "redirect:/superadmin";
     }
 
     @GetMapping("/usuarios")

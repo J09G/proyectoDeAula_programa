@@ -1,8 +1,6 @@
 package com.proyecto.parking.security;
 
-import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Usuario;
-import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,9 +19,6 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private UsuarioService usuarioService;
 
     @Autowired
-    private ParqueaderoService parqueaderoService;
-
-    @Autowired
     private LoginAttemptService loginAttemptService;
 
     @Override
@@ -38,15 +33,6 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         String rol = usuario.getRol().getNombre().toLowerCase();
 
-        if (rol.equals("administrador")) {
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorAdministrador(usuario.getId());
-            if (parqueadero != null && !parqueadero.getHabilitado()) {
-                request.getSession().invalidate();
-                request.getSession(true);
-                response.sendRedirect("/login?error=parqueadero");
-                return;
-            }
-        }
 
         HttpSession session = request.getSession(true);
         session.setAttribute("usuario", usuario);
