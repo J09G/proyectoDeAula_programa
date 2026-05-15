@@ -23,8 +23,6 @@ public class Parqueadero {
     @DBRef(lazy = true)
     private Zona zona;
     @DBRef(lazy = true)
-    private Usuario registradoPor;
-    @DBRef(lazy = true)
     private Usuario administrador;
 
     public Parqueadero() {}
@@ -32,7 +30,7 @@ public class Parqueadero {
     public Parqueadero(String nombre, String direccion, String horario,
                        Double tarifaHora, Integer espaciosTotales, Integer espaciosDisponibles,
                        String urlMaps, String telefono, Boolean habilitado,
-                       Zona zona, Usuario registradoPor, Usuario administrador) {
+                       Zona zona, Usuario administrador) {
         this.nombre = nombre;
         this.direccion = direccion;
         this.horario = horario;
@@ -43,7 +41,6 @@ public class Parqueadero {
         this.telefono = telefono;
         this.habilitado = habilitado;
         this.zona = zona;
-        this.registradoPor = registradoPor;
         this.administrador = administrador;
     }
 
@@ -79,9 +76,6 @@ public class Parqueadero {
 
     public Zona getZona() { return zona; }
     public void setZona(Zona zona) { this.zona = zona; }
-
-    public Usuario getRegistradoPor() { return registradoPor; }
-    public void setRegistradoPor(Usuario registradoPor) { this.registradoPor = registradoPor; }
 
     public Usuario getAdministrador() { return administrador; }
     public void setAdministrador(Usuario administrador) { this.administrador = administrador; }

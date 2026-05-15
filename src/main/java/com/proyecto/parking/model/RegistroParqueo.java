@@ -13,6 +13,7 @@ public class RegistroParqueo {
     private String id;
 
     private String placa;
+    private Integer espacioReservado;
     @DBRef(lazy = true)
     private Usuario usuario;
     @DBRef(lazy = true)
@@ -55,6 +56,9 @@ public class RegistroParqueo {
 
     public Double getValorPagado() { return valorPagado; }
     public void setValorPagado(Double valorPagado) { this.valorPagado = valorPagado; }
+
+    public Integer getEspacioReservado() { return espacioReservado; }
+    public void setEspacioReservado(Integer espacioReservado) { this.espacioReservado = espacioReservado; }
 
     public EstadoRegistro getEstado() { return estado; }
     public void setEstado(EstadoRegistro estado) { this.estado = estado; }

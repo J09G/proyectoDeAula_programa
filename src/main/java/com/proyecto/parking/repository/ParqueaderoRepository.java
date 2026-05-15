@@ -12,7 +12,7 @@ public interface ParqueaderoRepository extends MongoRepository<Parqueadero, Stri
 
     List<Parqueadero> findByZona_IdAndHabilitado(String idZona, boolean habilitado);
 
-    Parqueadero findByAdministrador_Id(String idAdministrador);
+    List<Parqueadero> findByAdministrador_Id(String idAdministrador);
 
     List<Parqueadero> findByNombreContainingIgnoreCase(String nombre);
 

@@ -14,6 +14,7 @@ public class Reserva {
 
     private EstadoReserva estado;
     private LocalDateTime fechaReserva;
+    private Integer espacioReservado;
     @DBRef(lazy = true)
     private Usuario cliente;
     @DBRef(lazy = true)
@@ -45,6 +46,9 @@ public class Reserva {
 
     public Usuario getCliente() { return cliente; }
     public void setCliente(Usuario cliente) { this.cliente = cliente; }
+
+    public Integer getEspacioReservado() { return espacioReservado; }
+    public void setEspacioReservado(Integer espacioReservado) { this.espacioReservado = espacioReservado; }
 
     public Parqueadero getParqueadero() { return parqueadero; }
     public void setParqueadero(Parqueadero parqueadero) { this.parqueadero = parqueadero; }
