@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface RegistroParqueoService {
 
-    RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero);
+    RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero, int espacioReservado);
 
     RegistroParqueo registrarSalida(String idRegistro);
 

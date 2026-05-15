@@ -38,7 +38,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
     private ReservaRepository reservaRepository;
 
     @Override
-    public RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero) {
+    public RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero, int espacioReservado) {
         Parqueadero parqueadero = parqueaderoRepository.findById(idParqueadero)
                 .orElseThrow(() -> new RuntimeException("Parqueadero no encontrado."));
 
@@ -50,6 +50,7 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         registro.setParqueadero(parqueadero);
         registro.setHoraEntrada(LocalDateTime.now());
         registro.setEstado(EstadoRegistro.ACTIVO);
+        registro.setEspacioReservado(espacioReservado);
 
         boolean tieneReserva = false;
         Usuario usuario = null;

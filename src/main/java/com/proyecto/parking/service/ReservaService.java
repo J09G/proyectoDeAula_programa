@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ReservaService {
 
-    Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva);
+    Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva, int espacioReservado);
 
     List<Reserva> listarReservasCliente(String idCliente);
 

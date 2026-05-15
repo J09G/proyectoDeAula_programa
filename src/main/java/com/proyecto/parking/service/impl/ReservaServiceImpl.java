@@ -41,7 +41,7 @@ public class ReservaServiceImpl implements ReservaService {
     private RegistroParqueoRepository registroParqueoRepository;
 
     @Override
-    public Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva) {
+    public Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva, int espacioReservado) {
         Usuario cliente = usuarioService.obtenerUsuarioPorId(idCliente);
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
 
@@ -79,6 +79,7 @@ public class ReservaServiceImpl implements ReservaService {
         nueva.setParqueadero(parqueadero);
         nueva.setEstado(EstadoReserva.PENDIENTE);
         nueva.setFechaReserva(fechaReserva);
+        nueva.setEspacioReservado(espacioReservado);
 
         return reservaRepository.save(nueva);
     }

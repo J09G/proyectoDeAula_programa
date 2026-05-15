@@ -92,8 +92,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
 
         if ("Administrador".equalsIgnoreCase(usuario.getRol().getNombre())) {
-            Parqueadero parqueadero = parqueaderoRepository.findByAdministrador_Id(idUsuario);
-            if (parqueadero != null) {
+            List<Parqueadero> parqueaderos = parqueaderoRepository.findByAdministrador_Id(idUsuario);
+            for (Parqueadero parqueadero : parqueaderos) {
                 parqueadero.setHabilitado(habilitado);
                 parqueaderoRepository.save(parqueadero);
             }

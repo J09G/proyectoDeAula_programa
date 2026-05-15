@@ -7,15 +7,15 @@ public interface ParqueaderoService {
 
     Parqueadero registrarParqueadero(String nombre, String direccion, String horario,
                                      double tarifa, int espaciosTotales, int espaciosDisponibles,
-                                     String idZona, String registradoPor, String urlMaps, String telefono);
+                                     String idZona, String urlMaps, String telefono);
 
     Parqueadero actualizarParqueadero(String idParqueadero, String nombre, String direccion,
                                       String horario, double tarifa, int espaciosTotales,
                                       int espaciosDisponibles, String idZona, String urlMaps);
 
-    Parqueadero obtenerParqueaderoPorAdministrador(String idUsuario);
+    List<Parqueadero> obtenerParqueaderosPorAdministrador(String idUsuario);
 
-    void eliminarParqueaderoPorAdministrador(String idUsuario);
+    void eliminarParqueaderosPorAdministrador(String idUsuario);
 
     List<Parqueadero> obtenerParqueaderosPorZona(String idZona);
 
