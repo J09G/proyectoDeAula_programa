@@ -117,6 +117,15 @@ public class ReservaServiceImpl implements ReservaService {
             if (parqueadero.getEspaciosDisponibles() <= 0) {
                 throw new RuntimeException("No hay espacios disponibles para aceptar la reserva.");
             }
+            if (reserva.getEspacioReservado() != null) {
+                boolean espacioYaTomado = !reservaRepository.findByParqueadero_IdAndEspacioReservadoAndEstado(
+                        reserva.getParqueadero().getId(),
+                        reserva.getEspacioReservado(),
+                        EstadoReserva.ACEPTADA).isEmpty();
+                if (espacioYaTomado) {
+                    throw new RuntimeException("El espacio #" + reserva.getEspacioReservado() + " ya fue aceptado para otra reserva.");
+                }
+            }
             parqueadero.setEspaciosDisponibles(parqueadero.getEspaciosDisponibles() - 1);
             parqueaderoService.guardarParqueadero(parqueadero);
         }

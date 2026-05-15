@@ -47,8 +47,7 @@ public class ReservaController {
     private Set<Integer> calcularEspaciosOcupados(String idParqueadero) {
         Set<Integer> ocupados = new HashSet<>();
         reservaService.listarReservasParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE
-                          || r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
+                .filter(r -> r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
                 .filter(r -> r.getEspacioReservado() != null)
                 .map(Reserva::getEspacioReservado)
                 .forEach(ocupados::add);

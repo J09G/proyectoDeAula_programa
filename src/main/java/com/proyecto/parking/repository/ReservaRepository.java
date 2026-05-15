@@ -17,4 +17,6 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
     List<Reserva> findByCliente_IdAndParqueadero_Id(String idCliente, String idParqueadero);
 
     List<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);
+
+    List<Reserva> findByParqueadero_IdAndEspacioReservadoAndEstado(String idParqueadero, Integer espacioReservado, EstadoReserva estado);
 }
