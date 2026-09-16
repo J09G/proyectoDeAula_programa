@@ -6,7 +6,7 @@ services:
     build: .
     container_name: parking-backend
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb+srv://Jgomez:52134Jg2005@cluster0.br6d4qz.mongodb.net/parking?appName=Cluster0
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI}
     expose:
       - "8080"
     networks:
