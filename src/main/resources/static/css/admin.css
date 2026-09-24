@@ -1,105 +1,97 @@
-/* ── Admin dashboard ───────────────────────────────────────── */
-.btn-disabled {
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  background: var(--gray-200);
-  color: var(--gray-500);
-  font-size: 0.875rem;
-  cursor: not-allowed;
-}
-.admin-dashboard { /* no extra styles needed — page-body handles it */ }
+/* ============================================================================
+   Pantallas de administrador y superadministrador
+   Sólo lo específico: botones, tablas, distintivos, indicadores y cubículos
+   viven en style.css para que ambos paneles no se desincronicen.
+   ========================================================================== */
 
-/* Info grid (edit + spaces) */
+/* Editar información + capacidad, lado a lado. */
 .info-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 28px;
+  align-items: start;
 }
-@media (max-width: 900px) { .info-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .info-grid { grid-template-columns: 1fr; } }
 
-/* Spaces counter display */
-.spaces-display {
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 20px;
-}
-.spaces-display .spaces-num {
-  font-size: 2.5rem; font-weight: 700;
-  color: var(--brand); line-height: 1;
-}
-.spaces-display .spaces-sub {
-  color: var(--gray-500); font-size: 0.875rem; margin-top: 6px;
-}
-
-/* Comment cards */
-.comment-card {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-left: 4px solid var(--brand);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-.comment-card .comment-meta {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 8px;
-}
-.comment-card .comment-author { font-weight: 600; font-size: 0.875rem; color: var(--gray-800); }
-.comment-card .comment-date  { font-size: 0.8rem; color: var(--gray-400); }
-.comment-card .comment-body  { font-size: 0.875rem; color: var(--gray-700); }
-
-/* Cubicle grid */
-.cubiculos-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 16px;
-}
-.cubiculo {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  border: 1.5px solid;
-}
-.cubiculo.libre     { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
-.cubiculo.pendiente { background: #fef9c3; border-color: #fde047; color: #854d0e; }
-.cubiculo.ocupado   { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
-.cubiculos-legend  { display: flex; gap: 16px; font-size: 0.78rem; color: var(--gray-500); margin-bottom: 12px; }
-.cubiculos-legend span { display: flex; align-items: center; gap: 5px; }
-.legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.legend-dot.libre    { background: #6ee7b7; }
-.legend-dot.pendiente{ background: #fde047; }
-.legend-dot.ocupado  { background: #fca5a5; }
-
-/* Registros form */
-.form-entrada { max-width: 480px; }
-
-/* Parking lot list (admin index) */
+/* Lista de parqueaderos del administrador: tarjetas blancas como las de la portada. */
 .parqueaderos-admin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
 }
-.parqueadero-admin-card { display: flex; flex-direction: column; }
+.parqueadero-admin-card {
+  display: flex; flex-direction: column;
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s;
+}
+.parqueadero-admin-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.parqueadero-admin-card h3 {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 1.375rem; font-weight: 600;
+  letter-spacing: -.025em; text-transform: none;
+  color: var(--gray-900); margin-bottom: 12px;
+}
+.parqueadero-admin-card p {
+  font-size: 0.9375rem; color: var(--gray-700);
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 8px 0; margin: 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+.parqueadero-admin-card p strong {
+  color: var(--gray-500); font-weight: 600;
+  font-size: 0.8125rem;
+  min-width: 96px; flex-shrink: 0;
+}
 
-/* Badges */
-.badge-ok  { background: #d1fae5; color: #065f46; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-.badge-off { background: #fee2e2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+/* Comentarios que deja el cliente, vistos por el administrador. */
+.comment-card {
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.comment-card .comment-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.comment-card .comment-author {
+  font-family: var(--fuente-titulo);
+  font-weight: 700; font-size: 0.9375rem; color: var(--gray-900);
+}
+.comment-card .comment-date { font-size: 0.8125rem; color: var(--gray-400); margin-left: auto; }
+.comment-card .comment-body { font-size: 0.9375rem; color: var(--gray-700); line-height: 1.7; }
 
-/* Hidden utility */
-.hidden { display: none !important; }
+/* Formulario de entrada en portería. */
+.form-entrada { max-width: 420px; }
 
-/* Clickable cubicle */
-.cubiculo-selectable { cursor: pointer; transition: transform .12s; }
-.cubiculo-selectable:hover { transform: scale(1.15); }
-.cubiculo-activo { outline: 3px solid var(--brand); outline-offset: 2px; }
+/* Alta de administrador y creación de zonas: tarjetas blancas sobre la crema. */
+.forms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
+}
+.register-section {
+  max-width: 520px;
+  padding: 30px;
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.register-section h3 { margin-bottom: 22px; }
+
+/* Informe de Power BI a pantalla completa. */
+.dashboard-wrapper {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  height: calc(100vh - 300px);
+  min-height: 460px;
+  background: var(--surface);
+}
+.dashboard-wrapper iframe { width: 100%; height: 100%; border: none; display: block; }

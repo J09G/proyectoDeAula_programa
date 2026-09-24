@@ -1,83 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Página no encontrada - ParkingApp</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <style>
-    .error-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--gray-100, #F3F4F6);
-    }
-    .error-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08);
-      padding: 3rem 2.5rem;
-      max-width: 440px;
-      width: 100%;
-      text-align: center;
-    }
-    .error-icon {
-      width: 72px;
-      height: 72px;
-      background: #FEF3C7;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.5rem;
-    }
-    .error-icon svg {
-      width: 36px;
-      height: 36px;
-      fill: #D97706;
-    }
-    .error-code {
-      font-size: 4rem;
-      font-weight: 800;
-      color: var(--brand, #2F4BFF);
-      line-height: 1;
-      margin: 0 0 .5rem;
-      letter-spacing: -2px;
-    }
-    .error-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0 0 .75rem;
-    }
-    .error-message {
-      font-size: .95rem;
-      color: #6B7280;
-      line-height: 1.6;
-      margin: 0 0 2rem;
-    }
-    .error-actions {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-    }
-    .brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      margin-bottom: 2rem;
-      color: var(--brand, #2F4BFF);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-    .brand-row svg {
-      width: 28px;
-      height: 28px;
-      fill: var(--brand, #2F4BFF);
-    }
-  </style>
+  <th:block th:replace="~{fragments/layout :: cabeza('error.404.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/error.css}">
 </head>
 <body>
 <div class="error-wrap">
@@ -85,24 +10,22 @@
 
     <div class="brand-row">
       <svg viewBox="0 0 24 24"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
-      ParkingApp
+      <span th:text="#{app.nombre}">ParkingApp</span>
     </div>
 
-    <div class="error-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    <div class="error-icon error-icon-info">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
     </div>
 
     <p class="error-code">404</p>
-    <h1 class="error-title">Página no encontrada</h1>
-    <p class="error-message">
-      La página que buscas no existe o fue movida.<br>
-      Verifica la dirección o regresa al inicio.
-    </p>
+    <h1 class="error-title" th:text="#{error.404.titulo}">Página no encontrada</h1>
+    <p class="error-message" th:text="${error} ?: #{error.404.texto}">La página que buscas no existe.</p>
 
     <div class="error-actions">
-      <a th:href="@{/login}" class="btn-primary">Volver al inicio</a>
+      <a th:href="@{/}" class="btn-primary" th:text="#{error.volverInicio}">Volver al inicio</a>
     </div>
 
+    <p class="error-path" th:if="${path}" th:text="${path}"></p>
   </div>
 </div>
 </body>

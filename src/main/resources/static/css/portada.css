@@ -1,0 +1,234 @@
+/* ============================================================================
+   Portada pública
+   ----------------------------------------------------------------------------
+   Hero a pantalla completa con la foto de Cartagena bajo un velo teal, el
+   buscador flotando encima, y después bloques que alternan crema y verde agua
+   hasta la franja teal de cierre. Las tarjetas de zona y de parqueadero viven
+   en style.css porque también las usa el panel del cliente.
+   ========================================================================== */
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: min(760px, 100vh);
+  display: flex; flex-direction: column;
+  color: #FFFFFF;
+  background: #0B3F42 url('../images/Bocagrande.jpg') center 40% / cover no-repeat;
+  isolation: isolate;
+}
+/* Velo: más denso a la izquierda, donde va el texto; deja ver la ciudad a la derecha. */
+.hero::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(8,58,62,.94) 0%, rgba(10,72,76,.78) 42%, rgba(10,72,76,.30) 100%),
+    linear-gradient(0deg, rgba(8,40,44,.55) 0%, rgba(8,40,44,0) 40%);
+}
+
+.hero-nav {
+  width: 100%; max-width: var(--contenido);
+  margin: 0 auto;
+  padding: 22px 24px;
+  display: flex; align-items: center; gap: 32px;
+  border-bottom: 1px solid rgba(255,255,255,.14);
+}
+.hero-nav-links { display: flex; gap: 30px; flex: 1; justify-content: center; }
+.hero-nav-links a {
+  color: rgba(255,255,255,.88); font-weight: 600; font-size: 0.9375rem;
+  transition: color .15s;
+}
+.hero-nav-links a:hover { color: #FFFFFF; }
+.hero-nav-acciones { display: flex; align-items: center; gap: 18px; }
+.hero-entrar { color: #FFFFFF; font-weight: 600; font-size: 0.9375rem; }
+.hero-entrar:hover { color: #FFFFFF; text-decoration: underline; text-underline-offset: 4px; }
+.hero-crear { padding: 11px 20px; }
+
+/* Controles de tema e idioma en blanco sobre la foto. */
+.hero .ctrl-btn, .hero .lang-switch a { color: rgba(255,255,255,.7); }
+.hero .ctrl-btn:hover, .hero .lang-switch a:hover { background: rgba(255,255,255,.12); color: #FFFFFF; }
+.hero .lang-switch a.active { color: #FFFFFF; }
+
+.hero-cuerpo {
+  width: 100%; max-width: var(--contenido);
+  margin: 0 auto;
+  padding: 96px 24px 80px;
+  flex: 1;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.hero-etiqueta { color: #FFFFFF; margin-bottom: 26px; }
+.hero h1 {
+  color: #FFFFFF;
+  font-size: clamp(2.75rem, 7vw, 5.25rem);
+  font-weight: 600;
+  line-height: .98; letter-spacing: -.055em;
+  max-width: 11ch;
+  margin-bottom: 26px;
+}
+.hero-texto {
+  font-size: 1.1875rem; line-height: 1.6;
+  color: rgba(255,255,255,.86);
+  max-width: 34rem;
+  margin-bottom: 38px;
+}
+
+/* Buscador flotante */
+.buscador {
+  display: flex; align-items: stretch; gap: 0;
+  max-width: 980px;
+  padding: 10px;
+  background: #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.45);
+}
+.buscador-campo {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 14px;
+  margin: 0; padding: 8px 20px;
+  text-transform: none; letter-spacing: 0;
+  cursor: pointer;
+}
+.buscador-campo + .buscador-campo { border-left: 1px solid #E2E8E6; }
+.buscador-campo > svg { width: 22px; height: 22px; color: #0F5C5C; flex-shrink: 0; }
+.buscador-texto { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.buscador-label {
+  font-size: 0.6875rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: #677775; margin-bottom: 2px;
+}
+/* Los controles del buscador no llevan caja: el buscador ya es la caja. */
+.buscador select, .buscador input {
+  margin: 0; padding: 2px 28px 2px 0;
+  border: none; border-radius: 0; box-shadow: none;
+  background-color: transparent;
+  font-size: 1rem; font-weight: 700; color: #13262A;
+  color-scheme: light;
+}
+.buscador input { padding-right: 0; }
+.buscador select:focus, .buscador input:focus { box-shadow: none; }
+.buscador-boton { padding: 16px 28px; border-radius: 14px; font-size: 1rem; }
+.buscador-boton svg { width: 18px; height: 18px; }
+
+.hero-dato {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 28px;
+  font-size: 0.9375rem; color: rgba(255,255,255,.85);
+}
+.hero-dato strong { color: #FFFFFF; }
+.hero-dato-fotos { display: flex; }
+.hero-dato-fotos img {
+  width: 34px; height: 34px; border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #FFFFFF;
+}
+.hero-dato-fotos img + img { margin-left: -10px; }
+
+/* ── Bloques ───────────────────────────────────────────────────────────── */
+.bloque { padding: 104px 0; }
+.bloque-crema { background: var(--page-bg); }
+.bloque-agua  { background: var(--surface-2); }
+.bloque-inner { max-width: var(--contenido); margin: 0 auto; padding: 0 24px; }
+
+.bloque-cabecera {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.bloque h2 {
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1.05; letter-spacing: -.045em;
+  margin: 14px 0 10px;
+}
+.bloque-cabecera p, .pasos-intro p { color: var(--gray-500); font-size: 1.0625rem; }
+
+/* ── Cómo funciona ─────────────────────────────────────────────────────── */
+.pasos {
+  display: grid;
+  grid-template-columns: 1fr 1.7fr;
+  gap: 72px;
+  align-items: center;
+}
+.pasos-intro p { line-height: 1.75; max-width: 30rem; }
+.pasos-lista {
+  list-style: none;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.pasos-lista li { position: relative; }
+/* Línea que une los iconos. */
+.pasos-lista li:not(:last-child)::after {
+  content: '';
+  position: absolute; top: 26px; left: 70px; right: -14px;
+  height: 1px; background: var(--teal-border);
+}
+.paso-icono {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--teal-soft); color: var(--teal);
+  margin-bottom: 20px;
+}
+.paso-icono svg { width: 22px; height: 22px; }
+.paso-num {
+  display: block;
+  font-size: 0.6875rem; font-weight: 800; letter-spacing: .1em;
+  color: var(--coral); margin-bottom: 6px;
+}
+.pasos-lista h3 {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 1.3125rem; font-weight: 500;
+  text-transform: none; letter-spacing: -.02em;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+.pasos-lista p { font-size: 0.9375rem; color: var(--gray-500); line-height: 1.6; }
+
+/* ── Cierre ────────────────────────────────────────────────────────────── */
+.cierre { background: var(--teal-banda); color: #FFFFFF; }
+.cierre-inner {
+  max-width: var(--contenido); margin: 0 auto;
+  padding: 34px 24px;
+  display: flex; align-items: center; gap: 18px;
+}
+.cierre-icono {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(255,255,255,.12);
+  flex-shrink: 0;
+}
+.cierre-icono svg { width: 24px; height: 24px; }
+.cierre-texto { flex: 1; display: flex; flex-direction: column; }
+.cierre-texto strong { font-family: var(--fuente-titulo); font-size: 1.125rem; }
+.cierre-texto span { color: rgba(255,255,255,.75); font-size: 0.9375rem; }
+.cierre-boton {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 24px; border-radius: 12px;
+  background: #FFFFFF; color: #0F5C5C;
+  font-weight: 800;
+  transition: transform .15s;
+}
+.cierre-boton:hover { color: #0F5C5C; transform: translateY(-1px); }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .pasos { grid-template-columns: 1fr; gap: 48px; }
+}
+@media (max-width: 860px) {
+  .hero-nav-links { display: none; }
+  .hero-nav { justify-content: space-between; }
+  .hero-nav .lang-switch { display: none; }
+  .buscador { flex-direction: column; }
+  .buscador-campo { padding: 14px 12px; }
+  .buscador-campo + .buscador-campo { border-left: none; border-top: 1px solid #E2E8E6; }
+  .buscador-boton { margin-top: 6px; }
+}
+@media (max-width: 640px) {
+  .hero-nav { padding: 16px; gap: 12px; }
+  .hero-entrar { display: none; }
+  .hero-cuerpo { padding: 56px 16px 56px; }
+  .hero-texto { font-size: 1.0625rem; }
+  .bloque { padding: 72px 0; }
+  .bloque-inner { padding: 0 16px; }
+  .pasos-lista { grid-template-columns: 1fr; gap: 32px; }
+  .pasos-lista li::after { display: none; }
+  .cierre-inner { flex-direction: column; align-items: flex-start; padding: 32px 16px; }
+}

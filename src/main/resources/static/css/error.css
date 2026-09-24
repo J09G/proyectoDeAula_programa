@@ -1,0 +1,96 @@
+/* ============================================================================
+   Páginas de error
+   ----------------------------------------------------------------------------
+   Estaban como bloques <style> repetidos dentro de cada plantilla, con colores
+   fijos que no respondían al tema oscuro. Ahora es una hoja única basada en los
+   mismos tokens que el resto de la aplicación.
+   ========================================================================== */
+
+.error-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--page-bg);
+  border-top: 6px solid #0A5A62;
+}
+
+.error-card {
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 48px 40px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -.3px;
+}
+.brand-row { color: var(--gray-900); font-family: var(--fuente-titulo); }
+.brand-row svg {
+  width: 34px; height: 34px; padding: 7px;
+  border-radius: 10px; background: #0F5C5C; fill: #FFFFFF;
+}
+
+.error-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px;
+}
+.error-icon svg { width: 34px; height: 34px; }
+
+.error-icon-danger { background: var(--danger-soft); }
+.error-icon-danger svg { fill: var(--danger); }
+.error-icon-warn { background: var(--warn-soft); }
+.error-icon-warn svg { fill: var(--warn); }
+.error-icon-info { background: var(--info-soft); }
+.error-icon-info svg { fill: var(--info); }
+
+.error-code {
+  font-size: 4rem; font-weight: 800;
+  color: var(--coral);
+  font-family: var(--fuente-titulo);
+  line-height: 1; margin: 0 0 10px;
+  letter-spacing: -3px;
+  font-variant-numeric: tabular-nums;
+}
+.error-title {
+  font-size: 1.3125rem; font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -.4px;
+  margin: 0 0 12px;
+}
+.error-message {
+  font-size: 0.9375rem; color: var(--gray-500);
+  line-height: 1.65; margin: 0 0 32px;
+}
+.error-actions { display: flex; flex-direction: column; gap: 10px; }
+.error-actions .btn-primary { width: 100%; }
+
+/* Ruta que provocó el error: sólo interesa a quien desarrolla, así que va
+   discreta al pie y en monoespaciada. */
+.error-path {
+  margin-top: 24px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  word-break: break-all;
+}
+
+@media (max-width: 480px) {
+  .error-card { padding: 36px 24px; }
+  .error-code { font-size: 3.25rem; }
+}

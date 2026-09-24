@@ -1,0 +1,66 @@
+/* ============================================================================
+   Comprobante de pago en pantalla
+   Al imprimir se oculta la navegación y queda sólo el recibo.
+   ========================================================================== */
+
+.factura-wrap { max-width: 460px; }
+
+.factura-box {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 36px;
+  background: var(--surface);
+}
+
+.factura-head {
+  text-align: center;
+  padding-bottom: 24px; margin-bottom: 8px;
+  border-bottom: 1px dashed var(--gray-300);
+}
+.factura-head h2 {
+  font-family: var(--fuente-titulo);
+  font-size: 1.5rem; font-weight: 700;
+  letter-spacing: -.03em; margin-bottom: 8px;
+}
+.factura-head p { font-size: 0.875rem; color: var(--gray-500); }
+.factura-num {
+  margin-top: 14px;
+  font-size: 0.8125rem; font-weight: 600;
+  color: var(--gray-700); font-variant-numeric: tabular-nums;
+}
+
+.factura-table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.factura-table td { padding: 13px 0; border-bottom: 1px solid var(--gray-200); }
+.factura-table tr:last-child td { border-bottom: none; }
+.factura-table td:first-child {
+  color: var(--gray-400); font-weight: 500;
+  font-size: 0.8125rem; text-transform: uppercase; letter-spacing: .06em;
+}
+.factura-table td:last-child {
+  text-align: right; color: var(--gray-900); font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.factura-total {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px;
+  margin-top: 26px; padding-top: 24px;
+  border-top: 2px solid var(--teal);
+}
+.factura-total-label {
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--gray-500);
+}
+.factura-total-value {
+  font-family: var(--fuente-titulo);
+  font-size: 2rem; font-weight: 800;
+  color: var(--coral); letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .factura-wrap { max-width: 100%; }
+  .factura-box { border: none; padding: 0; }
+}

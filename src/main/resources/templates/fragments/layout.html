@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head><title>Fragmentos de estructura</title></head>
+<body>
+
+<!--
+  Estructura común de todas las pantallas.
+
+      <head>  <th:block th:replace="~{fragments/layout :: cabeza('clave.titulo')}"></th:block>
+      <body>  <nav th:replace="~{fragments/layout :: barra('inicio')}"></nav>
+              <main class="pagina"> ... </main>
+              <th:block th:replace="~{fragments/layout :: pie}"></th:block>
+
+  La barra decide qué enlaces mostrar según el rol de quien mira, con
+  sec:authorize. Antes cada plantilla llevaba su propia barra lateral copiada:
+  añadir un enlace obligaba a tocar trece archivos.
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CABECERA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<th:block th:fragment="cabeza(claveTitulo)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- La doble barra baja es el preprocesado de Thymeleaf: resuelve la variable
+       antes de buscar la clave, que es lo que permite un título dinámico. -->
+  <title th:text="#{__${claveTitulo}__} + ' · ' + #{app.nombre}">ParkingApp</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <link rel="preload" th:href="@{/fonts/manrope.woff2}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" th:href="@{/fonts/dm-sans.woff2}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- El tema se aplica ANTES de pintar. Si esto se cargara al final del body,
+       en modo oscuro habría un destello blanco en cada navegación. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('parking-tema');
+        if (t === 'dark' || t === 'light') { document.documentElement.setAttribute('data-theme', t); }
+        // Sin preferencia guardada no se toca el atributo: manda prefers-color-scheme.
+      } catch (e) { /* modo privado: se sigue con el tema del sistema */ }
+    })();
+  </script>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     NAVEGACIÓN SUPERIOR
+     ═══════════════════════════════════════════════════════════════════════ -->
+<nav th:fragment="barra(activo)" class="nav">
+  <div class="nav-inner">
+
+    <a th:href="@{/}" class="marca nav-marca">
+      <span class="marca-icono">P</span>
+      <span>Parking<span class="marca-app">App</span></span>
+    </a>
+
+    <button type="button" class="nav-toggle" id="navToggle" th:aria-label="#{nav.abrirMenu}">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+    </button>
+
+    <div class="nav-links" id="navLinks">
+
+      <!-- Cliente -->
+      <th:block sec:authorize="hasRole('CLIENTE')">
+        <a th:href="@{/cliente}" class="nav-link"
+           th:classappend="${activo == 'zonas'} ? 'active'"
+           th:text="#{nav.zonasDisponibles}">Zonas</a>
+        <a th:href="@{/cliente(scroll='reservas')}" class="nav-link"
+           th:classappend="${activo == 'reservas'} ? 'active'"
+           th:text="#{nav.misReservas}">Mis reservas</a>
+      </th:block>
+
+      <!-- Administrador -->
+      <th:block sec:authorize="hasRole('ADMINISTRADOR')">
+        <a th:href="@{/admin}" class="nav-link"
+           th:classappend="${activo == 'parqueaderos'} ? 'active'"
+           th:text="#{nav.misParqueaderos}">Mis parqueaderos</a>
+      </th:block>
+
+      <!-- Superadministrador -->
+      <th:block sec:authorize="hasRole('SUPERADMIN')">
+        <a th:href="@{/superadmin}" class="nav-link"
+           th:classappend="${activo == 'inicio'} ? 'active'"
+           th:text="#{nav.inicio}">Inicio</a>
+        <a th:href="@{/superadmin/parqueaderos}" class="nav-link"
+           th:classappend="${activo == 'parqueaderos'} ? 'active'"
+           th:text="#{nav.parqueaderos}">Parqueaderos</a>
+        <a th:href="@{/superadmin/usuarios}" class="nav-link"
+           th:classappend="${activo == 'usuarios'} ? 'active'"
+           th:text="#{nav.usuarios}">Usuarios</a>
+        <a th:href="@{/superadmin/zonas}" class="nav-link"
+           th:classappend="${activo == 'zonas'} ? 'active'"
+           th:text="#{nav.zonas}">Zonas</a>
+        <a th:href="@{/superadmin/dashboard}" class="nav-link"
+           th:classappend="${activo == 'dashboard'} ? 'active'"
+           th:text="#{nav.dashboard}">Dashboard</a>
+      </th:block>
+
+      <a sec:authorize="isAuthenticated()" th:href="@{/perfil}" class="nav-link"
+         th:classappend="${activo == 'perfil'} ? 'active'"
+         th:text="#{nav.perfil}">Mi perfil</a>
+    </div>
+
+    <div class="nav-acciones">
+      <div th:replace="~{fragments/layout :: controles}"></div>
+
+      <div sec:authorize="isAuthenticated()" class="nav-usuario">
+        <!-- Inicial del nombre a modo de avatar. -->
+        <span class="nav-avatar"
+              th:text="${#strings.substring(#authentication.principal.nombre, 0, 1)}">S</span>
+        <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;"></form>
+        <button type="button" class="nav-salir" th:title="#{nav.cerrarSesion}"
+                th:aria-label="#{nav.cerrarSesion}"
+                onclick="document.getElementById('logout-form').submit()">
+          <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CONTROLES DE TEMA E IDIOMA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div th:fragment="controles" class="ctrl-group">
+  <button type="button" class="ctrl-btn" id="btnTema"
+          th:title="#{tema.alternar}" th:aria-label="#{tema.alternar}">
+    <svg class="icon-moon" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+    </svg>
+    <svg class="icon-sun" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+    </svg>
+  </button>
+
+  <!-- El idioma se cambia con ?lang=xx sobre la URL actual, conservando los
+       parámetros que ya hubiera. app.js construye el enlace. -->
+  <div class="lang-switch" role="group" th:aria-label="#{idioma.seleccionar}">
+    <a href="#" data-lang="es" th:classappend="${#locale.language == 'es'} ? 'active'" th:text="#{idioma.es}">ES</a>
+    <a href="#" data-lang="en" th:classappend="${#locale.language == 'en'} ? 'active'" th:text="#{idioma.en}">EN</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PIE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<th:block th:fragment="pie">
+  <footer class="pie">
+    <div class="pie-inner">
+      <a th:href="@{/}" class="marca marca-clara">
+        <span class="marca-icono">P</span>
+        <span>Parking<span class="marca-app">App</span></span>
+      </a>
+      <span th:text="#{portada.footer.lema}">Moviéndote mejor por Cartagena.</span>
+      <span th:text="'© ' + ${#temporals.year(#temporals.createNow())} + ' ParkingApp'">© 2026 ParkingApp</span>
+    </div>
+  </footer>
+  <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL LATERAL DE ACCESO Y REGISTRO
+     Foto de Cartagena bajo el velo teal, como el hero de la portada.
+     'prefijo' es 'login' o 'registro': de ahí salen las claves *.side.*.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<aside th:fragment="ladoAuth(prefijo)" class="auth-lado">
+  <a th:href="@{/}" class="marca marca-clara">
+    <span class="marca-icono">P</span>
+    <span>Parking<span class="marca-app">App</span></span>
+  </a>
+
+  <div class="auth-lado-cuerpo">
+    <span class="etiqueta etiqueta-guion" th:text="#{portada.hero.etiqueta}">Parquea fácil en Cartagena</span>
+    <h2 th:text="#{__${prefijo}__.side.titulo}">Tu parqueadero, en un clic</h2>
+    <p th:text="#{__${prefijo}__.side.texto}">Reserva espacios en los mejores parqueaderos de Cartagena.</p>
+    <ul>
+      <li th:text="#{__${prefijo}__.side.f1}">Reservas en tiempo real</li>
+      <li th:text="#{__${prefijo}__.side.f2}">Múltiples zonas disponibles</li>
+      <li th:text="#{__${prefijo}__.side.f3}">Historial completo</li>
+    </ul>
+  </div>
+
+  <span class="auth-lado-pie" th:text="#{portada.footer.lema}">Moviéndote mejor por Cartagena.</span>
+</aside>
+
+<!-- Sólo el script, para las pantallas que no llevan pie (acceso y registro). -->
+<th:block th:fragment="scripts">
+  <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ICONOS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<svg th:fragment="flecha" class="flecha" fill="none" stroke="currentColor" stroke-width="2"
+     viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/>
+</svg>
+
+<svg th:fragment="estrella" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M12 2.8l2.84 5.76 6.36.92-4.6 4.49 1.09 6.33L12 17.3l-5.69 3 1.09-6.33-4.6-4.49 6.36-.92z"/>
+</svg>
+
+<svg th:fragment="pin" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.2-7-11.5a7 7 0 1114 0C19 14.8 12 21 12 21z"/>
+  <circle cx="12" cy="9.5" r="2.5"/>
+</svg>
+
+<svg th:fragment="reloj" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="12" cy="12" r="9"/>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/>
+</svg>
+
+<!-- Valoración compacta: estrella, promedio y número de reseñas. -->
+<span th:fragment="valoracion(v)" class="valoracion" th:classappend="${!v.tieneValoraciones()} ? 'sin'">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.84 5.76 6.36.92-4.6 4.49 1.09 6.33L12 17.3l-5.69 3 1.09-6.33-4.6-4.49 6.36-.92z"/></svg>
+  <th:block th:if="${v.tieneValoraciones()}">
+    <span th:text="${v.promedioFormateado()}">4,8</span>
+    <small th:text="#{valoracion.resenas(${v.total})}">(89)</small>
+  </th:block>
+  <span th:unless="${v.tieneValoraciones()}" th:text="#{valoracion.sinValoraciones}">Sin valoraciones</span>
+</span>
+
+</body>
+</html>

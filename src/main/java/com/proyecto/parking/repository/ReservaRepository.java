@@ -5,6 +5,8 @@ import com.proyecto.parking.model.Reserva.EstadoReserva;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,5 +20,12 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
 
     List<Reserva> findByCliente_IdAndParqueadero_IdAndEstado(String idCliente, String idParqueadero, EstadoReserva estado);
 
+    List<Reserva> findByCliente_IdAndEstadoIn(String idCliente, List<EstadoReserva> estados);
+
     List<Reserva> findByParqueadero_IdAndEspacioReservadoAndEstado(String idParqueadero, Integer espacioReservado, EstadoReserva estado);
+
+    List<Reserva> findByParqueadero_IdAndEstado(String idParqueadero, EstadoReserva estado);
+
+    /** Reservas aceptadas cuya hora de llegada ya pasó: candidatas a expirar. */
+    List<Reserva> findByEstadoAndFechaReservaBefore(EstadoReserva estado, LocalDateTime limite);
 }

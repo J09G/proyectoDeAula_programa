@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('perfil.titulo')}"></th:block>
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('perfil')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{perfil.titulo}">Mi perfil</h1>
+      <p th:text="#{perfil.subtitulo}">Actualiza tus datos de acceso.</p>
+    </div>
+  </div>
+
+  <div class="mensajes">
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+  </div>
+
+  <form th:action="@{/perfil}" th:object="${form}" method="post" class="two-col">
+
+    <div>
+      <h3 th:text="#{perfil.datos}">Datos personales</h3>
+
+      <label for="nombre" th:text="#{common.nombre}">Nombre</label>
+      <input type="text" id="nombre" th:field="*{nombre}" required>
+      <small class="campo-error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
+
+      <label for="correo" th:text="#{common.correo}">Correo electrónico</label>
+      <input type="email" id="correo" th:field="*{correo}" required>
+      <small class="campo-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+
+      <label th:text="#{perfil.rolAsignado}">Rol asignado</label>
+      <!-- Sólo informativo: el rol no se cambia desde aquí. -->
+      <input type="text" th:value="${principal.rol}" disabled>
+      <small th:text="#{perfil.rolNoEditable}">Sólo un superadministrador puede cambiarlo.</small>
+    </div>
+
+    <div>
+      <h3 th:text="#{perfil.cambiarPassword}">Cambiar contraseña</h3>
+      <p style="font-size:0.9375rem; color:var(--gray-500); margin-bottom:22px;"
+         th:text="#{perfil.passwordAyuda}">Déjalo en blanco si no quieres cambiarla.</p>
+
+      <label for="passwordActual" th:text="#{perfil.passwordActual}">Contraseña actual</label>
+      <input type="password" id="passwordActual" th:field="*{passwordActual}" autocomplete="current-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('passwordActualPresente')}"
+             th:errors="*{passwordActualPresente}"></small>
+
+      <label for="passwordNueva" th:text="#{perfil.passwordNueva}">Contraseña nueva</label>
+      <input type="password" id="passwordNueva" th:field="*{passwordNueva}"
+             autocomplete="new-password" minlength="8">
+      <small class="campo-error" th:if="${#fields.hasErrors('passwordNuevaValida')}"
+             th:errors="*{passwordNuevaValida}"></small>
+
+      <label for="passwordConfirmar" th:text="#{perfil.passwordConfirmar}">Repite la contraseña</label>
+      <input type="password" id="passwordConfirmar" th:field="*{passwordConfirmar}" autocomplete="new-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('passwordNuevaConfirmada')}"
+             th:errors="*{passwordNuevaConfirmada}"></small>
+
+      <button type="submit" class="btn-primary" style="margin-top:8px;"
+              th:text="#{common.guardar}">Guardar cambios</button>
+    </div>
+
+  </form>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

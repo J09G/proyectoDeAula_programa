@@ -1,47 +1,51 @@
 package com.proyecto.parking.security;
 
-import com.proyecto.parking.model.Usuario;
-import com.proyecto.parking.service.UsuarioService;
+import com.proyecto.parking.model.Rol;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/** Redirige a cada rol a su panel tras un login correcto. */
 @Component
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private static final Logger log = LoggerFactory.getLogger(LoginSuccessHandler.class);
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
+
+    public LoginSuccessHandler(LoginAttemptService loginAttemptService) {
+        this.loginAttemptService = loginAttemptService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        String ip = request.getRemoteAddr();
-        loginAttemptService.loginExitoso(ip);
+        loginAttemptService.loginExitoso(IpUtils.obtenerIp(request));
 
-        String correo = authentication.getName();
-        Usuario usuario = usuarioService.obtenerUsuarioPorCorreo(correo);
+        UsuarioPrincipal principal = (UsuarioPrincipal) authentication.getPrincipal();
+        log.info("Inicio de sesión de {} (rol {}).", principal.getCorreo(), principal.getRol());
 
-        String rol = usuario.getRol().getNombre().toLowerCase();
+        response.sendRedirect(request.getContextPath() + destinoPara(principal));
+    }
 
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute("usuario", usuario);
-
-        switch (rol) {
-            case "cliente" -> response.sendRedirect("/cliente");
-            case "administrador" -> response.sendRedirect("/admin");
-            case "superadmin" -> response.sendRedirect("/superadmin");
-            default -> response.sendRedirect("/login?error=credenciales");
+    /** Panel inicial de cada rol. */
+    public static String destinoPara(UsuarioPrincipal principal) {
+        if (principal.tieneRol(Rol.CLIENTE)) {
+            return "/cliente";
         }
+        if (principal.tieneRol(Rol.ADMINISTRADOR)) {
+            return "/admin";
+        }
+        if (principal.tieneRol(Rol.SUPERADMIN)) {
+            return "/superadmin";
+        }
+        return "/login?error=credenciales";
     }
 }

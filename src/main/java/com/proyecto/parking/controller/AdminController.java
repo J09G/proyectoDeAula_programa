@@ -1,428 +1,331 @@
 package com.proyecto.parking.controller;
 
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfPCell;
+import com.proyecto.parking.dto.EditarParqueaderoForm;
+import com.proyecto.parking.dto.EntradaForm;
+import com.proyecto.parking.dto.EspaciosForm;
+import com.proyecto.parking.dto.ParqueaderoForm;
+import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.RegistroParqueo;
-import com.proyecto.parking.model.Reserva;
-import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
+import com.proyecto.parking.service.EspacioService;
+import com.proyecto.parking.service.FacturaPdfService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.RegistroParqueoService;
 import com.proyecto.parking.service.ReservaService;
 import com.proyecto.parking.service.ZonaService;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.awt.Color;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Panel del administrador de parqueaderos.
+ *
+ * <p><strong>Propiedad de los recursos:</strong> ninguna operación confía en el
+ * id que llega por la URL. Todas pasan por
+ * {@code ParqueaderoService.obtenerParqueaderoDeAdministrador(...)} o por un
+ * método de servicio que recibe el id del administrador y comprueba lo mismo.
+ * Antes bastaba con editar el id de la ruta para gestionar el parqueadero de
+ * otro administrador: ver tarifas, aceptar reservas o descargar sus facturas.</p>
+ */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired private ComentarioService comentarioService;
-    @Autowired private ParqueaderoService parqueaderoService;
-    @Autowired private ReservaService reservaService;
-    @Autowired private RegistroParqueoService registroParqueoService;
-    @Autowired private ZonaService zonaService;
+    private static final int REGISTROS_POR_PAGINA = 10;
 
-    /* ── Lista de parqueaderos del admin ─────────────────────── */
+    private final ParqueaderoService parqueaderoService;
+    private final ReservaService reservaService;
+    private final RegistroParqueoService registroParqueoService;
+    private final ComentarioService comentarioService;
+    private final ZonaService zonaService;
+    private final EspacioService espacioService;
+    private final FacturaPdfService facturaPdfService;
+
+    public AdminController(ParqueaderoService parqueaderoService,
+                           ReservaService reservaService,
+                           RegistroParqueoService registroParqueoService,
+                           ComentarioService comentarioService,
+                           ZonaService zonaService,
+                           EspacioService espacioService,
+                           FacturaPdfService facturaPdfService) {
+        this.parqueaderoService = parqueaderoService;
+        this.reservaService = reservaService;
+        this.registroParqueoService = registroParqueoService;
+        this.comentarioService = comentarioService;
+        this.zonaService = zonaService;
+        this.espacioService = espacioService;
+        this.facturaPdfService = facturaPdfService;
+    }
+
+    // ── Listado propio ───────────────────────────────────────────────────────
 
     @GetMapping("")
-    public String listarMisParqueaderos(HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null) return "redirect:/login";
-        if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
-
-        List<Parqueadero> parqueaderos = parqueaderoService.obtenerParqueaderosPorAdministrador(admin.getId());
-        model.addAttribute("parqueaderos", parqueaderos);
+    public String listarMisParqueaderos(@AuthenticationPrincipal UsuarioPrincipal admin, Model model) {
+        model.addAttribute("parqueaderos",
+                parqueaderoService.obtenerParqueaderosPorAdministrador(admin.getId()));
         model.addAttribute("zonas", zonaService.obtenerZonas());
+        model.addAttribute("form", new ParqueaderoForm());
         return "admin/index";
     }
 
-    /* ── Registrar nuevo parqueadero ─────────────────────────── */
-
     @PostMapping("/registrarParqueadero")
-    public String registrarParqueadero(@RequestParam String nombre,
-                                       @RequestParam String direccion,
-                                       @RequestParam String horario,
-                                       @RequestParam double tarifa,
-                                       @RequestParam("espacios_totales") int espaciosTotales,
-                                       @RequestParam("espacios_disponibles") int espaciosDisponibles,
-                                       @RequestParam("id_zona") String idZona,
-                                       @RequestParam(value = "telefono", required = false) String telefono,
-                                       @RequestParam(value = "url_maps", required = false) String urlMaps,
-                                       HttpSession session,
-                                       RedirectAttributes redirectAttributes) {
+    public String registrarParqueadero(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                       @Valid @ModelAttribute("form") ParqueaderoForm form,
+                                       BindingResult errores,
+                                       RedirectAttributes flash) {
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return "redirect:/admin";
+        }
+
         try {
-            Usuario admin = (Usuario) session.getAttribute("usuario");
-            if (admin == null) return "redirect:/login";
-
-            Parqueadero parqueadero = parqueaderoService.registrarParqueadero(
-                    nombre, direccion, horario, tarifa,
-                    espaciosTotales, espaciosDisponibles,
-                    idZona, urlMaps, telefono);
-
-            parqueaderoService.asignarAdministrador(parqueadero.getId(), admin.getId());
-            parqueaderoService.cambiarEstado(parqueadero.getId(), true);
-
-            redirectAttributes.addFlashAttribute("mensaje", "Parqueadero registrado correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al registrar el parqueadero: " + e.getMessage());
+            parqueaderoService.registrarParqueadero(form, admin.getId());
+            flash.addFlashAttribute("mensaje", "Parqueadero registrado correctamente.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin";
     }
 
-    /* ── Panel de gestión de un parqueadero específico ───────── */
+    // ── Panel de un parqueadero ──────────────────────────────────────────────
 
     @GetMapping("/parqueadero/{id}")
-    public String verParqueadero(@PathVariable String id,
-                                 HttpSession session,
+    public String verParqueadero(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                 @PathVariable String id,
                                  Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null) return "redirect:/login";
-        if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
+        Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoDeAdministrador(id, admin.getId());
 
-        try {
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(id);
-
-            if (!model.containsAttribute("reservas")) {
-                model.addAttribute("reservas", reservaService.listarReservasParqueadero(id));
-            }
-
-            Set<Integer> ocupados = calcularEspaciosOcupados(id);
-            Set<Integer> pendientes = calcularEspaciosPendientes(id);
-
-            model.addAttribute("parqueadero", parqueadero);
-            model.addAttribute("comentarios", comentarioService.listarPorParqueadero(id));
-            model.addAttribute("espaciosOcupados", ocupados);
-            model.addAttribute("espaciosPendientes", pendientes);
-            model.addAttribute("zonas", zonaService.obtenerZonas());
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar el parqueadero: " + e.getMessage());
+        if (!model.containsAttribute("reservas")) {
+            model.addAttribute("reservas", reservaService.listarReservasParqueadero(id, admin.getId()));
         }
+
+        model.addAttribute("parqueadero", parqueadero);
+        model.addAttribute("comentarios", comentarioService.listarPorParqueadero(id));
+        model.addAttribute("espaciosOcupados", espacioService.calcularEspaciosOcupados(id));
+        model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(id));
+        model.addAttribute("zonas", zonaService.obtenerZonas());
         return "admin/parqueadero";
     }
 
-    /* ── Editar info del parqueadero ─────────────────────────── */
-
     @PostMapping("/parqueadero/{id}/editar")
-    public String editarParqueadero(@PathVariable String id,
-                                    @RequestParam String nombre,
-                                    @RequestParam String direccion,
-                                    @RequestParam String horario,
-                                    @RequestParam double tarifa,
-                                    @RequestParam(value = "urlMaps", required = false) String urlMaps,
-                                    RedirectAttributes redirectAttributes) {
+    public String editarParqueadero(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                    @PathVariable String id,
+                                    @Valid @ModelAttribute EditarParqueaderoForm form,
+                                    BindingResult errores,
+                                    RedirectAttributes flash) {
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return "redirect:/admin/parqueadero/" + id;
+        }
+
         try {
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(id);
-            parqueaderoService.actualizarParqueadero(id, nombre, direccion, horario, tarifa,
-                    parqueadero.getEspaciosTotales(), parqueadero.getEspaciosDisponibles(),
-                    parqueadero.getZona().getId(), urlMaps);
-            redirectAttributes.addFlashAttribute("mensaje", "Información actualizada correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
+            parqueaderoService.actualizarDatos(id, admin.getId(), form);
+            flash.addFlashAttribute("mensaje", "Información actualizada correctamente.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/parqueadero/" + id;
     }
 
-    /* ── Actualizar espacios disponibles ─────────────────────── */
-
     @PostMapping("/parqueadero/{id}/espacios")
-    public String actualizarEspacios(@PathVariable String id,
-                                     @RequestParam int espaciosTotales,
-                                     @RequestParam int espaciosDisponibles,
-                                     RedirectAttributes redirectAttributes) {
+    public String actualizarEspacios(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                     @PathVariable String id,
+                                     @Valid @ModelAttribute EspaciosForm form,
+                                     BindingResult errores,
+                                     RedirectAttributes flash) {
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return "redirect:/admin/parqueadero/" + id;
+        }
+
         try {
-            if (espaciosDisponibles > espaciosTotales) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Los espacios disponibles no pueden superar los totales.");
-                return "redirect:/admin/parqueadero/" + id;
-            }
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(id);
-            parqueaderoService.actualizarParqueadero(id, parqueadero.getNombre(), parqueadero.getDireccion(),
-                    parqueadero.getHorario(), parqueadero.getTarifaHora(),
-                    espaciosTotales, espaciosDisponibles,
-                    parqueadero.getZona().getId(), parqueadero.getUrlMaps());
-            redirectAttributes.addFlashAttribute("mensaje", "Espacios actualizados correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar espacios: " + e.getMessage());
+            parqueaderoService.actualizarCapacidad(id, admin.getId(),
+                    form.getEspaciosTotales(), form.getEspaciosDisponibles());
+            flash.addFlashAttribute("mensaje", "Espacios actualizados correctamente.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/parqueadero/" + id;
     }
 
     @PostMapping("/parqueadero/{id}/estado")
-    public String toggleEstado(@PathVariable String id,
-                               @RequestParam boolean habilitado,
-                               RedirectAttributes redirectAttributes) {
-        try {
-            parqueaderoService.cambiarEstado(id, habilitado);
-            redirectAttributes.addFlashAttribute("mensaje",
-                    habilitado ? "Parqueadero habilitado." : "Parqueadero deshabilitado.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al cambiar estado: " + e.getMessage());
-        }
+    public String cambiarEstado(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                @PathVariable String id,
+                                @RequestParam boolean habilitado,
+                                RedirectAttributes flash) {
+        parqueaderoService.cambiarEstado(id, admin.getId(), habilitado);
+        flash.addFlashAttribute("mensaje",
+                habilitado ? "Parqueadero habilitado." : "Parqueadero deshabilitado.");
         return "redirect:/admin/parqueadero/" + id;
     }
 
-    /* ── Buscar reserva por cédula ───────────────────────────── */
+    // ── Reservas ─────────────────────────────────────────────────────────────
 
     @GetMapping("/parqueadero/{id}/reservas/buscar")
-    public String buscarReservaPorCedula(@PathVariable String id,
+    public String buscarReservaPorCedula(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                         @PathVariable String id,
                                          @RequestParam String cedula,
-                                         RedirectAttributes redirectAttributes) {
-        try {
-            List<Reserva> reservas = reservaService.buscarReservasPorCedulaYParqueadero(cedula, id);
-            if (reservas.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error",
-                        "No se encontraron reservas para la cédula: " + cedula);
-            } else {
-                redirectAttributes.addFlashAttribute("reservas", reservas);
-            }
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al buscar reservas: " + e.getMessage());
+                                         RedirectAttributes flash) {
+        var reservas = reservaService.buscarReservasPorCedulaYParqueadero(cedula, id, admin.getId());
+
+        if (reservas.isEmpty()) {
+            flash.addFlashAttribute("error", "No se encontraron reservas para la cédula " + cedula + ".");
+        } else {
+            flash.addFlashAttribute("reservas", reservas);
         }
         return "redirect:/admin/parqueadero/" + id;
     }
 
-    /* ── Gestión de reservas ─────────────────────────────────── */
-
     @PostMapping("/parqueadero/{id}/reserva/aceptar/{rid}")
-    public String aceptarReserva(@PathVariable String id, @PathVariable String rid,
-                                 RedirectAttributes redirectAttributes) {
+    public String aceptarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                 @PathVariable String id,
+                                 @PathVariable String rid,
+                                 RedirectAttributes flash) {
         try {
-            reservaService.cambiarEstadoReserva(rid, "ACEPTADA");
-            redirectAttributes.addFlashAttribute("mensaje", "Reserva aceptada.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al aceptar la reserva: " + e.getMessage());
+            reservaService.aceptarReserva(rid, admin.getId());
+            flash.addFlashAttribute("mensaje", "Reserva aceptada.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/parqueadero/" + id;
     }
 
     @PostMapping("/parqueadero/{id}/reserva/rechazar/{rid}")
-    public String rechazarReserva(@PathVariable String id, @PathVariable String rid,
-                                  RedirectAttributes redirectAttributes) {
+    public String rechazarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                  @PathVariable String id,
+                                  @PathVariable String rid,
+                                  RedirectAttributes flash) {
         try {
-            reservaService.cambiarEstadoReserva(rid, "RECHAZADA");
-            redirectAttributes.addFlashAttribute("mensaje", "Reserva rechazada.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al rechazar la reserva: " + e.getMessage());
+            reservaService.rechazarReserva(rid, admin.getId());
+            flash.addFlashAttribute("mensaje", "Reserva rechazada.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/parqueadero/" + id;
     }
 
     @PostMapping("/parqueadero/{id}/reserva/eliminar/{rid}")
-    public String eliminarReserva(@PathVariable String id, @PathVariable String rid,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            reservaService.eliminarReserva(rid);
-            redirectAttributes.addFlashAttribute("mensaje", "Reserva eliminada.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar la reserva: " + e.getMessage());
-        }
+    public String eliminarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                  @PathVariable String id,
+                                  @PathVariable String rid,
+                                  RedirectAttributes flash) {
+        reservaService.eliminarReserva(rid, admin.getId());
+        flash.addFlashAttribute("mensaje", "Reserva eliminada.");
         return "redirect:/admin/parqueadero/" + id;
     }
 
-    /* ── Registros de parqueo ────────────────────────────────── */
+    // ── Registros de parqueo ─────────────────────────────────────────────────
 
     @GetMapping("/parqueadero/{id}/registros")
-    public String mostrarRegistros(@PathVariable String id,
-                                   HttpSession session, Model model) {
-        Usuario admin = (Usuario) session.getAttribute("usuario");
-        if (admin == null) return "redirect:/login";
-        if (!admin.getRol().getNombre().equalsIgnoreCase("Administrador")) return "redirect:/error/403";
+    public String mostrarRegistros(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                   @PathVariable String id,
+                                   @RequestParam(defaultValue = "0") int pagina,
+                                   Model model) {
+        Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoDeAdministrador(id, admin.getId());
 
-        try {
-            Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(id);
-            Set<Integer> ocupados = calcularEspaciosOcupados(id);
-            Set<Integer> pendientes = calcularEspaciosPendientes(id);
+        List<RegistroParqueo> activos =
+                registroParqueoService.listarActivosPorParqueadero(id, admin.getId());
 
-            model.addAttribute("parqueadero", parqueadero);
-            model.addAttribute("activos", registroParqueoService.listarActivosPorParqueadero(id));
-            model.addAttribute("historial", registroParqueoService.listarTodosPorParqueadero(id));
-            model.addAttribute("espaciosOcupados", ocupados);
-            model.addAttribute("espaciosPendientes", pendientes);
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar registros: " + e.getMessage());
-        }
+        // El historial crece sin techo: se pagina para no traer la colección
+        // entera a memoria en cada visita.
+        Page<RegistroParqueo> historial = registroParqueoService.listarHistorial(
+                id, admin.getId(),
+                PageRequest.of(Math.max(pagina, 0), REGISTROS_POR_PAGINA,
+                        Sort.by(Sort.Direction.DESC, "_id")));
+
+        model.addAttribute("parqueadero", parqueadero);
+        model.addAttribute("activos", activos);
+        model.addAttribute("historial", historial.getContent());
+        model.addAttribute("paginaActual", historial.getNumber());
+        model.addAttribute("totalPaginas", historial.getTotalPages());
+        model.addAttribute("totalElementos", historial.getTotalElements());
+        model.addAttribute("espaciosOcupados", espacioService.calcularEspaciosOcupados(id));
+        model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(id));
         return "admin/registros";
     }
 
     @PostMapping("/parqueadero/{id}/registros/entrada")
-    public String registrarEntrada(@PathVariable String id,
-                                   @RequestParam String placa,
-                                   @RequestParam int espacioReservado,
-                                   @RequestParam(value = "cedula", required = false) String cedula,
-                                   HttpSession session,
-                                   RedirectAttributes redirectAttributes) {
-        try {
-            Usuario admin = (Usuario) session.getAttribute("usuario");
-            if (admin == null) return "redirect:/login";
-            registroParqueoService.registrarEntrada(placa, cedula, id, espacioReservado);
-            redirectAttributes.addFlashAttribute("mensaje",
-                    "Entrada registrada para la placa " + placa.toUpperCase() + ", espacio #" + espacioReservado);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al registrar entrada: " + e.getMessage());
+    public String registrarEntrada(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                   @PathVariable String id,
+                                   @Valid @ModelAttribute EntradaForm form,
+                                   BindingResult errores,
+                                   RedirectAttributes flash) {
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return "redirect:/admin/parqueadero/" + id + "/registros";
         }
-        return "redirect:/admin/parqueadero/" + id;
-    }
 
-    @PostMapping("/parqueadero/{id}/registros/salida/{idRegistro}")
-    public String registrarSalida(@PathVariable String id,
-                                  @PathVariable String idRegistro,
-                                  RedirectAttributes redirectAttributes) {
         try {
-            RegistroParqueo registro = registroParqueoService.registrarSalida(idRegistro);
-            redirectAttributes.addFlashAttribute("mensaje",
-                    "Salida registrada. Valor a pagar: $" + registro.getValorPagado());
-            redirectAttributes.addFlashAttribute("idFactura", registro.getId());
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al registrar salida: " + e.getMessage());
+            registroParqueoService.registrarEntrada(id, admin.getId(), form);
+            flash.addFlashAttribute("mensaje",
+                    "Entrada registrada: placa " + form.getPlaca()
+                    + ", cubículo #" + form.getEspacioReservado() + ".");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/parqueadero/" + id + "/registros";
     }
 
-    @GetMapping("/parqueadero/{id}/registros/factura/{idRegistro}")
-    public String verFactura(@PathVariable String id,
-                             @PathVariable String idRegistro, Model model) {
+    @PostMapping("/parqueadero/{id}/registros/salida/{idRegistro}")
+    public String registrarSalida(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                  @PathVariable String id,
+                                  @PathVariable String idRegistro,
+                                  RedirectAttributes flash) {
         try {
-            model.addAttribute("registro", registroParqueoService.obtenerPorId(idRegistro));
-            model.addAttribute("idParqueadero", id);
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
+            RegistroParqueo registro = registroParqueoService.registrarSalida(idRegistro, admin.getId());
+            flash.addFlashAttribute("mensaje",
+                    "Salida registrada. Valor a pagar: $" + registro.getValorPagado());
+            flash.addFlashAttribute("idFactura", registro.getId());
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
         }
+        return "redirect:/admin/parqueadero/" + id + "/registros";
+    }
+
+    // ── Factura ──────────────────────────────────────────────────────────────
+
+    @GetMapping("/parqueadero/{id}/registros/factura/{idRegistro}")
+    public String verFactura(@AuthenticationPrincipal UsuarioPrincipal admin,
+                             @PathVariable String id,
+                             @PathVariable String idRegistro,
+                             Model model) {
+        model.addAttribute("registro", registroParqueoService.obtenerPorId(idRegistro, admin.getId()));
+        model.addAttribute("idParqueadero", id);
         return "admin/factura";
     }
 
     @GetMapping("/parqueadero/{id}/registros/factura/pdf/{idRegistro}")
-    public void descargarFacturaPdf(@PathVariable String id,
+    public void descargarFacturaPdf(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                    @PathVariable String id,
                                     @PathVariable String idRegistro,
                                     HttpServletResponse response) throws IOException {
-        RegistroParqueo reg = registroParqueoService.obtenerPorId(idRegistro);
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        // La comprobación de propiedad ocurre antes de tocar la respuesta: si
+        // falla, GlobalExceptionHandler puede devolver una página de error en vez
+        // de un PDF a medio escribir.
+        RegistroParqueo registro = registroParqueoService.obtenerPorId(idRegistro, admin.getId());
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=factura-" + idRegistro + ".pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=factura-" + idRegistro + ".pdf");
 
-        Document doc = new Document(PageSize.A5);
-        try {
-            PdfWriter.getInstance(doc, response.getOutputStream());
-            doc.open();
-
-            Font fontTitulo    = new Font(Font.HELVETICA, 18, Font.BOLD);
-            Font fontSubtitulo = new Font(Font.HELVETICA, 11, Font.NORMAL, Color.GRAY);
-            Font fontLabel     = new Font(Font.HELVETICA, 10, Font.BOLD);
-            Font fontValor     = new Font(Font.HELVETICA, 10, Font.NORMAL);
-            Font fontTotal     = new Font(Font.HELVETICA, 14, Font.BOLD);
-
-            Paragraph titulo = new Paragraph("ParkingApp", fontTitulo);
-            titulo.setAlignment(Element.ALIGN_CENTER);
-            doc.add(titulo);
-
-            Paragraph nombre = new Paragraph(reg.getParqueadero().getNombre(), fontSubtitulo);
-            nombre.setAlignment(Element.ALIGN_CENTER);
-            doc.add(nombre);
-
-            Paragraph direccion = new Paragraph(reg.getParqueadero().getDireccion(), fontSubtitulo);
-            direccion.setAlignment(Element.ALIGN_CENTER);
-            doc.add(direccion);
-
-            doc.add(new Paragraph(" "));
-
-            Paragraph facturaId = new Paragraph("Factura #" + reg.getId(), fontLabel);
-            facturaId.setAlignment(Element.ALIGN_CENTER);
-            doc.add(facturaId);
-
-            doc.add(new Paragraph(" "));
-
-            PdfPTable tabla = new PdfPTable(2);
-            tabla.setWidthPercentage(100);
-            tabla.setWidths(new float[]{40f, 60f});
-
-            agregarFilaTabla(tabla, "Placa:", reg.getPlaca(), fontLabel, fontValor);
-            agregarFilaTabla(tabla, "Espacio #:", String.valueOf(reg.getEspacioReservado()), fontLabel, fontValor);
-            agregarFilaTabla(tabla, "Cliente:",
-                    reg.getUsuario() != null ? reg.getUsuario().getNombre() : "Cliente de paso",
-                    fontLabel, fontValor);
-
-            if (reg.getUsuario() != null) {
-                agregarFilaTabla(tabla, "Cédula:", reg.getUsuario().getCedula(), fontLabel, fontValor);
-            }
-
-            agregarFilaTabla(tabla, "Con reserva:",
-                    reg.getReserva() != null ? "Sí - Reserva #" + reg.getReserva().getId() : "No",
-                    fontLabel, fontValor);
-            agregarFilaTabla(tabla, "Hora de entrada:", reg.getHoraEntrada().format(fmt), fontLabel, fontValor);
-            agregarFilaTabla(tabla, "Hora de salida:", reg.getHoraSalida().format(fmt), fontLabel, fontValor);
-
-            long horas = reg.getTiempoMinutos() / 60;
-            long mins  = reg.getTiempoMinutos() % 60;
-            agregarFilaTabla(tabla, "Tiempo:", horas + "h " + mins + "min", fontLabel, fontValor);
-            agregarFilaTabla(tabla, "Tarifa/hora:", "$" + reg.getParqueadero().getTarifaHora(), fontLabel, fontValor);
-
-            doc.add(tabla);
-            doc.add(new Paragraph(" "));
-
-            Paragraph total = new Paragraph("TOTAL A PAGAR: $" + reg.getValorPagado(), fontTotal);
-            total.setAlignment(Element.ALIGN_RIGHT);
-            doc.add(total);
-
-        } finally {
-            doc.close();
-        }
-    }
-
-    /* ── Utilidades: espacios ocupados y pendientes ─────────── */
-
-    private Set<Integer> calcularEspaciosOcupados(String idParqueadero) {
-        Set<Integer> ocupados = new HashSet<>();
-
-        reservaService.listarReservasParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
-                .filter(r -> r.getEspacioReservado() != null)
-                .map(Reserva::getEspacioReservado)
-                .forEach(ocupados::add);
-
-        registroParqueoService.listarActivosPorParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEspacioReservado() != null)
-                .map(RegistroParqueo::getEspacioReservado)
-                .forEach(ocupados::add);
-
-        return ocupados;
-    }
-
-    private Set<Integer> calcularEspaciosPendientes(String idParqueadero) {
-        Set<Integer> pendientes = new HashSet<>();
-        reservaService.listarReservasParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.PENDIENTE)
-                .filter(r -> r.getEspacioReservado() != null)
-                .map(Reserva::getEspacioReservado)
-                .forEach(pendientes::add);
-        return pendientes;
-    }
-
-    private void agregarFilaTabla(PdfPTable tabla, String label, String valor,
-                                  Font fontLabel, Font fontValor) {
-        PdfPCell celdaLabel = new PdfPCell(new Phrase(label, fontLabel));
-        celdaLabel.setBorder(Rectangle.BOTTOM);
-        celdaLabel.setPadding(6);
-        tabla.addCell(celdaLabel);
-
-        PdfPCell celdaValor = new PdfPCell(new Phrase(valor, fontValor));
-        celdaValor.setBorder(Rectangle.BOTTOM);
-        celdaValor.setPadding(6);
-        tabla.addCell(celdaValor);
+        facturaPdfService.generar(registro, response.getOutputStream());
     }
 }

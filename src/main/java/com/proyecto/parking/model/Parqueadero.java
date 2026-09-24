@@ -1,5 +1,6 @@
 package com.proyecto.parking.model;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -20,8 +21,18 @@ public class Parqueadero {
     private String urlMaps;
     private String telefono;
     private Boolean habilitado = true;
+
+    /**
+     * Foto del parqueadero que se muestra en las tarjetas del cliente.
+     * Si está vacía, la vista cae en una imagen de respaldo.
+     */
+    private String urlImagen;
+
+    @Indexed
     @DBRef(lazy = true)
     private Zona zona;
+
+    @Indexed
     @DBRef(lazy = true)
     private Usuario administrador;
 
@@ -42,6 +53,16 @@ public class Parqueadero {
         this.habilitado = habilitado;
         this.zona = zona;
         this.administrador = administrador;
+    }
+
+    /**
+     * @return {@code true} si {@code idUsuario} es el administrador de este
+     *         parqueadero. Base de todas las comprobaciones de propiedad.
+     */
+    public boolean perteneceA(String idUsuario) {
+        return administrador != null
+                && administrador.getId() != null
+                && administrador.getId().equals(idUsuario);
     }
 
     public String getId() { return id; }
@@ -70,6 +91,9 @@ public class Parqueadero {
 
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
+
+    public String getUrlImagen() { return urlImagen; }
+    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
 
     public Boolean getHabilitado() { return habilitado; }
     public void setHabilitado(Boolean habilitado) { this.habilitado = habilitado; }

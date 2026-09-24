@@ -1,5 +1,6 @@
 package com.proyecto.parking.model;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -10,7 +11,9 @@ public class Zona {
     @MongoId(FieldType.OBJECT_ID)
     private String id;
 
+    @Indexed(unique = true)
     private String nombreZona;
+
     private boolean habilitado = true;
 
     public String getId() { return id; }

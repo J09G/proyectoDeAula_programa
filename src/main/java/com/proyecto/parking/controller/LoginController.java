@@ -1,7 +1,8 @@
 package com.proyecto.parking.controller;
 
-import com.proyecto.parking.model.Usuario;
-import jakarta.servlet.http.HttpSession;
+import com.proyecto.parking.security.LoginSuccessHandler;
+import com.proyecto.parking.security.UsuarioPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -9,16 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class LoginController {
 
     @GetMapping("/login")
-    public String mostrarLogin(HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario != null) {
-            String rol = usuario.getRol().getNombre().toLowerCase();
-            return switch (rol) {
-                case "cliente" -> "redirect:/cliente";
-                case "administrador" -> "redirect:/admin";
-                case "superadmin" -> "redirect:/superadmin";
-                default -> "login";
-            };
+    public String mostrarLogin(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        // Quien ya tiene sesión no necesita ver el formulario otra vez.
+        if (principal != null) {
+            return "redirect:" + LoginSuccessHandler.destinoPara(principal);
         }
         return "login";
     }

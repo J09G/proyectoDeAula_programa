@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Navegación de páginas reutilizable.
+
+    <div th:replace="~{fragments/paginacion :: nav(url='/superadmin/usuarios', params=${filtros})}"></div>
+
+  Espera en el modelo: paginaActual (base 0), totalPaginas y, opcionalmente,
+  totalElementos. 'params' son los filtros a conservar al cambiar de página, ya
+  formateados como query string (por ejemplo "&cedula=123").
+
+  Muestra números para saltar sin pasar por todas las páginas intermedias:
+  siempre la primera y la última, y dos a cada lado de la actual, con "…" en
+  los huecos:
+
+      ← Anterior   1 … 48 49 [50] 51 52 … 200   Siguiente →
+
+  Con muchas páginas aparece además un campo "Ir a la página" (app.js).
+
+  Se muestra siempre que haya resultados, aunque quepan en una sola página: así
+  el usuario sabe cuántos registros hay en total en vez de quedarse a ciegas.
+-->
+<nav th:fragment="nav(url, params)"
+     th:if="${totalPaginas != null and totalPaginas > 0}"
+     th:with="ultima=${totalPaginas - 1},
+              desde=${paginaActual - 2 > 0 ? paginaActual - 2 : 0},
+              hasta=${paginaActual + 2 < totalPaginas - 1 ? paginaActual + 2 : totalPaginas - 1}"
+     class="paginacion"
+     th:aria-label="#{paginacion.pagina}">
+
+  <div class="paginacion-controles">
+    <a th:if="${paginaActual > 0}"
+       th:href="@{|${url}?pagina=${paginaActual - 1}${params}|}"
+       class="pag-flecha" th:title="#{paginacion.anterior}">&larr; <span th:text="#{paginacion.anterior}">Anterior</span></a>
+    <span th:unless="${paginaActual > 0}" class="pag-flecha disabled" aria-disabled="true">
+      &larr; <span th:text="#{paginacion.anterior}">Anterior</span>
+    </span>
+
+    <div class="pag-numeros">
+      <!-- Primera página y hueco inicial -->
+      <a th:if="${desde > 0}" th:href="@{|${url}?pagina=0${params}|}" class="pag-num">1</a>
+      <span th:if="${desde > 1}" class="pag-hueco" aria-hidden="true">…</span>
+
+      <!-- Ventana alrededor de la actual -->
+      <th:block th:each="n : ${#numbers.sequence(desde, hasta)}">
+        <span th:if="${n == paginaActual}" class="pag-num actual" aria-current="page" th:text="${n + 1}">50</span>
+        <a th:unless="${n == paginaActual}" th:href="@{|${url}?pagina=${n}${params}|}"
+           class="pag-num" th:text="${n + 1}">49</a>
+      </th:block>
+
+      <!-- Hueco final y última página -->
+      <span th:if="${hasta < ultima - 1}" class="pag-hueco" aria-hidden="true">…</span>
+      <a th:if="${hasta < ultima}" th:href="@{|${url}?pagina=${ultima}${params}|}"
+         class="pag-num" th:text="${totalPaginas}">200</a>
+    </div>
+
+    <a th:if="${paginaActual < ultima}"
+       th:href="@{|${url}?pagina=${paginaActual + 1}${params}|}"
+       class="pag-flecha" th:title="#{paginacion.siguiente}"><span th:text="#{paginacion.siguiente}">Siguiente</span> &rarr;</a>
+    <span th:unless="${paginaActual < ultima}" class="pag-flecha disabled" aria-disabled="true">
+      <span th:text="#{paginacion.siguiente}">Siguiente</span> &rarr;
+    </span>
+  </div>
+
+  <div class="paginacion-pie">
+    <span class="paginacion-info">
+      <span th:text="#{paginacion.pagina}">Página</span>
+      <strong th:text="${paginaActual + 1}">1</strong>
+      <span th:text="#{paginacion.de}">de</span>
+      <strong th:text="${totalPaginas}">1</strong>
+      <span th:if="${totalElementos != null}"
+            th:text="'· ' + #{paginacion.registros(${totalElementos})}"></span>
+    </span>
+
+    <!-- Salto directo. La URL la arma app.js con la base y los filtros, que
+         vienen en los data-*: así no hay que convertir 'params' en campos. -->
+    <form th:if="${totalPaginas > 7}" class="pag-ir"
+          th:attr="data-base=@{|${url}?pagina=|},data-params=${params},data-total=${totalPaginas}">
+      <label for="pagIr" th:text="#{paginacion.irA}">Ir a la página</label>
+      <input type="number" id="pagIr" min="1" th:max="${totalPaginas}"
+             th:placeholder="${paginaActual + 1}" inputmode="numeric" required>
+      <button type="submit" class="btn" th:text="#{paginacion.ir}">Ir</button>
+    </form>
+  </div>
+
+</nav>
+
+</body>
+</html>

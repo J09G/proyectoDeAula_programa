@@ -1,75 +1,59 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParkingApp - Iniciar Sesión</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/layout :: cabeza('login.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
 <body>
-<div class="auth-wrap">
 
-  <!-- Panel izquierdo -->
-  <div class="auth-side">
-    <div class="auth-side-brand">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
-      <span>ParkingApp</span>
-    </div>
-    <h2>Tu parqueadero,<br>en un clic</h2>
-    <p>Reserva espacios en los mejores parqueaderos de Cartagena de manera rápida y segura.</p>
-    <ul class="auth-features">
-      <li><span class="dot">✓</span> Reservas en tiempo real</li>
-      <li><span class="dot">✓</span> Múltiples zonas disponibles</li>
-      <li><span class="dot">✓</span> Historial completo de parqueos</li>
-    </ul>
+<div class="auth">
+
+  <aside th:replace="~{fragments/layout :: ladoAuth('login')}"></aside>
+
+  <div class="auth-columna">
+
+  <div class="auth-controles">
+    <div th:replace="~{fragments/layout :: controles}"></div>
   </div>
 
-  <!-- Panel derecho -->
-  <div class="auth-form-panel">
-    <div class="auth-form-inner">
-      <h2>Bienvenido de nuevo</h2>
-      <p class="auth-sub">Ingresa tus credenciales para continuar</p>
+  <div class="auth-caja">
 
-      <div th:if="${param.error != null and param.error[0] == 'credenciales'}" class="alert alert-error">
-        Correo o contraseña incorrectos.
-      </div>
-      <div th:if="${param.error != null and param.error[0] == 'deshabilitado'}" class="alert alert-error">
-        Tu cuenta está deshabilitada. Contacta al SuperAdministrador.
-      </div>
-      <div th:if="${param.error != null and param.error[0] == 'parqueadero'}" class="alert alert-error">
-        Tu parqueadero está deshabilitado. Contacta al SuperAdministrador.
-      </div>
-      <div th:if="${param.error != null and param.error[0] == 'bloqueado'}" class="alert alert-error">
-        Demasiados intentos fallidos. Intenta de nuevo en 30 minutos.
-      </div>
-      <div th:if="${param.logout != null}" class="alert alert-success">
-        Sesión cerrada correctamente.
-      </div>
-      <div th:if="${param.expired != null}" class="alert alert-warn">
-        Tu sesión fue cerrada porque iniciaste sesión desde otro dispositivo.
-      </div>
-      <div th:if="${param.timeout != null}" class="alert alert-warn">
-        Tu sesión expiró por inactividad. Inicia sesión nuevamente.
-      </div>
+    <h1 th:text="#{login.titulo}">Bienvenido de nuevo</h1>
+    <p class="auth-sub" th:text="#{login.subtitulo}">Ingresa tus credenciales para continuar</p>
 
-      <form th:action="@{/login}" method="post">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
+    <div th:if="${param.error != null and param.error[0] == 'credenciales'}"
+         class="alert alert-error" th:text="#{login.error.credenciales}"></div>
+    <div th:if="${param.error != null and param.error[0] == 'deshabilitado'}"
+         class="alert alert-error" th:text="#{login.error.deshabilitado}"></div>
+    <div th:if="${param.error != null and param.error[0] == 'bloqueado'}"
+         class="alert alert-error" th:text="#{login.error.bloqueado}"></div>
+    <div th:if="${param.logout != null}"  class="alert alert-success" th:text="#{login.logout}"></div>
+    <div th:if="${param.expired != null}" class="alert alert-warn"    th:text="#{login.expired}"></div>
+    <div th:if="${param.timeout != null}" class="alert alert-warn"    th:text="#{login.timeout}"></div>
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" placeholder="••••••••" required>
+    <form th:action="@{/login}" method="post">
+      <label for="email" th:text="#{login.correo}">Correo electrónico</label>
+      <input type="email" id="email" name="email" placeholder="tu@correo.com" required autocomplete="username">
 
-        <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
-          Iniciar sesión
-        </button>
-      </form>
+      <label for="password" th:text="#{login.password}">Contraseña</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
 
-      <p class="auth-form-link">
-        ¿Eres nuevo cliente? <a th:href="@{/registro/cliente}">Regístrate aquí</a>
-      </p>
-    </div>
+      <button type="submit" class="btn-primary">
+        <span th:text="#{login.entrar}">Iniciar sesión</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </button>
+    </form>
+
+    <p class="auth-pie">
+      <span th:text="#{login.nuevoCliente}">¿Eres nuevo cliente?</span>
+      <a th:href="@{/registro/cliente}" th:text="#{login.registrate}">Regístrate aquí</a>
+    </p>
+
   </div>
-
+  </div>
 </div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 </body>
 </html>

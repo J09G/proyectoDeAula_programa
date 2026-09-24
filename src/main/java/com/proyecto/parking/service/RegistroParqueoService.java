@@ -1,17 +1,21 @@
 package com.proyecto.parking.service;
 
+import com.proyecto.parking.dto.EntradaForm;
 import com.proyecto.parking.model.RegistroParqueo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface RegistroParqueoService {
 
-    RegistroParqueo registrarEntrada(String placa, String cedula, String idParqueadero, int espacioReservado);
+    RegistroParqueo registrarEntrada(String idParqueadero, String idAdministrador, EntradaForm form);
 
-    RegistroParqueo registrarSalida(String idRegistro);
+    RegistroParqueo registrarSalida(String idRegistro, String idAdministrador);
 
-    List<RegistroParqueo> listarActivosPorParqueadero(String idParqueadero);
+    List<RegistroParqueo> listarActivosPorParqueadero(String idParqueadero, String idAdministrador);
 
-    List<RegistroParqueo> listarTodosPorParqueadero(String idParqueadero);
+    Page<RegistroParqueo> listarHistorial(String idParqueadero, String idAdministrador, Pageable pageable);
 
-    RegistroParqueo obtenerPorId(String idRegistro);
+    RegistroParqueo obtenerPorId(String idRegistro, String idAdministrador);
 }

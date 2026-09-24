@@ -1,138 +1,189 @@
-/* ── Zone cards grid ───────────────────────────────────────── */
-.zonas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin-bottom: 8px;
-}
-.zona-card {
-  display: block;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  text-decoration: none;
-  border: 1px solid var(--gray-200);
-  transition: transform .18s, box-shadow .18s;
-  position: relative;
-  height: 180px;
-  background: var(--gray-200) center/cover no-repeat;
-}
-.zona-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
-.zona-card-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.18) 55%, transparent 100%);
-  display: flex; align-items: flex-end;
-  padding: 16px;
-}
-.zona-nombre {
-  color: #fff; font-weight: 700; font-size: 1rem;
-  text-shadow: 0 1px 4px rgba(0,0,0,.4);
-}
+/* ============================================================================
+   Pantallas del cliente
+   ----------------------------------------------------------------------------
+   Continúan la portada: las zonas y los parqueaderos usan las mismas tarjetas
+   (definidas en style.css) y la cabecera de una zona o de un parqueadero lleva
+   su foto bajo el velo teal, como el hero.
+   ========================================================================== */
 
-/* ── Parking lot cards ─────────────────────────────────────── */
-.parqueaderos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+/* ── Cabecera con foto ─────────────────────────────────────────────────── */
+/* La foto llega por la variable --foto desde la plantilla. La sombra con la
+   que style.css alarga la banda a los lados no admite imagen, así que aquí la
+   banda se pinta con un pseudo-elemento a sangre que lleva velo y foto. */
+.cabecera-foto {
+  padding: 88px 0 56px;
+  background: none;
+  box-shadow: none;
+  clip-path: none;
+  isolation: isolate;
 }
-.parqueadero-card {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+.cabecera-foto::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  left: 50%; width: 100vw; transform: translateX(-50%);
+  z-index: -1;
+  background-color: #0B3F42;
+  background-image:
+    linear-gradient(90deg, rgba(8,58,62,.95) 0%, rgba(10,72,76,.82) 45%, rgba(10,72,76,.45) 100%),
+    var(--foto, none);
+  background-size: cover;
+  background-position: center;
 }
-.parqueadero-card h4 {
-  font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 4px;
-}
-.parqueadero-card p { font-size: 0.875rem; color: var(--gray-600); }
-.parqueadero-card p strong { color: var(--gray-800); }
-.parqueadero-card .acciones { margin-top: 12px; }
-
-/* Cubicle grid (client view) */
-.cubiculos-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin: 6px 0 4px;
-}
-.cubiculo {
-  width: 28px;
-  height: 28px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6rem;
-  font-weight: 700;
-  border: 1.5px solid;
-}
-.cubiculo.libre    { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
-.cubiculo.ocupado  { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
-
-/* ── Reservation detail page ───────────────────────────────── */
-.reserva-detalle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-@media (max-width: 800px) { .reserva-detalle { grid-template-columns: 1fr; } }
-
-.parqueadero-info {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
-.parqueadero-info h3 { margin-bottom: 16px; }
-.parqueadero-info p { font-size: 0.875rem; color: var(--gray-600); margin-bottom: 10px; }
-.parqueadero-info p strong { color: var(--gray-800); }
-
-.form-reserva {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
-.form-reserva h3 { margin-bottom: 16px; }
-
-/* ── Comments section ──────────────────────────────────────── */
-.comentarios-section {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
-.comentario-item {
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-left: 4px solid var(--brand);
-  border-radius: var(--radius-lg);
-  padding: 14px 18px;
+/* 100vw incluye la barra de desplazamiento: sin esto aparece scroll lateral. */
+body { overflow-x: clip; }
+.cabecera-zona {
+  display: inline-block;
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .16em;
+  color: #6FD3C6;
   margin-bottom: 12px;
 }
-.comentario-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.comentario-autor { font-weight: 700; font-size: 0.875rem; color: var(--gray-800); }
-.comentario-fecha { font-size: 0.8rem; color: var(--gray-400); }
-.comentario-texto { font-size: 0.875rem; color: var(--gray-700); }
+/* Con la etiqueta de zona encima, el guion coral sobra. */
+.cabecera-zona + h1::before { display: none; }
+.cabecera-meta {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.cabecera-meta .valoracion { color: #FFFFFF; }
+.cabecera-meta .valoracion small,
+.cabecera-meta .valoracion.sin { color: rgba(255,255,255,.7); }
 
-/* ── Reservas table (client) ───────────────────────────────── */
-.tabla-reservas {
-  width: 100%; border-collapse: collapse; font-size: 0.875rem;
+/* Dato grande a la derecha de la banda del panel. */
+.cabecera-dato { text-align: right; color: rgba(255,255,255,.75); }
+.cabecera-dato strong {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 3.25rem; font-weight: 700; line-height: 1;
+  letter-spacing: -.04em; color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
 }
-.tabla-reservas thead { background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
-.tabla-reservas th {
-  padding: 11px 16px; text-align: left;
-  font-size: 0.7rem; font-weight: 700; color: var(--gray-500);
-  text-transform: uppercase; letter-spacing: .06em;
+.cabecera-dato span {
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
 }
-.tabla-reservas td { padding: 13px 16px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); }
-.tabla-reservas tbody tr:last-child td { border-bottom: none; }
-.tabla-reservas tbody tr:hover { background: var(--gray-50); }
-.link-maps { color: var(--brand); font-weight: 500; }
+
+/* ── Cabecera de sección: etiqueta + título grande ─────────────────────── */
+.seccion-cabecera { margin-bottom: 28px; }
+.seccion-cabecera h2 {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 500; letter-spacing: -.04em; line-height: 1.1;
+  margin: 10px 0 6px;
+}
+.seccion-cabecera p { color: var(--gray-500); }
+.seccion-cabecera.fila {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.celda-fuerte { color: var(--gray-900); font-weight: 700; }
+
+@media (max-width: 720px) {
+  .cabecera-foto { padding: 56px 0 40px; }
+  .cabecera-dato { text-align: left; }
+  .cabecera-dato strong { font-size: 2.5rem; }
+}
+
+/* ── Detalle de reserva ────────────────────────────────────────────────── */
+.reserva-detalle {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 1.6fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 72px;
+}
+@media (max-width: 900px) { .reserva-detalle { grid-template-columns: 1fr; } }
+
+.ficha { position: sticky; top: calc(var(--nav-h) + 24px); }
+@media (max-width: 900px) { .ficha { position: static; } }
+
+.ficha-precio {
+  display: flex; flex-direction: column; line-height: 1.2;
+  padding-bottom: 20px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.ficha-precio > small { font-size: 0.8125rem; color: var(--gray-500); margin-bottom: 6px; }
+.ficha-precio strong {
+  font-family: var(--fuente-titulo);
+  font-size: 2.25rem; font-weight: 800; letter-spacing: -.03em;
+  color: var(--gray-900);
+}
+.ficha-precio span small { color: var(--gray-500); font-size: 0.9375rem; }
+
+.ficha-datos { margin-bottom: 20px; }
+.ficha-datos > div {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.9375rem;
+}
+.ficha-datos dt {
+  color: var(--gray-500); font-size: 0.8125rem; font-weight: 600;
+}
+.ficha-datos dd { color: var(--gray-900); font-weight: 600; text-align: right; }
+
+.reserva-form { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--gray-200); }
+.espacio-elegido {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; margin-bottom: 22px;
+  background: var(--surface-2); border-radius: var(--radius);
+  font-size: 0.9375rem; color: var(--gray-600);
+}
+.espacio-elegido strong {
+  font-family: var(--fuente-titulo);
+  font-size: 1.25rem; color: var(--coral);
+}
+.btn-ancho { width: 100%; margin-top: 24px; padding: 15px 24px; font-size: 1rem; }
+
+/* ── Comentarios ───────────────────────────────────────────────────────── */
+.nota-grande { display: flex; align-items: baseline; gap: 10px; }
+.nota-grande small { font-family: var(--fuente-texto); font-size: 1rem; color: var(--gray-500); letter-spacing: 0; font-weight: 500; }
+
+.comentarios-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 1.6fr;
+  gap: 28px;
+  align-items: start;
+}
+@media (max-width: 900px) { .comentarios-grid { grid-template-columns: 1fr; } }
+
+.label-falso {
+  display: block;
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--gray-500); margin-bottom: 8px;
+}
+
+.comentarios-lista {
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 28px;
+}
+.comentarios-lista .mensaje-vacio { border: none; background: none; }
+.comentario-item {
+  display: flex; gap: 16px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+.comentario-item:last-child { border-bottom: none; }
+.comentario-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--teal-soft); color: var(--teal-text);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fuente-titulo); font-weight: 800;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.comentario-cuerpo { flex: 1; min-width: 0; }
+.comentario-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.comentario-autor {
+  font-family: var(--fuente-titulo);
+  font-weight: 700; font-size: 0.9375rem; color: var(--gray-900);
+}
+.comentario-estrellas { display: inline-flex; gap: 1px; }
+.comentario-estrellas svg { width: 14px; height: 14px; fill: var(--estrella); }
+.comentario-estrellas svg.apagada { fill: var(--gray-300); }
+.comentario-fecha { font-size: 0.8125rem; color: var(--gray-400); margin-left: auto; }
+.comentario-texto { font-size: 0.9375rem; color: var(--gray-700); line-height: 1.7; }
+
+.link-maps { color: var(--accent); font-weight: 700; }
 .link-maps:hover { text-decoration: underline; }

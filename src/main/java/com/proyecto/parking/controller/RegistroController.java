@@ -1,43 +1,54 @@
 package com.proyecto.parking.controller;
 
+import com.proyecto.parking.dto.RegistroClienteForm;
+import com.proyecto.parking.exception.ReglaNegocioException;
+import com.proyecto.parking.model.Rol;
 import com.proyecto.parking.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class RegistroController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
+
+    public RegistroController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping("/registro/cliente")
-    public String mostrarFormulario() {
+    public String mostrarFormulario(Model model) {
+        model.addAttribute("form", new RegistroClienteForm());
         return "registro_cliente";
     }
 
     @PostMapping("/registro/cliente")
-    public String registrarCliente(@RequestParam String nombre,
-                                   @RequestParam String cedula,
-                                   @RequestParam("email") String correo,
-                                   @RequestParam("password") String contrasena,
-                                   @RequestParam(required = false) String placa,
-                                   Model model) {
-        try {
-            if (usuarioService.existeCorreo(correo)) {
-                model.addAttribute("error", "El correo ya está registrado. Intente con otro.");
-                return "registro_cliente";
-            }
-
-            usuarioService.registrarUsuario(nombre, cedula, correo, contrasena, placa, "Cliente");
-
-            model.addAttribute("mensaje", "Registro exitoso. ¡Ya puedes iniciar sesión!");
-            return "login";
-
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al registrar usuario: " + e.getMessage());
+    public String registrarCliente(@Valid @ModelAttribute("form") RegistroClienteForm form,
+                                   BindingResult errores,
+                                   Model model,
+                                   RedirectAttributes flash) {
+        // Bean Validation cubre formato, longitud y que las contraseñas coincidan.
+        if (errores.hasErrors()) {
             return "registro_cliente";
         }
+
+        try {
+            usuarioService.registrarUsuario(
+                    form.getNombre(), form.getCedula(), form.getEmail(),
+                    form.getPassword(), form.getPlaca(), Rol.CLIENTE);
+
+        } catch (ReglaNegocioException e) {
+            model.addAttribute("error", e.getMessage());
+            return "registro_cliente";
+        }
+
+        flash.addFlashAttribute("mensaje", "Registro exitoso. Ya puedes iniciar sesión.");
+        return "redirect:/login";
     }
 }

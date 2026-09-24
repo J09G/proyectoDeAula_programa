@@ -1,5 +1,6 @@
 package com.proyecto.parking.model;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -12,12 +13,23 @@ public class Usuario {
     private String id;
 
     private String nombre;
+
+    /** Identificador de login. La unicidad la garantiza el índice, no una comprobación en Java. */
+    @Indexed(unique = true)
     private String correo;
+
     private String contrasena;
+
+    @Indexed(unique = true)
     private String cedula;
+
     @DBRef(lazy = true)
     private Rol rol;
+
+    /** Opcional: no todos los usuarios tienen vehículo, de ahí el índice disperso. */
+    @Indexed(unique = true, sparse = true)
     private String placa;
+
     private boolean habilitado = true;
 
     public String getId() { return id; }

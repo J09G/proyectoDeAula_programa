@@ -1,72 +1,71 @@
 package com.proyecto.parking.controller;
 
-import com.proyecto.parking.model.Zona;
-import com.proyecto.parking.model.Reserva;
-import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.dto.ComentarioForm;
+import com.proyecto.parking.exception.ReglaNegocioException;
+import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
-import com.proyecto.parking.service.ZonaService;
+import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.ReservaService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.proyecto.parking.service.ZonaService;
+import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
 
 @Controller
 public class ClienteController {
 
-    @Autowired
-    private ZonaService zonaService;
+    private final ZonaService zonaService;
+    private final ReservaService reservaService;
+    private final ComentarioService comentarioService;
+    private final PortadaService portadaService;
 
-    @Autowired
-    private ReservaService reservaService;
-
-    @Autowired
-    private ComentarioService comentarioService;
+    public ClienteController(ZonaService zonaService,
+                             ReservaService reservaService,
+                             ComentarioService comentarioService,
+                             PortadaService portadaService) {
+        this.zonaService = zonaService;
+        this.reservaService = reservaService;
+        this.comentarioService = comentarioService;
+        this.portadaService = portadaService;
+    }
 
     @GetMapping("/cliente")
-    public String mostrarPanelCliente(Model model, HttpSession session) {
-        Usuario cliente = (Usuario) session.getAttribute("usuario");
-
-        if (cliente == null) return "redirect:/login";
-        if (!cliente.getRol().getNombre().equalsIgnoreCase("Cliente")) return "redirect:/error/403";
-
-        List<Zona> zonas = zonaService.obtenerZonasHabilitadas();
-        List<Reserva> reservas = reservaService.listarReservasCliente(cliente.getId());
-
-        model.addAttribute("zonas", zonas);
-        model.addAttribute("reservas", reservas);
+    public String mostrarPanel(@AuthenticationPrincipal UsuarioPrincipal cliente, Model model) {
+        // El rol ya lo exige SecurityConfig; aquí no hace falta repetir la comprobación.
+        model.addAttribute("zonas", portadaService.zonasConConteo());
+        model.addAttribute("reservas", reservaService.listarReservasCliente(cliente.getId()));
         model.addAttribute("usuario", cliente);
-
         return "cliente/index";
     }
 
     @PostMapping("/comentario/crear")
-    public String crearComentario(@RequestParam("idParqueadero") String idParqueadero,
-                                  @RequestParam("texto") String texto,
-                                  HttpSession session,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            Usuario cliente = (Usuario) session.getAttribute("usuario");
-            if (cliente == null) return "redirect:/login";
+    public String crearComentario(@AuthenticationPrincipal UsuarioPrincipal cliente,
+                                  @Valid @ModelAttribute ComentarioForm form,
+                                  BindingResult errores,
+                                  RedirectAttributes flash) {
 
-            if (texto == null || texto.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede estar vacío.");
-                return "redirect:/reserva/" + idParqueadero;
-            }
+        String destino = "redirect:/reserva/" + form.getIdParqueadero();
 
-            comentarioService.crearComentario(cliente.getId(), idParqueadero, texto);
-            redirectAttributes.addFlashAttribute("mensajeComentario", "Comentario publicado correctamente.");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorComentario", "Error al publicar el comentario: " + e.getMessage());
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("errorComentario", Errores.resumen(errores));
+            return destino;
         }
 
-        return "redirect:/reserva/" + idParqueadero;
+        try {
+            comentarioService.crearComentario(cliente.getId(), form.getIdParqueadero(),
+                    form.getTexto(), form.getPuntuacion());
+            flash.addFlashAttribute("mensajeComentario", "Comentario publicado correctamente.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("errorComentario", e.getMessage());
+        }
+
+        return destino;
     }
+
 }

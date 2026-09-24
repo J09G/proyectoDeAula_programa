@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('error.500.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/error.css}">
+</head>
+<body>
+<div class="error-wrap">
+  <div class="error-card">
+
+    <div class="brand-row">
+      <svg viewBox="0 0 24 24"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
+      <span th:text="#{app.nombre}">ParkingApp</span>
+    </div>
+
+    <div class="error-icon error-icon-warn">
+      <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+    </div>
+
+    <h1 class="error-title" style="margin-top:8px;" th:text="#{error.500.titulo}">Error del servidor</h1>
+    <!--
+      Si el error viene de una regla de negocio, el mensaje es apto para el
+      usuario y se muestra. Cualquier otro error llega aquí ya convertido en un
+      texto genérico por GlobalExceptionHandler: nunca se filtra la excepción.
+    -->
+    <p class="error-message" th:text="${error} ?: #{error.500.texto}">Ocurrió un error inesperado.</p>
+
+    <div class="error-actions">
+      <a th:href="@{/}" class="btn-primary" th:text="#{error.volverInicio}">Volver al inicio</a>
+    </div>
+
+    <p class="error-path" th:if="${path}" th:text="${path}"></p>
+  </div>
+</div>
+</body>
+</html>

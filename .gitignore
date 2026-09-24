@@ -34,3 +34,20 @@ build/
 
 ### SSL certs (never commit private keys) ###
 certs/
+
+### Secretos y configuración local (NUNCA versionar) ###
+.env
+.env.local
+*.env
+!.env.example
+src/main/resources/application-local.yml
+src/main/resources/application-local.properties
+src/main/resources/application.properties
+
+### Claves y certificados ###
+*.pem
+*.key
+*.p12.local
+
+### Script de arranque local (contiene valores personales) ###
+run-local.ps1

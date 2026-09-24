@@ -1,68 +1,79 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParkingApp - Registro</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/layout :: cabeza('registro.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
 <body>
-<div class="auth-wrap">
 
-  <!-- Panel izquierdo -->
-  <div class="auth-side">
-    <div class="auth-side-brand">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
-      <span>ParkingApp</span>
-    </div>
-    <h2>Únete a<br>ParkingApp</h2>
-    <p>Crea tu cuenta y comienza a reservar espacios de parqueo en las mejores zonas de Cartagena.</p>
-    <ul class="auth-features">
-      <li><span class="dot">✓</span> Registro gratuito</li>
-      <li><span class="dot">✓</span> Reserva en segundos</li>
-      <li><span class="dot">✓</span> Soporte 24/7</li>
-    </ul>
+<div class="auth">
+
+  <aside th:replace="~{fragments/layout :: ladoAuth('registro')}"></aside>
+
+  <div class="auth-columna">
+
+  <div class="auth-controles">
+    <div th:replace="~{fragments/layout :: controles}"></div>
   </div>
 
-  <!-- Panel derecho -->
-  <div class="auth-form-panel">
-    <div class="auth-form-inner">
-      <h2>Crear cuenta</h2>
-      <p class="auth-sub">Completa tus datos para registrarte</p>
+  <div class="auth-caja">
 
-      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-      <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <h1 th:text="#{registro.titulo}">Crear cuenta</h1>
+    <p class="auth-sub" th:text="#{registro.subtitulo}">Completa tus datos para registrarte</p>
 
-      <form th:action="@{/registro/cliente}" method="post">
-        <label>Nombre completo</label>
-        <input type="text" name="nombre" placeholder="Juan Pérez" required>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-        <label>Cédula</label>
-        <input type="text" name="cedula" placeholder="123456789" required>
+    <!-- Los atributos HTML (required, minlength) son sólo una ayuda al usuario.
+         La validación que cuenta es la del servidor: RegistroClienteForm. -->
+    <form th:action="@{/registro/cliente}" th:object="${form}" method="post">
+      <label for="nombre" th:text="#{registro.nombreCompleto}">Nombre completo</label>
+      <input type="text" id="nombre" th:field="*{nombre}" placeholder="Juan Pérez" required>
+      <small class="campo-error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
 
-        <label>Placa del vehículo</label>
-        <input type="text" name="placa" placeholder="ABC-123" required>
+      <div class="form-row form-row-auth">
+        <div class="form-group">
+          <label for="cedula" th:text="#{common.cedula}">Cédula</label>
+          <input type="text" id="cedula" th:field="*{cedula}" placeholder="123456789" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label for="placa" th:text="#{registro.placaVehiculo}">Placa</label>
+          <input type="text" id="placa" th:field="*{placa}" placeholder="ABC123" required
+                 oninput="this.value = this.value.toUpperCase()">
+        </div>
+      </div>
+      <small class="campo-error" th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}"></small>
+      <small class="campo-error" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}"></small>
 
-        <label>Correo electrónico</label>
-        <input type="email" name="email" placeholder="tu@correo.com" required>
+      <label for="email" th:text="#{common.correo}">Correo electrónico</label>
+      <input type="email" id="email" th:field="*{email}" placeholder="tu@correo.com" required>
+      <small class="campo-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
 
-        <label>Contraseña</label>
-        <input type="password" name="password" placeholder="Mínimo 6 caracteres" required>
+      <label for="password" th:text="#{registro.password}">Contraseña</label>
+      <input type="password" id="password" th:field="*{password}"
+             th:placeholder="#{registro.passwordHint}" minlength="8" required autocomplete="new-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
 
-        <label>Confirmar contraseña</label>
-        <input type="password" name="confirmPassword" placeholder="Repite tu contraseña" required>
+      <label for="confirmPassword" th:text="#{registro.confirmPassword}">Confirmar contraseña</label>
+      <input type="password" id="confirmPassword" th:field="*{confirmPassword}"
+             th:placeholder="#{registro.confirmPasswordHint}" required autocomplete="new-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></small>
+      <small class="campo-error" th:if="${#fields.hasErrors('passwordsCoinciden')}" th:errors="*{passwordsCoinciden}"></small>
 
-        <button type="submit" class="btn-primary" style="width:100%; margin-top:4px;">
-          Crear cuenta
-        </button>
-      </form>
+      <button type="submit" class="btn-primary">
+        <span th:text="#{registro.crearCuenta}">Crear cuenta</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </button>
+    </form>
 
-      <p class="auth-form-link">
-        ¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión aquí</a>
-      </p>
-    </div>
+    <p class="auth-pie">
+      <span th:text="#{registro.yaTienesCuenta}">¿Ya tienes cuenta?</span>
+      <a th:href="@{/login}" th:text="#{registro.iniciaSesion}">Inicia sesión aquí</a>
+    </p>
+
   </div>
-
+  </div>
 </div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 </body>
 </html>

@@ -1,0 +1,146 @@
+# ============================================================================
+#  ParkingApp - configuración base
+# ----------------------------------------------------------------------------
+#  NINGÚN secreto vive en este archivo. Todos los valores sensibles se leen de
+#  variables de entorno; ver .env.example en la raíz del proyecto.
+#
+#  Perfiles:
+#    dev  -> desarrollo local  (mvn spring-boot:run -Dspring-boot.run.profiles=dev)
+#    prod -> despliegue        (SPRING_PROFILES_ACTIVE=prod)
+# ============================================================================
+
+spring:
+  application:
+    name: parking
+
+  profiles:
+    default: dev
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/parking}
+      auto-index-creation: true
+
+  thymeleaf:
+    cache: true
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+
+  # Textos de la interfaz. `fallback-to-system-locale: false` evita que, con un
+  # idioma no traducido, Spring use el del servidor: se cae al español, que es
+  # el messages.properties sin sufijo.
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+  devtools:
+    restart:
+      enabled: false
+
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 8
+        queue-capacity: 100
+      thread-name-prefix: parking-async-
+
+server:
+  port: ${PORT:8081}
+
+  # TLS del backend. Detrás de un proxy que ya termina TLS puedes apagarlo con
+  # SSL_ENABLED=false. El keystore incluido es AUTOFIRMADO y sólo sirve para
+  # desarrollo: ver README para generar uno propio.
+  ssl:
+    enabled: ${SSL_ENABLED:true}
+    key-store: ${KEYSTORE_PATH:classpath:keystore.p12}
+    key-store-password: ${KEYSTORE_PASSWORD:}
+    key-store-type: PKCS12
+    key-alias: ${KEYSTORE_ALIAS:parking}
+
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+
+  error:
+    include-stacktrace: never
+    include-message: never
+
+# ── Parámetros de negocio ───────────────────────────────────────────────────
+parking:
+  reservas:
+    # Minutos de tolerancia tras la hora de llegada antes de liberar el cubículo
+    # de una reserva ACEPTADA a la que el cliente nunca llegó.
+    minutos-tolerancia: ${RESERVAS_MINUTOS_TOLERANCIA:120}
+    # Cada cuánto corre el job de expiración (milisegundos).
+    intervalo-expiracion-ms: ${RESERVAS_INTERVALO_EXPIRACION_MS:900000}
+  seguridad:
+    max-intentos-login: ${MAX_INTENTOS_LOGIN:5}
+    minutos-bloqueo: ${MINUTOS_BLOQUEO_LOGIN:30}
+
+# ── Correo transaccional (Brevo) ────────────────────────────────────────────
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+    url: ${BREVO_API_URL:https://api.brevo.com/v3/smtp/email}
+  sender:
+    email: ${BREVO_SENDER_EMAIL:no-reply@parkingapp.local}
+    name: ${BREVO_SENDER_NAME:ParkingApp}
+
+# ── JWT (API stateless /api/**) ─────────────────────────────────────────────
+# En produccion, JWT_SECRET debe definirse como variable de entorno (minimo 256
+# bits / 32 caracteres para HS256). El valor por defecto solo sirve para
+# desarrollo local.
+jwt:
+  secret: ${JWT_SECRET:dev-only-secret-cambiar-en-produccion-32chars}
+  expiration-ms: ${JWT_EXPIRATION_MS:900000}
+
+logging:
+  level:
+    root: INFO
+    com.proyecto.parking: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# ── Perfil: desarrollo ──────────────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+
+server:
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+  servlet:
+    session:
+      cookie:
+        secure: false
+
+logging:
+  level:
+    com.proyecto.parking: DEBUG
+
+---
+# ── Perfil: producción ──────────────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    com.proyecto.parking: INFO

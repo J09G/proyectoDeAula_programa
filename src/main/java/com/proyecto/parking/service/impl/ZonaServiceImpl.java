@@ -1,9 +1,12 @@
 package com.proyecto.parking.service.impl;
 
+import com.proyecto.parking.exception.RecursoNoEncontradoException;
+import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Zona;
 import com.proyecto.parking.repository.ZonaRepository;
 import com.proyecto.parking.service.ZonaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,8 +14,13 @@ import java.util.List;
 @Service
 public class ZonaServiceImpl implements ZonaService {
 
-    @Autowired
-    private ZonaRepository zonaRepository;
+    private static final Logger log = LoggerFactory.getLogger(ZonaServiceImpl.class);
+
+    private final ZonaRepository zonaRepository;
+
+    public ZonaServiceImpl(ZonaRepository zonaRepository) {
+        this.zonaRepository = zonaRepository;
+    }
 
     @Override
     public List<Zona> obtenerZonas() {
@@ -27,14 +35,23 @@ public class ZonaServiceImpl implements ZonaService {
     @Override
     public Zona obtenerZonaPorId(String idZona) {
         return zonaRepository.findById(idZona)
-                .orElseThrow(() -> new RuntimeException("Zona no encontrada con ID: " + idZona));
+                .orElseThrow(() -> RecursoNoEncontradoException.de("Zona", idZona));
     }
 
     @Override
     public Zona crearZona(String nombreZona) {
+        String nombre = nombreZona.trim();
+
+        if (zonaRepository.existsByNombreZonaIgnoreCase(nombre)) {
+            throw new ReglaNegocioException("Ya existe una zona llamada '" + nombre + "'.");
+        }
+
         Zona zona = new Zona();
-        zona.setNombreZona(nombreZona.trim());
-        return zonaRepository.save(zona);
+        zona.setNombreZona(nombre);
+        Zona guardada = zonaRepository.save(zona);
+
+        log.info("Zona '{}' creada (id {}).", nombre, guardada.getId());
+        return guardada;
     }
 
     @Override
@@ -42,5 +59,6 @@ public class ZonaServiceImpl implements ZonaService {
         Zona zona = obtenerZonaPorId(idZona);
         zona.setHabilitado(habilitado);
         zonaRepository.save(zona);
+        log.info("Zona {} {}.", idZona, habilitado ? "habilitada" : "deshabilitada");
     }
 }

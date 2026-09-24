@@ -1,20 +1,32 @@
 package com.proyecto.parking.service;
 
+import com.proyecto.parking.dto.ReservaForm;
 import com.proyecto.parking.model.Reserva;
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 public interface ReservaService {
 
-    Reserva crearReserva(String idCliente, String idParqueadero, LocalDateTime fechaReserva, int espacioReservado);
+    Reserva crearReserva(String idCliente, ReservaForm form);
 
     List<Reserva> listarReservasCliente(String idCliente);
 
-    List<Reserva> listarReservasParqueadero(String idParqueadero);
+    /** Reservas del parqueadero, comprobando antes que sea del administrador. */
+    List<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador);
 
-    Reserva cambiarEstadoReserva(String idReserva, String nuevoEstado);
+    List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero, String idAdministrador);
 
-    void eliminarReserva(String idReserva);
+    Reserva aceptarReserva(String idReserva, String idAdministrador);
 
-    List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero);
+    Reserva rechazarReserva(String idReserva, String idAdministrador);
+
+    void eliminarReserva(String idReserva, String idAdministrador);
+
+    /**
+     * Marca como EXPIRADA toda reserva aceptada cuya hora de llegada pasó hace
+     * más de la tolerancia configurada, y devuelve su cubículo al inventario.
+     *
+     * @return número de reservas expiradas
+     */
+    int expirarReservasVencidas();
 }

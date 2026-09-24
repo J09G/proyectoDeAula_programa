@@ -1,273 +1,211 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="'Registros - ' + ${parqueadero.nombre}">Registros - ParkingApp</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/layout :: cabeza('registros.titulo')}"></th:block>
   <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
 <body>
-<div class="app-shell">
-  <div class="sb-overlay" id="sbOverlay"></div>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-brand">
-      <div class="sb-brand-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
-      </div>
-      <span class="sb-brand-name">ParkingApp</span>
+<nav th:replace="~{fragments/layout :: barra('parqueaderos')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{registros.titulo}">Entradas y salidas</h1>
+      <p th:text="${parqueadero.nombre}"></p>
     </div>
-
-    <nav class="sb-nav">
-      <div class="sb-section">
-        <span class="sb-section-label">Navegación</span>
-      </div>
-      <a th:href="@{/admin}" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-        </svg>
-        Mis parqueaderos
-      </a>
-      <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="sb-link">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18"/>
-        </svg>
-        Panel del parqueadero
-      </a>
-
-      <div class="sb-divider"></div>
-      <div class="sb-section">
-        <span class="sb-section-label">Registros</span>
-      </div>
-      <a th:href="@{/admin/parqueadero/{id}/registros(id=${parqueadero.id})}" class="sb-link active">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
-        </svg>
-        Entradas y salidas
-      </a>
-    </nav>
-
-    <div class="sb-footer">
-      <div class="sb-user">
-        <div class="sb-avatar">A</div>
-        <span class="sb-user-name" th:text="${parqueadero.nombre}">Parqueadero</span>
-      </div>
-      <form id="logout-form" th:action="@{/logout}" method="post" style="display:none;">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-      </form>
-      <button class="sb-logout" onclick="document.getElementById('logout-form').submit()">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
-        </svg>
-        Cerrar sesión
-      </button>
-    </div>
-  </aside>
-
-  <div class="main-area">
-    <header class="topbar">
-      <button class="sb-hamburger" id="sbHamburger" aria-label="Abrir menú">
-        <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
-      </button>
-      <span class="topbar-title" th:text="'Registros - ' + ${parqueadero.nombre}">Registros</span>
-      <div class="topbar-right">
-        <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn">← Panel</a>
-      </div>
-    </header>
-
-    <div class="page-body">
-      <div class="page-header">
-        <h1>Registro de Parqueo</h1>
-        <p th:text="${parqueadero.nombre} + ' · Registra entradas y salidas de vehículos.'"></p>
-      </div>
-
-      <div class="mensajes">
-        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
-        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
-        <div th:if="${idFactura}" class="alert alert-success">
-          Salida registrada.
-          <a th:href="@{/admin/parqueadero/{id}/registros/factura/{rid}(id=${parqueadero.id},rid=${idFactura})}"
-             class="btn-link-factura">Ver Factura →</a>
-        </div>
-      </div>
-
-      <!-- Registrar Entrada con selección de cubículo -->
-      <section>
-        <div class="card" style="max-width:640px;">
-          <h3 style="margin-bottom:16px;">Registrar entrada de vehículo</h3>
-
-          <div class="cubiculos-legend" style="margin-bottom:8px;">
-            <span><span class="legend-dot libre"></span>Libre</span>
-            <span><span class="legend-dot pendiente"></span>Pendiente</span>
-            <span><span class="legend-dot ocupado"></span>Ocupado</span>
-          </div>
-          <p style="font-size:0.8rem; color:var(--gray-500); margin-bottom:10px;">
-            Haz clic en un cubículo libre para seleccionarlo.
-          </p>
-
-          <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid" style="margin-bottom:16px;">
-            <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
-              <div th:if="${espaciosOcupados.contains(i)}"
-                   class="cubiculo ocupado" th:text="${i}"></div>
-              <div th:if="${!espaciosOcupados.contains(i) and espaciosPendientes.contains(i)}"
-                   class="cubiculo pendiente" th:text="${i}"></div>
-              <div th:if="${!espaciosOcupados.contains(i) and !espaciosPendientes.contains(i)}"
-                   class="cubiculo libre cubiculo-selectable"
-                   th:text="${i}"
-                   th:attr="data-num=${i}"
-                   onclick="seleccionarCubiculo(this)"></div>
-            </th:block>
-          </div>
-
-          <form th:action="@{/admin/parqueadero/{id}/registros/entrada(id=${parqueadero.id})}" method="post" class="form-entrada">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <input type="hidden" name="espacioReservado" id="espacioSeleccionado" value="0">
-            <label>Placa del vehículo</label>
-            <input type="text" name="placa" placeholder="Ej: ABC-123" required
-                   oninput="this.value = this.value.toUpperCase()">
-            <p id="espacioLabel" style="font-size:0.875rem; color:var(--gray-500); margin-bottom:8px;">
-              Espacio seleccionado: <strong id="espacioTexto">Ninguno</strong>
-            </p>
-            <button type="submit" class="btn-primary" id="btnEntrada" disabled>Registrar entrada</button>
-          </form>
-        </div>
-      </section>
-
-      <!-- Vehículos Activos -->
-      <section>
-        <h3>
-          Vehículos en el parqueadero
-          <span class="badge-count" th:text="${#lists.size(activos)}"></span>
-        </h3>
-
-        <div th:if="${!#lists.isEmpty(activos)}" class="form-buscar">
-          <input type="text" id="buscarPlacaActivos" placeholder="Buscar por placa..."
-                 oninput="filtrarTabla('buscarPlacaActivos', 'tablaActivos', 1)"
-                 style="max-width:280px; margin-bottom:0;">
-        </div>
-
-        <p th:if="${#lists.isEmpty(activos)}" class="no-data">No hay vehículos en el parqueadero.</p>
-
-        <div class="tabla-responsive" th:if="${!#lists.isEmpty(activos)}">
-          <table class="tabla-datos" id="tablaActivos">
-            <thead>
-              <tr>
-                <th>Espacio</th>
-                <th>Placa</th>
-                <th>Cliente</th>
-                <th>Con Reserva</th>
-                <th>Hora Entrada</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="reg : ${activos}">
-                <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '-'}"></td>
-                <td><strong th:text="${reg.placa}"></strong></td>
-                <td th:text="${reg.usuario != null ? reg.usuario.nombre + ' - ' + reg.usuario.cedula : 'Cliente de paso'}"></td>
-                <td>
-                  <span th:if="${reg.reserva != null}"    class="badge-reserva">Sí</span>
-                  <span th:unless="${reg.reserva != null}" class="badge-sin-reserva">No</span>
-                </td>
-                <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
-                <td>
-                  <form th:action="@{/admin/parqueadero/{id}/registros/salida/{rid}(id=${parqueadero.id},rid=${reg.id})}"
-                        method="post" style="display:inline;">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="btn-salida"
-                            onclick="return confirm('¿Registrar salida del vehículo?')">Registrar salida</button>
-                  </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Historial -->
-      <section>
-        <h3>Historial de registros</h3>
-
-        <div th:if="${!#lists.isEmpty(historial)}" class="form-buscar">
-          <input type="text" id="buscarPlacaHistorial" placeholder="Buscar por placa..."
-                 oninput="filtrarTabla('buscarPlacaHistorial', 'tablaHistorial', 1)"
-                 style="max-width:280px; margin-bottom:0;">
-        </div>
-
-        <p th:if="${#lists.isEmpty(historial)}" class="no-data">No hay registros aún.</p>
-
-        <div class="tabla-responsive" th:if="${!#lists.isEmpty(historial)}">
-          <table class="tabla-datos" id="tablaHistorial">
-            <thead>
-              <tr>
-                <th>Espacio</th>
-                <th>Placa</th>
-                <th>Cliente</th>
-                <th>Entrada</th>
-                <th>Salida</th>
-                <th>Tiempo</th>
-                <th>Valor</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="reg : ${historial}">
-                <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '-'}"></td>
-                <td><strong th:text="${reg.placa}"></strong></td>
-                <td th:text="${reg.usuario != null ? reg.usuario.nombre : 'De paso'}"></td>
-                <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
-                <td th:text="${reg.horaSalida != null ? #temporals.format(reg.horaSalida, 'dd/MM/yyyy HH:mm') : '-'}"></td>
-                <td>
-                  <span th:if="${reg.tiempoMinutos != null}"
-                        th:text="${reg.tiempoMinutos / 60} + 'h ' + ${reg.tiempoMinutos % 60} + 'min'"></span>
-                  <span th:unless="${reg.tiempoMinutos != null}">-</span>
-                </td>
-                <td th:text="${reg.valorPagado != null ? '$' + reg.valorPagado : '-'}"></td>
-                <td>
-                  <span th:if="${reg.estado.name() == 'ACTIVO'}"     class="estado-activo">Activo</span>
-                  <span th:unless="${reg.estado.name() == 'ACTIVO'}" class="estado-finalizado">Finalizado</span>
-                </td>
-                <td>
-                  <a th:if="${reg.estado.name() == 'FINALIZADO'}"
-                     th:href="@{/admin/parqueadero/{id}/registros/factura/{rid}(id=${parqueadero.id},rid=${reg.id})}"
-                     class="btn-editar">Factura</a>
-                  <span th:unless="${reg.estado.name() == 'FINALIZADO'}">-</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+    <div class="pagina-cabecera-acciones">
+      <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn">
+        &larr; <span th:text="#{nav.volver}">Volver</span></a>
     </div>
   </div>
 
-</div>
+  <div class="mensajes">
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+  </div>
 
+  <!-- Registrar entrada -->
+  <section class="seccion">
+    <h3 th:text="#{registros.registrarEntrada}">Registrar entrada</h3>
+
+    <div class="cubiculos-legend">
+      <span><span class="legend-dot libre"></span><span th:text="#{cubiculo.libre}">Libre</span></span>
+      <span><span class="legend-dot pendiente"></span><span th:text="#{cubiculo.pendiente}">Solicitado</span></span>
+      <span><span class="legend-dot ocupado"></span><span th:text="#{cubiculo.ocupado}">Ocupado</span></span>
+    </div>
+
+    <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid" style="margin-bottom:24px;">
+      <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+        <div th:if="${espaciosOcupados.contains(i)}" class="cubiculo ocupado" th:text="${i}"></div>
+        <div th:if="${!espaciosOcupados.contains(i) and espaciosPendientes.contains(i)}"
+             class="cubiculo pendiente" th:text="${i}"></div>
+        <div th:if="${!espaciosOcupados.contains(i) and !espaciosPendientes.contains(i)}"
+             class="cubiculo libre cubiculo-selectable" th:text="${i}"
+             th:attr="data-num=${i}" onclick="seleccionarCubiculo(this)"></div>
+      </th:block>
+    </div>
+
+    <form th:action="@{/admin/parqueadero/{id}/registros/entrada(id=${parqueadero.id})}" method="post" class="form-entrada">
+      <input type="hidden" name="espacioReservado" id="espacioSeleccionado" value="0">
+
+      <div class="form-row" style="margin-bottom:18px;">
+        <div class="form-group">
+          <label th:text="#{registros.placaVehiculo}">Placa</label>
+          <input type="text" name="placa" placeholder="ABC123" required
+                 oninput="this.value = this.value.toUpperCase()">
+        </div>
+        <div class="form-group">
+          <label th:text="#{common.cedula} + ' (' + #{common.opcional} + ')'">Cédula</label>
+          <input type="text" name="cedula" inputmode="numeric">
+        </div>
+      </div>
+
+      <p style="font-size:0.9375rem; color:var(--gray-500); margin-bottom:18px;">
+        <span th:text="#{reserva.espacioSeleccionado}">Espacio seleccionado</span>:
+        <strong id="espacioTexto" style="color:var(--gray-900);" th:text="#{reserva.ninguno}">Ninguno</strong>
+      </p>
+
+      <button type="submit" class="btn-primary" id="btnEntrada" disabled
+              th:text="#{registros.registrarEntrada}">Registrar entrada</button>
+    </form>
+  </section>
+
+  <!-- Vehículos dentro -->
+  <section class="seccion">
+    <h3>
+      <span th:text="#{registros.vehiculosDentro}">Vehículos en el parqueadero</span>
+      <span class="badge-count" th:text="${#lists.size(activos)}"></span>
+    </h3>
+
+    <div th:if="${!#lists.isEmpty(activos)}" class="form-buscar">
+      <input type="text" id="buscarPlacaActivos" th:placeholder="#{registros.buscarPlaca}"
+             oninput="filtrarTabla('buscarPlacaActivos', 'tablaActivos', 1)" style="max-width:300px;">
+    </div>
+
+    <p th:if="${#lists.isEmpty(activos)}" class="no-data" th:text="#{registros.sinActivos}"></p>
+
+    <div class="tabla-responsive" th:if="${!#lists.isEmpty(activos)}">
+      <table class="tabla-datos" id="tablaActivos">
+        <thead>
+          <tr>
+            <th th:text="#{admin.espacio}">Espacio</th>
+            <th th:text="#{common.placa}">Placa</th>
+            <th th:text="#{admin.cliente}">Cliente</th>
+            <th th:text="#{factura.conReserva}">Con reserva</th>
+            <th th:text="#{registros.entrada}">Entrada</th>
+            <th th:text="#{common.acciones}">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="reg : ${activos}">
+            <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '—'}"></td>
+            <td><strong th:text="${reg.placa}"></strong></td>
+            <td th:text="${reg.usuario != null ? reg.usuario.nombre + ' · ' + reg.usuario.cedula : #messages.msg('registros.dePaso')}"></td>
+            <td>
+              <span th:if="${reg.reserva != null}"     class="badge-reserva"     th:text="#{common.si}">Sí</span>
+              <span th:unless="${reg.reserva != null}" class="badge-sin-reserva" th:text="#{common.no}">No</span>
+            </td>
+            <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+            <td>
+              <form th:action="@{/admin/parqueadero/{id}/registros/salida/{rid}(id=${parqueadero.id},rid=${reg.id})}"
+                    method="post" style="display:inline;"
+                    th:attr="onsubmit='return confirm(\'' + #{registros.confirmarSalida} + '\')'">
+                <button type="submit" class="btn-salida" th:text="#{registros.registrarSalida}">Registrar salida</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Historial -->
+  <section class="seccion">
+    <h3 th:text="#{registros.historial}">Historial de registros</h3>
+
+    <div th:if="${!#lists.isEmpty(historial)}" class="form-buscar">
+      <input type="text" id="buscarPlacaHistorial" th:placeholder="#{registros.buscarPlaca}"
+             oninput="filtrarTabla('buscarPlacaHistorial', 'tablaHistorial', 1)" style="max-width:300px;">
+    </div>
+
+    <p th:if="${#lists.isEmpty(historial)}" class="no-data" th:text="#{registros.sinHistorial}"></p>
+
+    <div class="tabla-responsive" th:if="${!#lists.isEmpty(historial)}">
+      <table class="tabla-datos" id="tablaHistorial">
+        <thead>
+          <tr>
+            <th th:text="#{admin.espacio}">Espacio</th>
+            <th th:text="#{common.placa}">Placa</th>
+            <th th:text="#{admin.cliente}">Cliente</th>
+            <th th:text="#{registros.entrada}">Entrada</th>
+            <th th:text="#{registros.salida}">Salida</th>
+            <th th:text="#{registros.tiempo}">Tiempo</th>
+            <th th:text="#{registros.valor}">Valor</th>
+            <th th:text="#{common.estado}">Estado</th>
+            <th th:text="#{common.acciones}">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="reg : ${historial}">
+            <td th:text="${reg.espacioReservado != null ? '#' + reg.espacioReservado : '—'}"></td>
+            <td><strong th:text="${reg.placa}"></strong></td>
+            <td th:text="${reg.usuario != null ? reg.usuario.nombre : #messages.msg('registros.dePaso')}"></td>
+            <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${reg.horaSalida != null ? #temporals.format(reg.horaSalida, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+            <td>
+              <span th:if="${reg.tiempoMinutos != null}"
+                    th:text="${reg.tiempoMinutos / 60} + 'h ' + ${reg.tiempoMinutos % 60} + 'min'"></span>
+              <span th:unless="${reg.tiempoMinutos != null}">—</span>
+            </td>
+            <td th:text="${reg.valorPagado != null ? '$' + reg.valorPagado : '—'}"></td>
+            <td>
+              <span th:class="${reg.estado.name() == 'ACTIVO'} ? 'estado-activo' : 'estado-finalizado'"
+                    th:text="#{__${'estado.' + reg.estado.name()}__}"></span>
+            </td>
+            <td>
+              <a th:if="${reg.estado.name() == 'FINALIZADO'}"
+                 th:href="@{/admin/parqueadero/{id}/registros/factura/{rid}(id=${parqueadero.id},rid=${reg.id})}"
+                 class="btn-editar" th:text="#{registros.verFactura}">Factura</a>
+              <span th:unless="${reg.estado.name() == 'FINALIZADO'}">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="~{fragments/paginacion :: nav(url='/admin/parqueadero/' + ${parqueadero.id} + '/registros', params='')}"></div>
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
 <script>
-  let espacioActual = null;
+  var espacioActual = null;
 
   function seleccionarCubiculo(el) {
-    if (espacioActual) espacioActual.classList.remove('cubiculo-activo');
+    if (espacioActual) { espacioActual.classList.remove('cubiculo-activo'); }
     espacioActual = el;
     el.classList.add('cubiculo-activo');
-    const num = el.getAttribute('data-num');
+    var num = el.getAttribute('data-num');
     document.getElementById('espacioSeleccionado').value = num;
     document.getElementById('espacioTexto').textContent = '#' + num;
     document.getElementById('btnEntrada').disabled = false;
   }
 
+  /* Filtro en cliente: sólo afecta a las filas de la página actual, porque el
+     historial viene paginado desde el servidor. */
   function filtrarTabla(inputId, tablaId, columna) {
-    const filtro = document.getElementById(inputId).value.toUpperCase();
-    const tabla  = document.getElementById(tablaId);
-    const filas  = tabla.getElementsByTagName('tr');
-    for (let i = 1; i < filas.length; i++) {
-      const celda = filas[i].getElementsByTagName('td')[columna];
-      if (celda) filas[i].style.display = celda.textContent.toUpperCase().includes(filtro) ? '' : 'none';
+    var filtro = document.getElementById(inputId).value.toUpperCase();
+    var filas  = document.getElementById(tablaId).getElementsByTagName('tr');
+    for (var i = 1; i < filas.length; i++) {
+      var celda = filas[i].getElementsByTagName('td')[columna];
+      if (celda) {
+        filas[i].style.display = celda.textContent.toUpperCase().indexOf(filtro) > -1 ? '' : 'none';
+      }
     }
   }
 </script>
-<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

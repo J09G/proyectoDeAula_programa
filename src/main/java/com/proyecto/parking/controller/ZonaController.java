@@ -1,40 +1,40 @@
 package com.proyecto.parking.controller;
 
-import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Zona;
-import com.proyecto.parking.service.ParqueaderoService;
+import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.ZonaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/zona")
 public class ZonaController {
 
-    @Autowired
-    private ZonaService zonaService;
+    private final ZonaService zonaService;
+    private final PortadaService portadaService;
 
-    @Autowired
-    private ParqueaderoService parqueaderoService;
+    public ZonaController(ZonaService zonaService, PortadaService portadaService) {
+        this.zonaService = zonaService;
+        this.portadaService = portadaService;
+    }
 
     @GetMapping("/{idZona}")
-    public String mostrarZona(@PathVariable("idZona") String idZona, Model model) {
-        try {
-            Zona zona = zonaService.obtenerZonaPorId(idZona);
-            model.addAttribute("zona", zona);
+    public String mostrarZona(@PathVariable String idZona,
+                              @RequestParam(required = false) String llegada,
+                              Model model) {
+        // Si la zona no existe salta RecursoNoEncontradoException y la maneja
+        // GlobalExceptionHandler con un 404. Antes se capturaba aquí y se
+        // devolvía cliente/index sin sus atributos, que salía medio vacía.
+        Zona zona = zonaService.obtenerZonaPorId(idZona);
 
-            List<Parqueadero> parqueaderos = parqueaderoService.obtenerParqueaderosPorZona(idZona);
-            model.addAttribute("parqueaderos", parqueaderos);
-
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar la zona: " + e.getMessage());
-            return "cliente/index";
-        }
-
+        model.addAttribute("zona", zona);
+        model.addAttribute("parqueaderos", portadaService.porZona(idZona));
+        // Hora elegida en el buscador de la portada; se pasa a la reserva.
+        model.addAttribute("llegada", HomeController.esFechaDeFormulario(llegada) ? llegada : null);
         return "cliente/zona";
     }
 }

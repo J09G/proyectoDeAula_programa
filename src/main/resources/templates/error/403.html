@@ -1,84 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso Denegado - ParkingApp</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <style>
-    .error-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--gray-100, #F3F4F6);
-    }
-    .error-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08);
-      padding: 3rem 2.5rem;
-      max-width: 440px;
-      width: 100%;
-      text-align: center;
-    }
-    .error-icon {
-      width: 72px;
-      height: 72px;
-      background: #FEE2E2;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.5rem;
-    }
-    .error-icon svg {
-      width: 36px;
-      height: 36px;
-      color: #DC2626;
-      fill: #DC2626;
-    }
-    .error-code {
-      font-size: 4rem;
-      font-weight: 800;
-      color: var(--brand, #2F4BFF);
-      line-height: 1;
-      margin: 0 0 .5rem;
-      letter-spacing: -2px;
-    }
-    .error-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0 0 .75rem;
-    }
-    .error-message {
-      font-size: .95rem;
-      color: #6B7280;
-      line-height: 1.6;
-      margin: 0 0 2rem;
-    }
-    .error-actions {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-    }
-    .brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      margin-bottom: 2rem;
-      color: var(--brand, #2F4BFF);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-    .brand-row svg {
-      width: 28px;
-      height: 28px;
-      fill: var(--brand, #2F4BFF);
-    }
-  </style>
+  <th:block th:replace="~{fragments/layout :: cabeza('error.403.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/error.css}">
 </head>
 <body>
 <div class="error-wrap">
@@ -86,22 +10,19 @@
 
     <div class="brand-row">
       <svg viewBox="0 0 24 24"><path d="M13 3H6v18h4v-6h3c3.31 0 6-2.69 6-6S16.31 3 13 3zm.2 8H10V7h3.2c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>
-      ParkingApp
+      <span th:text="#{app.nombre}">ParkingApp</span>
     </div>
 
-    <div class="error-icon">
+    <div class="error-icon error-icon-danger">
       <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg>
     </div>
 
     <p class="error-code">403</p>
-    <h1 class="error-title">Acceso Denegado</h1>
-    <p class="error-message">
-      No tienes permiso para acceder a esta página.<br>
-      Si crees que esto es un error, contacta al administrador.
-    </p>
+    <h1 class="error-title" th:text="#{error.403.titulo}">Acceso denegado</h1>
+    <p class="error-message" th:text="#{error.403.texto}">No tienes permiso para ver esta página.</p>
 
     <div class="error-actions">
-      <a th:href="@{/login}" class="btn-primary">Volver al inicio</a>
+      <a th:href="@{/}" class="btn-primary" th:text="#{error.volverInicio}">Volver al inicio</a>
     </div>
 
   </div>

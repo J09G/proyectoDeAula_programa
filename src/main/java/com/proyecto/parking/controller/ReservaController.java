@@ -1,91 +1,86 @@
 package com.proyecto.parking.controller;
 
+import com.proyecto.parking.dto.ReservaForm;
+import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
-import com.proyecto.parking.model.RegistroParqueo;
-import com.proyecto.parking.model.Reserva;
-import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
+import com.proyecto.parking.service.EspacioService;
 import com.proyecto.parking.service.ParqueaderoService;
-import com.proyecto.parking.service.RegistroParqueoService;
+import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.ReservaService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/reserva")
 public class ReservaController {
 
-    @Autowired
-    private ReservaService reservaService;
+    private final ReservaService reservaService;
+    private final ParqueaderoService parqueaderoService;
+    private final ComentarioService comentarioService;
+    private final EspacioService espacioService;
+    private final PortadaService portadaService;
 
-    @Autowired
-    private ParqueaderoService parqueaderoService;
-
-    @Autowired
-    private ComentarioService comentarioService;
-
-    @Autowired
-    private RegistroParqueoService registroParqueoService;
+    public ReservaController(ReservaService reservaService,
+                             ParqueaderoService parqueaderoService,
+                             ComentarioService comentarioService,
+                             EspacioService espacioService,
+                             PortadaService portadaService) {
+        this.reservaService = reservaService;
+        this.parqueaderoService = parqueaderoService;
+        this.comentarioService = comentarioService;
+        this.espacioService = espacioService;
+        this.portadaService = portadaService;
+    }
 
     @GetMapping("/{idParqueadero}")
-    public String mostrarFormularioReserva(@PathVariable("idParqueadero") String idParqueadero,
-                                           Model model) {
+    public String mostrarFormulario(@PathVariable String idParqueadero,
+                                    @RequestParam(required = false) String llegada,
+                                    Model model) {
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoPorId(idParqueadero);
+
         model.addAttribute("parqueadero", parqueadero);
         model.addAttribute("comentarios", comentarioService.listarPorParqueadero(idParqueadero));
-        model.addAttribute("espaciosOcupados", calcularEspaciosOcupados(idParqueadero));
+        model.addAttribute("valoracion", portadaService.valoracionDe(idParqueadero));
+        model.addAttribute("llegada", HomeController.esFechaDeFormulario(llegada) ? llegada : null);
+        model.addAttribute("espaciosOcupados", espacioService.calcularEspaciosOcupados(idParqueadero));
+        model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(idParqueadero));
         return "cliente/reserva";
     }
 
-    private Set<Integer> calcularEspaciosOcupados(String idParqueadero) {
-        Set<Integer> ocupados = new HashSet<>();
-        reservaService.listarReservasParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEstado() == Reserva.EstadoReserva.ACEPTADA)
-                .filter(r -> r.getEspacioReservado() != null)
-                .map(Reserva::getEspacioReservado)
-                .forEach(ocupados::add);
-        registroParqueoService.listarActivosPorParqueadero(idParqueadero).stream()
-                .filter(r -> r.getEspacioReservado() != null)
-                .map(RegistroParqueo::getEspacioReservado)
-                .forEach(ocupados::add);
-        return ocupados;
-    }
-
     @PostMapping("/crear")
-    public String crearReserva(@RequestParam("idParqueadero") String idParqueadero,
-                               @RequestParam("fechaReserva") String fechaReservaStr,
-                               @RequestParam(value = "espacioReservado", defaultValue = "0") int espacioReservado,
-                               HttpSession session,
-                               RedirectAttributes redirectAttributes) {
-        try {
-            Usuario cliente = (Usuario) session.getAttribute("usuario");
+    public String crearReserva(@AuthenticationPrincipal UsuarioPrincipal cliente,
+                               @Valid @ModelAttribute ReservaForm form,
+                               BindingResult errores,
+                               RedirectAttributes flash) {
 
-            if (cliente == null) {
-                redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión para hacer una reserva.");
-                return "redirect:/login";
-            }
-
-            if (espacioReservado <= 0) {
-                redirectAttributes.addFlashAttribute("error", "Debes seleccionar un espacio disponible.");
-                return "redirect:/reserva/" + idParqueadero;
-            }
-
-            LocalDateTime fechaReserva = LocalDateTime.parse(fechaReservaStr);
-            Reserva nuevaReserva = reservaService.crearReserva(cliente.getId(), idParqueadero, fechaReserva, espacioReservado);
-            redirectAttributes.addFlashAttribute("mensaje",
-                    "Reserva creada con éxito. Estado: " + nuevaReserva.getEstado());
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al crear la reserva: " + e.getMessage());
+        if (errores.hasErrors()) {
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return "redirect:/reserva/" + form.getIdParqueadero();
         }
 
-        return "redirect:/cliente";
+        try {
+            reservaService.crearReserva(cliente.getId(), form);
+            flash.addFlashAttribute("mensaje",
+                    "Reserva creada. Queda pendiente de que el parqueadero la confirme.");
+            return "redirect:/cliente";
+
+        } catch (ReglaNegocioException e) {
+            // Se vuelve al formulario para que el cliente pueda elegir otro
+            // cubículo sin perder de vista la cuadrícula.
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/reserva/" + form.getIdParqueadero();
+        }
     }
 }

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Tarjetas</title></head>
+<body>
+
+<!--
+  Tarjeta de parqueadero: la usan la portada ("Cerca de ti") y la página de
+  una zona. Va dentro de un <article class="parqueo-card">:
+
+      <article class="parqueo-card"
+               th:insert="~{fragments/tarjetas :: parqueadero(${destacado}, ${llegada})}">
+
+  'llegada' es la fecha que el usuario eligió en el buscador (o null); se pasa
+  a la reserva para que el formulario llegue ya relleno.
+-->
+<th:block th:fragment="parqueadero(d, llegada)"
+          th:with="p=${d.parqueadero()},
+                   libres=${p.espaciosDisponibles != null ? p.espaciosDisponibles : 0},
+                   total=${p.espaciosTotales != null ? p.espaciosTotales : 0}">
+
+  <div class="parqueo-foto">
+    <img th:src="@{${d.imagen()}}" alt="" loading="lazy" onerror="this.remove()">
+  </div>
+
+  <div class="parqueo-cuerpo">
+    <div class="parqueo-fila">
+      <span class="parqueo-zona" th:text="${p.zona != null ? p.zona.nombreZona : ''}">Centro Histórico</span>
+      <span th:replace="~{fragments/layout :: valoracion(${d.valoracion()})}"></span>
+    </div>
+
+    <h3 class="parqueo-nombre" th:text="${p.nombre}">Park Centro</h3>
+
+    <p class="parqueo-dato">
+      <svg th:replace="~{fragments/layout :: pin}"></svg>
+      <span th:text="${p.direccion}">Calle de la Moneda #7-110</span>
+    </p>
+
+    <div class="parqueo-estado">
+      <span class="vivo"
+            th:classappend="${libres == 0} ? 'lleno' : (${total > 0 and libres * 5 <= total} ? 'pocos')"
+            th:text="${libres > 0} ? #{portada.cerca.espaciosLibres(${libres})} : #{portada.cerca.sinEspacios}">8 espacios libres</span>
+      <span class="parqueo-dato" th:if="${p.horario}">
+        <svg th:replace="~{fragments/layout :: reloj}"></svg>
+        <span th:text="${p.horario}">Abierto 24 horas</span>
+      </span>
+    </div>
+
+    <div class="parqueo-pie">
+      <div class="parqueo-precio">
+        <small th:text="#{portada.cerca.desde}">Desde</small>
+        <span>
+          <strong th:text="'$' + ${#numbers.formatDecimal(p.tarifaHora, 1, 'POINT', 0, 'COMMA')}">$6.500</strong>
+          <small th:text="#{portada.cerca.porHora}">/ hora</small>
+        </span>
+      </div>
+
+      <a th:if="${libres > 0}" class="btn-primary"
+         th:href="${llegada != null} ? @{'/reserva/' + ${p.id}(llegada=${llegada})} : @{'/reserva/' + ${p.id}}">
+        <span th:text="#{portada.cerca.reservar}">Reservar</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </a>
+      <span th:unless="${libres > 0}" class="btn-disabled" th:text="#{portada.cerca.sinEspacios}">Sin espacios</span>
+    </div>
+  </div>
+
+</th:block>
+
+</body>
+</html>
