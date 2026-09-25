@@ -11,6 +11,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class JwtServiceTest {
 
     @Test
+    void noArrancaEnProduccionConElSecretoDeDesarrollo() {
+        assertThrows(IllegalStateException.class, () ->
+                new JwtService("dev-only-secret-cambiar-en-produccion-32chars", 900000, "prod"));
+    }
+
+    @Test
+    void arrancaEnProduccionSiElSecretoFueSobrescrito() {
+        JwtService service = new JwtService("un-secreto-real-de-produccion-32-caracteres", 900000, "prod");
+        assertEquals("cliente@correo.com",
+                service.validarYObtenerClaims(service.generarToken("cliente@correo.com", "Cliente")).getSubject());
+    }
+
+    @Test
     void generaYValidaUnTokenValido() {
         JwtService service = new JwtService("dev-only-secret-cambiar-en-produccion-32chars", 900000);
 

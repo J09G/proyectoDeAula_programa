@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
@@ -47,15 +46,18 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final EstadoCuentaFilter estadoCuentaFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
 
     public SecurityConfig(LoginSuccessHandler loginSuccessHandler,
                           LoginFailureHandler loginFailureHandler,
                           EstadoCuentaFilter estadoCuentaFilter,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter) {
         this.loginSuccessHandler = loginSuccessHandler;
         this.loginFailureHandler = loginFailureHandler;
         this.estadoCuentaFilter = estadoCuentaFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
     }
 
     @Bean
@@ -63,11 +65,19 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // Evita que Spring Boot registre el filtro JWT como filtro de servlet global;
-    // solo debe correr dentro de la cadena /api/** (ver apiSecurityFilterChain).
+    // Evita que Spring Boot registre los filtros JWT como filtros de servlet
+    // globales; cada uno solo debe correr dentro de su propia cadena.
     @Bean
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
         FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<JwtCookieAuthenticationFilter> jwtCookieFilterRegistration(
+            JwtCookieAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtCookieAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
     }
@@ -101,8 +111,15 @@ public class SecurityConfig {
     }
 
     /**
-     * Aplicacion web por sesion (Thymeleaf): login de siempre, sin cambios de
-     * comportamiento para el usuario final.
+     * Aplicacion web (Thymeleaf): la identidad viaja en un JWT guardado en una
+     * cookie HttpOnly (ver JwtCookieAuthenticationFilter y LoginSuccessHandler),
+     * no en sesion de servidor. Por eso queda STATELESS igual que la cadena de
+     * la API, aunque siga usando formLogin/logout con paginas HTML.
+     *
+     * <p>Al no haber sesion, se pierde "maximumSessions(1)" (forzar una sola
+     * sesion activa por cuenta): un JWT no tiene forma de invalidarse a
+     * distancia sin volver a agregar estado en el servidor, que es justo lo
+     * que se quería eliminar. Es un tradeoff aceptado, no un olvido.</p>
      */
     @Bean
     @Order(2)
@@ -132,18 +149,11 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
-                .invalidateHttpSession(true)
                 .clearAuthentication(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies(JwtService.NOMBRE_COOKIE)
                 .permitAll()
             )
-            .sessionManagement(session -> session
-                // El id de sesión se renueva al autenticar (changeSessionId, por
-                // defecto en Spring Security 6): eso corta la fijación de sesión.
-                .invalidSessionUrl("/login?timeout")
-                .maximumSessions(1)
-                .expiredUrl("/login?expired")
-            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(ex -> ex.accessDeniedPage("/error/403"))
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(CSP))
@@ -155,10 +165,12 @@ public class SecurityConfig {
                         .maxAgeInSeconds(31_536_000))
                 .permissionsPolicy(pp -> pp.policy("geolocation=(), microphone=(), camera=()"))
             )
-            // CSRF activo (comportamiento por defecto): todos los formularios
-            // envían el token. Se deja explícito para que quede documentado.
-            .csrf(Customizer.withDefaults())
-            .addFilterAfter(estadoCuentaFilter, SecurityContextHolderFilter.class);
+            // El token CSRF ya no puede vivir en sesion (no hay); se guarda en su
+            // propia cookie (legible por JS a proposito, es lo que exige el patron
+            // "double submit cookie" para que Thymeleaf/JS puedan leerlo y mandarlo).
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            .addFilterBefore(jwtCookieAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(estadoCuentaFilter, JwtCookieAuthenticationFilter.class);
 
         return http.build();
     }

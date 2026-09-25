@@ -3,19 +3,16 @@ package com.proyecto.parking.controller;
 import com.proyecto.parking.dto.PerfilForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.security.JwtService;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -37,17 +34,19 @@ public class PerfilController {
     private final UsuarioService usuarioService;
     private final MessageSource messageSource;
     private final LocaleResolver localeResolver;
-
-    /** Necesario para que el cambio de identidad sobreviva a la redirección. */
-    private final SecurityContextRepository securityContextRepository =
-            new HttpSessionSecurityContextRepository();
+    private final JwtService jwtService;
+    private final boolean cookieSegura;
 
     public PerfilController(UsuarioService usuarioService,
                             MessageSource messageSource,
-                            LocaleResolver localeResolver) {
+                            LocaleResolver localeResolver,
+                            JwtService jwtService,
+                            @Value("${server.ssl.enabled}") boolean cookieSegura) {
         this.usuarioService = usuarioService;
         this.messageSource = messageSource;
         this.localeResolver = localeResolver;
+        this.jwtService = jwtService;
+        this.cookieSegura = cookieSegura;
     }
 
     @GetMapping
@@ -91,30 +90,23 @@ public class PerfilController {
             return "perfil";
         }
 
-        // Si cambió el correo, el principal en sesión apunta a un usuario que ya
-        // no existe con ese nombre y EstadoCuentaFilter cerraría la sesión en la
-        // siguiente petición. Se refresca la identidad para no echar al usuario
-        // justo después de guardar.
-        refrescarSesion(principal.getId(), request, response);
+        // Si cambió el correo, la cookie JWT vieja quedó firmada con un "sub" que
+        // ya no existe con ese correo, y JwtCookieAuthenticationFilter dejaría de
+        // reconocerlo en la siguiente petición. Se emite un JWT nuevo para no
+        // echar al usuario justo después de guardar.
+        refrescarCookieJwt(principal.getId(), response);
 
         flash.addFlashAttribute("mensaje", traducir(
                 cambioPassword ? "perfil.passwordActualizada" : "perfil.actualizado", request));
         return "redirect:/perfil";
     }
 
-    private void refrescarSesion(String idUsuario, HttpServletRequest request, HttpServletResponse response) {
+    private void refrescarCookieJwt(String idUsuario, HttpServletResponse response) {
         Usuario actualizado = usuarioService.obtenerUsuarioPorId(idUsuario);
         UsuarioPrincipal nuevo = new UsuarioPrincipal(actualizado);
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                nuevo, nuevo.getPassword(), nuevo.getAuthorities());
-
-        SecurityContext contexto = SecurityContextHolder.createEmptyContext();
-        contexto.setAuthentication(auth);
-        SecurityContextHolder.setContext(contexto);
-        // En Spring Security 6 el contexto no se guarda solo: sin esto el cambio
-        // se perdería al terminar la petición.
-        securityContextRepository.saveContext(contexto, request, response);
+        String token = jwtService.generarToken(nuevo.getCorreo(), nuevo.getRol());
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtService.crearCookieJwt(token, cookieSegura).toString());
     }
 
     private String traducir(String clave, HttpServletRequest request) {

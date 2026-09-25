@@ -41,8 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Usuario usuario = usuarioService.obtenerUsuarioPorCorreo(correo);
 
-                if (usuario != null && usuario.isHabilitado()) {
-                    String rol = claims.get("rol", String.class);
+                // El rol se toma de la base de datos, no del claim del token: si al usuario
+                // le cambiaron el rol despues de emitirse el token, un token viejo (valido
+                // hasta 15 min por defecto) no debe seguir otorgando la autoridad anterior.
+                if (usuario != null && usuario.isHabilitado() && usuario.getRol() != null) {
+                    String rol = usuario.getRol().getNombre();
                     String authority = "ROLE_" + rol.toUpperCase();
 
                     UsernamePasswordAuthenticationToken authentication =
@@ -53,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-                // Usuario inexistente o deshabilitado: no se autentica, aunque el token sea válido.
+                // Usuario inexistente, deshabilitado o sin rol: no se autentica, aunque el token sea válido.
             } catch (JwtException e) {
                 // Token invalido o expirado: se deja sin autenticar, el endpoint protegido respondera 401.
             }

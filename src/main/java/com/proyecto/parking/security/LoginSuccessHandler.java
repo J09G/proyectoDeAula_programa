@@ -5,22 +5,30 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/** Redirige a cada rol a su panel tras un login correcto. */
+/** Genera el JWT de la app web y redirige a cada rol a su panel tras un login correcto. */
 @Component
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LoginSuccessHandler.class);
 
     private final LoginAttemptService loginAttemptService;
+    private final JwtService jwtService;
+    private final boolean cookieSegura;
 
-    public LoginSuccessHandler(LoginAttemptService loginAttemptService) {
+    public LoginSuccessHandler(LoginAttemptService loginAttemptService,
+                               JwtService jwtService,
+                               @Value("${server.ssl.enabled}") boolean cookieSegura) {
         this.loginAttemptService = loginAttemptService;
+        this.jwtService = jwtService;
+        this.cookieSegura = cookieSegura;
     }
 
     @Override
@@ -31,6 +39,9 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         UsuarioPrincipal principal = (UsuarioPrincipal) authentication.getPrincipal();
         log.info("Inicio de sesión de {} (rol {}).", principal.getCorreo(), principal.getRol());
+
+        String token = jwtService.generarToken(principal.getCorreo(), principal.getRol());
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtService.crearCookieJwt(token, cookieSegura).toString());
 
         response.sendRedirect(request.getContextPath() + destinoPara(principal));
     }

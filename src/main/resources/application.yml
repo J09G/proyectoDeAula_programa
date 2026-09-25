@@ -97,13 +97,15 @@ brevo:
     email: ${BREVO_SENDER_EMAIL:no-reply@parkingapp.local}
     name: ${BREVO_SENDER_NAME:ParkingApp}
 
-# ── JWT (API stateless /api/**) ─────────────────────────────────────────────
+# ── JWT (autenticacion de toda la app: /api/** por cabecera, y la app web por
+# cookie HttpOnly) ────────────────────────────────────────────────────────────
 # En produccion, JWT_SECRET debe definirse como variable de entorno (minimo 256
 # bits / 32 caracteres para HS256). El valor por defecto solo sirve para
-# desarrollo local.
+# desarrollo local. La expiracion es fija (30 min): sin sesion de servidor no
+# hay como renovarla solo por seguir activo, a diferencia del timeout anterior.
 jwt:
   secret: ${JWT_SECRET:dev-only-secret-cambiar-en-produccion-32chars}
-  expiration-ms: ${JWT_EXPIRATION_MS:900000}
+  expiration-ms: ${JWT_EXPIRATION_MS:1800000}
 
 logging:
   level:
