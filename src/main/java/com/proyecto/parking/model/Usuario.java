@@ -20,7 +20,12 @@ public class Usuario {
 
     private String contrasena;
 
-    @Indexed(unique = true)
+    /**
+     * Disperso como la placa: un usuario que entra con Google se crea sin cédula
+     * (la completa después), y un índice único no disperso solo admitiría a uno
+     * sin ella en toda la colección.
+     */
+    @Indexed(unique = true, sparse = true)
     private String cedula;
 
     @DBRef(lazy = true)

@@ -47,17 +47,23 @@ public class SecurityConfig {
     private final EstadoCuentaFilter estadoCuentaFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
+    private final GoogleLoginSuccessHandler googleLoginSuccessHandler;
+    private final GoogleLoginFailureHandler googleLoginFailureHandler;
 
     public SecurityConfig(LoginSuccessHandler loginSuccessHandler,
                           LoginFailureHandler loginFailureHandler,
                           EstadoCuentaFilter estadoCuentaFilter,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
-                          JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter) {
+                          JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
+                          GoogleLoginSuccessHandler googleLoginSuccessHandler,
+                          GoogleLoginFailureHandler googleLoginFailureHandler) {
         this.loginSuccessHandler = loginSuccessHandler;
         this.loginFailureHandler = loginFailureHandler;
         this.estadoCuentaFilter = estadoCuentaFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
+        this.googleLoginSuccessHandler = googleLoginSuccessHandler;
+        this.googleLoginFailureHandler = googleLoginFailureHandler;
     }
 
     @Bean
@@ -120,6 +126,10 @@ public class SecurityConfig {
      * sesion activa por cuenta): un JWT no tiene forma de invalidarse a
      * distancia sin volver a agregar estado en el servidor, que es justo lo
      * que se quería eliminar. Es un tradeoff aceptado, no un olvido.</p>
+     *
+     * <p>Única excepción: el login con Google usa una sesión durante los
+     * segundos del viaje a Google, para guardar el {@code state} que protege
+     * ese viaje. Los handlers de Google la destruyen al terminar.</p>
      */
     @Bean
     @Order(2)
@@ -145,6 +155,12 @@ public class SecurityConfig {
                 .successHandler(loginSuccessHandler)
                 .failureHandler(loginFailureHandler)
                 .permitAll()
+            )
+            // Segunda puerta de entrada: Google. Termina en la misma cookie JWT.
+            .oauth2Login(oauth -> oauth
+                .loginPage("/login")
+                .successHandler(googleLoginSuccessHandler)
+                .failureHandler(googleLoginFailureHandler)
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

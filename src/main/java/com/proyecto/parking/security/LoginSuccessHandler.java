@@ -40,6 +40,17 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         UsuarioPrincipal principal = (UsuarioPrincipal) authentication.getPrincipal();
         log.info("Inicio de sesión de {} (rol {}).", principal.getCorreo(), principal.getRol());
 
+        entregarCookieYRedirigir(request, response, principal);
+    }
+
+    /**
+     * Cierre común de todo login web (formulario y Google): emite la cookie JWT
+     * y manda al usuario al panel de su rol. Tenerlo en un solo sitio garantiza
+     * que los dos caminos de entrada dejen exactamente la misma cookie.
+     */
+    public void entregarCookieYRedirigir(HttpServletRequest request,
+                                         HttpServletResponse response,
+                                         UsuarioPrincipal principal) throws IOException {
         String token = jwtService.generarToken(principal.getCorreo(), principal.getRol());
         response.addHeader(HttpHeaders.SET_COOKIE, jwtService.crearCookieJwt(token, cookieSegura).toString());
 

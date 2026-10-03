@@ -21,6 +21,19 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017/parking}
       auto-index-creation: true
 
+  # Login con Google. Spring Boot ya conoce las URLs de Google por el nombre
+  # "google"; solo faltan las credenciales de Google Cloud Console. El valor por
+  # defecto deja arrancar la app sin ellas (Spring Boot rechaza un client-id
+  # vacio): solo el boton de Google falla, con un error de Google.
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:no-configurado}
+            client-secret: ${GOOGLE_CLIENT_SECRET:no-configurado}
+            scope: openid,profile,email
+
   thymeleaf:
     cache: true
     prefix: classpath:/templates/

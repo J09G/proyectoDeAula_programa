@@ -11,6 +11,7 @@ import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -77,6 +79,40 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario guardado = usuarioRepository.save(usuario);
         log.info("Usuario {} registrado con rol {}.", correoNormalizado, rolNombre);
         return guardado;
+    }
+
+    @Override
+    public Usuario obtenerOCrearUsuarioGoogle(String correo, String nombre) {
+        String correoNormalizado = correo.trim().toLowerCase(Locale.ROOT);
+
+        Optional<Usuario> existente = usuarioRepository.findByCorreo(correoNormalizado);
+        if (existente.isPresent()) {
+            return existente.get();
+        }
+
+        Rol rol = rolRepository.findByNombre(Rol.CLIENTE)
+                .orElseThrow(() -> new IllegalStateException("Rol no configurado: " + Rol.CLIENTE));
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombre == null || nombre.isBlank()
+                ? correoNormalizado.substring(0, correoNormalizado.indexOf('@'))
+                : nombre.trim());
+        usuario.setCorreo(correoNormalizado);
+        usuario.setRol(rol);
+        usuario.setHabilitado(true);
+        // Sin contraseña (entra solo por Google) y sin cédula ni placa: las
+        // completa después. Los campos nulos no se escriben en Mongo, y por eso
+        // los índices dispersos de cédula y placa no los cuentan.
+
+        try {
+            Usuario guardado = usuarioRepository.save(usuario);
+            log.info("Usuario {} creado desde Google con rol {}.", correoNormalizado, Rol.CLIENTE);
+            return guardado;
+        } catch (DuplicateKeyException e) {
+            // Dos primeros logins casi simultáneos del mismo correo: el índice
+            // único dejó pasar solo uno; se devuelve ese.
+            return usuarioRepository.findByCorreo(correoNormalizado).orElseThrow(() -> e);
+        }
     }
 
     @Override
