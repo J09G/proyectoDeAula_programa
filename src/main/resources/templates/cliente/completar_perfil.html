@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('completarPerfil.titulo')}"></th:block>
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('zonas')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{completarPerfil.titulo}">Completa tus datos</h1>
+      <p th:text="#{completarPerfil.subtitulo}">Antes de reservar necesitamos tu cédula y la placa de tu vehículo.</p>
+    </div>
+  </div>
+
+  <div class="mensajes">
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+  </div>
+
+  <form th:action="@{/cliente/completar-perfil}" th:object="${form}" method="post"
+        class="card" style="max-width:520px;">
+
+    <input type="hidden" th:field="*{continuar}">
+
+    <p style="font-size:0.9375rem; color:var(--gray-500); margin-bottom:22px;"
+       th:text="#{completarPerfil.porque}">El parqueadero busca tus reservas por cédula y reconoce tu vehículo por la placa al llegar.</p>
+
+    <label for="cedula" th:text="#{common.cedula}">Cédula</label>
+    <input type="text" id="cedula" th:field="*{cedula}" inputmode="numeric"
+           pattern="[0-9]{6,12}" required th:readonly="${cedulaFija}">
+    <small class="campo-error" th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}"></small>
+
+    <label for="placa" th:text="#{common.placa}">Placa</label>
+    <input type="text" id="placa" th:field="*{placa}" placeholder="ABC123"
+           required th:readonly="${placaFija}">
+    <small class="campo-error" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}"></small>
+
+    <button type="submit" class="btn-primary" style="margin-top:8px;"
+            th:text="#{completarPerfil.guardar}">Guardar y continuar</button>
+  </form>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

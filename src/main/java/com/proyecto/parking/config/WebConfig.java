@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Configuración de MVC: selección de idioma.
+ * Configuración de MVC: selección de idioma y exigencia de perfil completo
+ * antes de reservar.
  *
  * <p>El idioma se cambia añadiendo {@code ?lang=en} a cualquier URL y se guarda
  * en una cookie, así que la elección sobrevive a la navegación y al cierre del
@@ -52,5 +53,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        // Solo el flujo de reserva exige cédula y placa; ver zonas y el panel no.
+        registry.addInterceptor(new PerfilCompletoInterceptor()).addPathPatterns("/reserva/**");
     }
 }

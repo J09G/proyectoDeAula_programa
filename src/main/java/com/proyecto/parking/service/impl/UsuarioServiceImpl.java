@@ -116,6 +116,35 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public void completarPerfil(String idUsuario, String cedula, String placa) {
+        Usuario usuario = obtenerUsuarioPorId(idUsuario);
+
+        if (usuario.getCedula() == null) {
+            String cedulaNormalizada = cedula.trim();
+            if (usuarioRepository.existsByCedula(cedulaNormalizada)) {
+                throw new ReglaNegocioException("La cédula ya está registrada.");
+            }
+            usuario.setCedula(cedulaNormalizada);
+        }
+        if (usuario.getPlaca() == null) {
+            String placaNormalizada = placa.trim().toUpperCase(Locale.ROOT);
+            if (usuarioRepository.existsByPlaca(placaNormalizada)) {
+                throw new ReglaNegocioException("La placa ya está registrada por otro usuario.");
+            }
+            usuario.setPlaca(placaNormalizada);
+        }
+
+        try {
+            usuarioRepository.save(usuario);
+        } catch (DuplicateKeyException e) {
+            // Otro usuario registró la misma cédula o placa entre la comprobación
+            // y el guardado; el índice único lo frenó.
+            throw new ReglaNegocioException("La cédula o la placa ya están registradas.");
+        }
+        log.info("Perfil de {} completado.", idUsuario);
+    }
+
+    @Override
     public Usuario obtenerUsuarioPorId(String idUsuario) {
         return usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> RecursoNoEncontradoException.de("Usuario", idUsuario));

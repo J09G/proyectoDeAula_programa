@@ -21,6 +21,16 @@ public interface UsuarioService {
      */
     Usuario obtenerOCrearUsuarioGoogle(String correo, String nombre);
 
+    /**
+     * Completa la cédula y la placa que le falten al usuario (típicamente, quien
+     * entró con Google). Solo llena lo que está vacío: un dato que ya tiene no
+     * se cambia por aquí, eso le corresponde al superadministrador.
+     *
+     * @throws com.proyecto.parking.exception.ReglaNegocioException
+     *         si la cédula o la placa ya pertenecen a otro usuario
+     */
+    void completarPerfil(String idUsuario, String cedula, String placa);
+
     Usuario obtenerUsuarioPorId(String idUsuario);
 
     Usuario obtenerUsuarioPorCorreo(String correo);

@@ -25,6 +25,7 @@ public class UsuarioPrincipal implements UserDetails {
     private final String nombre;
     private final String rol;
     private final boolean habilitado;
+    private final boolean perfilCompleto;
 
     public UsuarioPrincipal(Usuario usuario) {
         this.id = usuario.getId();
@@ -33,9 +34,16 @@ public class UsuarioPrincipal implements UserDetails {
         this.nombre = usuario.getNombre();
         this.rol = usuario.getRol() != null ? usuario.getRol().getNombre() : null;
         this.habilitado = usuario.isHabilitado();
+        this.perfilCompleto = usuario.getCedula() != null && usuario.getPlaca() != null;
     }
 
     public String getId() { return id; }
+
+    /**
+     * Tiene cédula y placa. Quien entra con Google llega sin ellas y debe
+     * completarlas antes de reservar (ver PerfilCompletoInterceptor).
+     */
+    public boolean isPerfilCompleto() { return perfilCompleto; }
 
     public String getNombre() { return nombre; }
 
