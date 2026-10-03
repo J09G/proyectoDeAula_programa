@@ -25,7 +25,7 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public LoginSuccessHandler(LoginAttemptService loginAttemptService,
                                JwtService jwtService,
-                               @Value("${server.ssl.enabled}") boolean cookieSegura) {
+                               @Value("${parking.cookie-segura}") boolean cookieSegura) {
         this.loginAttemptService = loginAttemptService;
         this.jwtService = jwtService;
         this.cookieSegura = cookieSegura;

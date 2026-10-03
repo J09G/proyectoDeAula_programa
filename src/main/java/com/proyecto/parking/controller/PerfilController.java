@@ -41,7 +41,7 @@ public class PerfilController {
                             MessageSource messageSource,
                             LocaleResolver localeResolver,
                             JwtService jwtService,
-                            @Value("${server.ssl.enabled}") boolean cookieSegura) {
+                            @Value("${parking.cookie-segura}") boolean cookieSegura) {
         this.usuarioService = usuarioService;
         this.messageSource = messageSource;
         this.localeResolver = localeResolver;

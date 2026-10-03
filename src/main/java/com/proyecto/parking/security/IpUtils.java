@@ -3,26 +3,22 @@ package com.proyecto.parking.security;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Resolución de la IP del cliente.
+ * Resolución de la IP del cliente, para el bloqueo por intentos fallidos.
  *
- * <p>La app corre detrás de nginx, así que {@code request.getRemoteAddr()} sería
- * siempre la IP del proxy y el bloqueo por intentos fallidos afectaría a todo el
- * mundo a la vez. Se usa la primera entrada de {@code X-Forwarded-For}, que es
- * la que añade nuestro propio proxy.</p>
+ * <p>Detrás de un proxy (Render, nginx), {@code getRemoteAddr()} ya es la IP
+ * real del cliente: con {@code server.forward-headers-strategy=native} Tomcat
+ * la toma de {@code X-Forwarded-For} leyendo de derecha a izquierda y saltando
+ * solo los proxies de confianza.</p>
+ *
+ * <p>Antes se usaba la PRIMERA entrada de {@code X-Forwarded-For}. Esa la
+ * escribe el cliente (los proxies agregan al final), así que bastaba mandar
+ * una IP inventada distinta en cada intento para no llegar nunca al bloqueo.</p>
  */
 final class IpUtils {
 
     private IpUtils() {}
 
     static String obtenerIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            int coma = forwarded.indexOf(',');
-            String primera = (coma > 0 ? forwarded.substring(0, coma) : forwarded).trim();
-            if (!primera.isEmpty()) {
-                return primera;
-            }
-        }
         return request.getRemoteAddr();
     }
 }

@@ -100,6 +100,10 @@ parking:
   seguridad:
     max-intentos-login: ${MAX_INTENTOS_LOGIN:5}
     minutos-bloqueo: ${MINUTOS_BLOQUEO_LOGIN:30}
+  # Atributo Secure de las cookies propias (JWT): solo viajan por HTTPS. Es
+  # independiente de server.ssl.enabled: en Render la app no sirve HTTPS por sí
+  # misma (lo pone el proxy), pero el usuario sí llega por HTTPS.
+  cookie-segura: ${COOKIE_SEGURA:true}
   # Dirección pública para los enlaces de los correos (no se toma de la
   # cabecera Host, que controla el cliente). En Render: la URL del servicio.
   url-publica: ${APP_URL:http://localhost:8081}
@@ -150,6 +154,9 @@ server:
       cookie:
         secure: false
 
+parking:
+  cookie-segura: false
+
 logging:
   level:
     com.proyecto.parking: DEBUG
@@ -160,6 +167,17 @@ spring:
   config:
     activate:
       on-profile: prod
+
+server:
+  # Render (y el nginx de docker-compose) ponen el HTTPS; la app habla HTTP
+  # plano detrás de ellos.
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+  # Tomcat lee X-Forwarded-Proto/Host/For de los proxies de confianza (redes
+  # privadas): así sabe que el usuario llegó por https://<dominio> (Google exige
+  # esa misma redirect URI) y cuál es la IP real del cliente, leyendo
+  # X-Forwarded-For de derecha a izquierda para que el cliente no la falsifique.
+  forward-headers-strategy: native
 
 logging:
   level:
