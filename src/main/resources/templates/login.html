@@ -30,6 +30,7 @@
     <div th:if="${param.error != null and param.error[0] == 'google'}"
          class="alert alert-error" th:text="#{login.error.google}"></div>
     <div th:if="${param.logout != null}"  class="alert alert-success" th:text="#{login.logout}"></div>
+    <div th:if="${param.restablecida != null}" class="alert alert-success" th:text="#{login.restablecida}"></div>
     <div th:if="${param.expired != null}" class="alert alert-warn"    th:text="#{login.expired}"></div>
     <div th:if="${param.timeout != null}" class="alert alert-warn"    th:text="#{login.timeout}"></div>
     <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
@@ -40,6 +41,7 @@
 
       <label for="password" th:text="#{login.password}">Contraseña</label>
       <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+      <a th:href="@{/recuperar}" class="auth-olvide" th:text="#{login.olvide}">¿Olvidaste tu contraseña?</a>
 
       <button type="submit" class="btn-primary">
         <span th:text="#{login.entrar}">Iniciar sesión</span>

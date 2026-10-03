@@ -137,7 +137,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/", "/login", "/registro/cliente",
+                        "/", "/login", "/registro/cliente", "/recuperar", "/restablecer",
                         "/buscar", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.svg",
                         "/error", "/error/**",
                         "/actuator/health").permitAll()

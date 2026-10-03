@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('recuperar.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+
+<div class="auth">
+
+  <aside th:replace="~{fragments/layout :: ladoAuth('login')}"></aside>
+
+  <div class="auth-columna">
+
+  <div class="auth-controles">
+    <div th:replace="~{fragments/layout :: controles}"></div>
+  </div>
+
+  <div class="auth-caja">
+
+    <h1 th:text="#{recuperar.titulo}">¿Olvidaste tu contraseña?</h1>
+    <p class="auth-sub" th:text="#{recuperar.subtitulo}">Escribe tu correo y te enviaremos un enlace para elegir una nueva.</p>
+
+    <!-- El mismo mensaje exista o no el correo: no se revela quién está registrado. -->
+    <div th:if="${param.enviado != null}" class="alert alert-success" th:text="#{recuperar.enviado}"></div>
+
+    <form th:action="@{/recuperar}" th:object="${form}" method="post" th:if="${param.enviado == null}">
+      <label for="correo" th:text="#{login.correo}">Correo electrónico</label>
+      <input type="email" id="correo" th:field="*{correo}" placeholder="tu@correo.com" required autocomplete="email">
+      <small class="campo-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+
+      <button type="submit" class="btn-primary">
+        <span th:text="#{recuperar.enviar}">Enviar enlace</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </button>
+    </form>
+
+    <p class="auth-pie">
+      <a th:href="@{/login}" th:text="#{recuperar.volver}">Volver a iniciar sesión</a>
+    </p>
+
+  </div>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

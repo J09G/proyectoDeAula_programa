@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('restablecer.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+
+<div class="auth">
+
+  <aside th:replace="~{fragments/layout :: ladoAuth('login')}"></aside>
+
+  <div class="auth-columna">
+
+  <div class="auth-controles">
+    <div th:replace="~{fragments/layout :: controles}"></div>
+  </div>
+
+  <div class="auth-caja">
+
+    <h1 th:text="#{restablecer.titulo}">Elige tu nueva contraseña</h1>
+
+    <th:block th:if="${enlaceInvalido}">
+      <div class="alert alert-error" th:text="#{restablecer.invalido}"></div>
+      <p class="auth-pie">
+        <a th:href="@{/recuperar}" th:text="#{restablecer.pedirOtro}">Pedir un enlace nuevo</a>
+      </p>
+    </th:block>
+
+    <form th:unless="${enlaceInvalido}" th:action="@{/restablecer}" th:object="${form}" method="post">
+      <input type="hidden" th:field="*{token}">
+
+      <label for="password" th:text="#{perfil.passwordNueva}">Contraseña nueva</label>
+      <input type="password" id="password" th:field="*{password}" required minlength="8" maxlength="72"
+             autocomplete="new-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+
+      <label for="confirmPassword" th:text="#{perfil.passwordConfirmar}">Repite la contraseña nueva</label>
+      <input type="password" id="confirmPassword" th:field="*{confirmPassword}" required autocomplete="new-password">
+      <small class="campo-error" th:if="${#fields.hasErrors('passwordsCoinciden')}" th:errors="*{passwordsCoinciden}"></small>
+
+      <button type="submit" class="btn-primary">
+        <span th:text="#{restablecer.guardar}">Guardar contraseña</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </button>
+    </form>
+
+  </div>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

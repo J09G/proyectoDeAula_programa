@@ -100,6 +100,12 @@ parking:
   seguridad:
     max-intentos-login: ${MAX_INTENTOS_LOGIN:5}
     minutos-bloqueo: ${MINUTOS_BLOQUEO_LOGIN:30}
+  # Dirección pública para los enlaces de los correos (no se toma de la
+  # cabecera Host, que controla el cliente). En Render: la URL del servicio.
+  url-publica: ${APP_URL:http://localhost:8081}
+  recuperacion:
+    minutos-vigencia: 30
+    segundos-entre-envios: 60
 
 # ── Correo transaccional (Brevo) ────────────────────────────────────────────
 brevo:
