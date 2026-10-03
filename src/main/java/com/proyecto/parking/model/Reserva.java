@@ -41,7 +41,9 @@ public class Reserva {
         /** El cliente llegó y se convirtió en un registro de parqueo. */
         UTILIZADA,
         /** Aceptada pero el cliente nunca llegó; el cubículo fue liberado. */
-        EXPIRADA;
+        EXPIRADA,
+        /** El cliente la canceló estando pendiente o aceptada; si tenía cupo, se devolvió. */
+        CANCELADA;
 
         /** Estados que mantienen un cubículo bloqueado. */
         public boolean bloqueaEspacio() {
@@ -50,7 +52,12 @@ public class Reserva {
 
         /** Un estado final ya no admite transiciones. */
         public boolean esFinal() {
-            return this == RECHAZADA || this == UTILIZADA || this == EXPIRADA;
+            return this == RECHAZADA || this == UTILIZADA || this == EXPIRADA || this == CANCELADA;
+        }
+
+        /** Estados desde los que el cliente puede cancelar su reserva. */
+        public boolean esCancelable() {
+            return this == PENDIENTE || this == ACEPTADA;
         }
     }
 

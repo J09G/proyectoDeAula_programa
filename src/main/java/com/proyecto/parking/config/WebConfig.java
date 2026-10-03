@@ -54,6 +54,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
         // Solo el flujo de reserva exige cédula y placa; ver zonas y el panel no.
-        registry.addInterceptor(new PerfilCompletoInterceptor()).addPathPatterns("/reserva/**");
+        // Cancelar tampoco: no tiene sentido pedir datos para dejar ir un cupo.
+        registry.addInterceptor(new PerfilCompletoInterceptor())
+                .addPathPatterns("/reserva/**")
+                .excludePathPatterns("/reserva/cancelar/**");
     }
 }

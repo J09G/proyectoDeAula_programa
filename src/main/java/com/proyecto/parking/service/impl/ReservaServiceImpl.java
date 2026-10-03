@@ -114,6 +114,38 @@ public class ReservaServiceImpl implements ReservaService {
         return reservaRepository.findByCliente_Id(idCliente, Sort.by(Sort.Direction.DESC, "_id"));
     }
 
+    @Override
+    public Reserva cancelarReserva(String idReserva, String idCliente) {
+        // Una reserva ajena responde igual que una inexistente: así no se puede
+        // averiguar qué ids de reserva existen probando con la URL.
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .filter(r -> r.getCliente() != null && idCliente.equals(r.getCliente().getId()))
+                .orElseThrow(() -> RecursoNoEncontradoException.de("Reserva", idReserva));
+
+        EstadoReserva anterior = reserva.getEstado();
+        if (!anterior.esCancelable()) {
+            throw new ReglaNegocioException(
+                    "Esta reserva ya no se puede cancelar: está " + anterior.name().toLowerCase() + ".");
+        }
+
+        // Atómico: si el administrador la aceptó o rechazó entre la lectura de
+        // arriba y este punto, no se modifica nada y no se devuelve un cupo que
+        // no corresponde.
+        if (reservaRepository.cambiarEstadoSi(idReserva, anterior, EstadoReserva.CANCELADA) == 0) {
+            throw new ReglaNegocioException(
+                    "La reserva acaba de cambiar de estado. Revisa su estado actual e inténtalo de nuevo.");
+        }
+
+        // El cupo solo se devuelve después de confirmar el cambio de estado.
+        if (anterior.bloqueaEspacio()) {
+            parqueaderoService.liberarEspacio(reserva.getParqueadero().getId());
+        }
+
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        log.info("Reserva {} ({}) cancelada por el cliente {}.", idReserva, anterior, idCliente);
+        return reserva;
+    }
+
     // ── Administrador ────────────────────────────────────────────────────────
 
     @Override

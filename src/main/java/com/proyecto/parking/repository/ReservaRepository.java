@@ -4,6 +4,8 @@ import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,17 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
     List<Reserva> findByParqueadero_IdAndEspacioReservadoAndEstado(String idParqueadero, Integer espacioReservado, EstadoReserva estado);
 
     List<Reserva> findByParqueadero_IdAndEstado(String idParqueadero, EstadoReserva estado);
+
+    /**
+     * Cambia el estado solo si sigue siendo {@code estadoEsperado}, en una única
+     * operación atómica. Evita que dos acciones simultáneas (el cliente cancela
+     * mientras el administrador acepta) se pisen y dejen un cupo perdido.
+     *
+     * @return documentos modificados; 0 significa que el estado ya había cambiado
+     */
+    @Query("{ '_id': ?0, 'estado': ?1 }")
+    @Update("{ '$set': { 'estado': ?2 } }")
+    long cambiarEstadoSi(String id, EstadoReserva estadoEsperado, EstadoReserva nuevoEstado);
 
     /** Reservas aceptadas cuya hora de llegada ya pasó: candidatas a expirar. */
     List<Reserva> findByEstadoAndFechaReservaBefore(EstadoReserva estado, LocalDateTime limite);

@@ -69,6 +69,7 @@
             <th th:text="#{admin.espacio}">Espacio</th>
             <th th:text="#{cliente.fechaLlegada}">Fecha de llegada</th>
             <th th:text="#{common.estado}">Estado</th>
+            <th th:text="#{common.acciones}">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -82,6 +83,14 @@
                    obliga a tocar esta plantilla. -->
               <span th:class="'estado-' + ${#strings.toLowerCase(reserva.estado.name())}"
                     th:text="#{__${'estado.' + reserva.estado.name()}__}"></span>
+            </td>
+            <td>
+              <!-- Solo en estados cancelables; la regla vive en EstadoReserva.esCancelable(). -->
+              <form th:if="${reserva.estado.esCancelable()}"
+                    th:action="@{/reserva/cancelar/{id}(id=${reserva.id})}" method="post"
+                    th:attr="onsubmit='return confirm(\'' + #{cliente.confirmarCancelar} + '\')'">
+                <button type="submit" class="btn-accion btn-eliminar-sm" th:text="#{cliente.cancelarReserva}">Cancelar</button>
+              </form>
             </td>
           </tr>
         </tbody>

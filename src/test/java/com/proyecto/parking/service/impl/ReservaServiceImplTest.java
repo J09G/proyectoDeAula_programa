@@ -2,6 +2,7 @@ package com.proyecto.parking.service.impl;
 
 import com.proyecto.parking.config.ParkingProperties;
 import com.proyecto.parking.dto.ReservaForm;
+import com.proyecto.parking.exception.RecursoNoEncontradoException;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.RegistroParqueo.EstadoRegistro;
@@ -282,6 +283,77 @@ class ReservaServiceImplTest {
 
             verify(parqueaderoService, never()).liberarEspacio(anyString());
             verify(reservaRepository).deleteById(ID_RESERVA);
+        }
+    }
+
+    // ── Cancelar (cliente) ───────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Cancelar reserva")
+    class Cancelar {
+
+        @Test
+        @DisplayName("cancelar una ACEPTADA la deja CANCELADA y devuelve el cubículo")
+        void aceptadaDevuelveCupo() {
+            Reserva reserva = reservaPendiente(3);
+            reserva.setEstado(EstadoReserva.ACEPTADA);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.ACEPTADA, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+
+            Reserva cancelada = servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE);
+
+            assertThat(cancelada.getEstado()).isEqualTo(EstadoReserva.CANCELADA);
+            verify(parqueaderoService).liberarEspacio(ID_PARQUEADERO);
+        }
+
+        @Test
+        @DisplayName("cancelar una PENDIENTE no devuelve nada, porque nunca tomó cupo")
+        void pendienteNoDevuelveCupo() {
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reservaPendiente(3)));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+
+            servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE);
+
+            verify(parqueaderoService, never()).liberarEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("la reserva de otro cliente responde igual que una inexistente")
+        void ajenaEsNoEncontrada() {
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reservaPendiente(3)));
+
+            assertThatThrownBy(() -> servicio.cancelarReserva(ID_RESERVA, "otro-cliente"))
+                    .isInstanceOf(RecursoNoEncontradoException.class);
+            verify(reservaRepository, never()).cambiarEstadoSi(anyString(), any(), any());
+        }
+
+        @Test
+        @DisplayName("una reserva en estado final no se puede cancelar")
+        void estadoFinalNoSeCancela() {
+            Reserva reserva = reservaPendiente(3);
+            reserva.setEstado(EstadoReserva.UTILIZADA);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+
+            assertThatThrownBy(() -> servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE))
+                    .isInstanceOf(ReglaNegocioException.class);
+            verify(reservaRepository, never()).cambiarEstadoSi(anyString(), any(), any());
+        }
+
+        @Test
+        @DisplayName("si el administrador la cambió al mismo tiempo, no se devuelve ningún cupo")
+        void carreraConElAdministrador() {
+            Reserva reserva = reservaPendiente(3);
+            reserva.setEstado(EstadoReserva.ACEPTADA);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+            // El estado ya no era ACEPTADA cuando llegó el cambio atómico.
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.ACEPTADA, EstadoReserva.CANCELADA))
+                    .thenReturn(0L);
+
+            assertThatThrownBy(() -> servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE))
+                    .isInstanceOf(ReglaNegocioException.class);
+            verify(parqueaderoService, never()).liberarEspacio(anyString());
         }
     }
 

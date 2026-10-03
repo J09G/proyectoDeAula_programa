@@ -83,4 +83,18 @@ public class ReservaController {
             return "redirect:/reserva/" + form.getIdParqueadero();
         }
     }
+
+    /** Una reserva ajena o inexistente sale como 404 por GlobalExceptionHandler. */
+    @PostMapping("/cancelar/{idReserva}")
+    public String cancelarReserva(@AuthenticationPrincipal UsuarioPrincipal cliente,
+                                  @PathVariable String idReserva,
+                                  RedirectAttributes flash) {
+        try {
+            reservaService.cancelarReserva(idReserva, cliente.getId());
+            flash.addFlashAttribute("mensaje", "Reserva cancelada.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/cliente?scroll=reservas";
+    }
 }

@@ -11,6 +11,17 @@ public interface ReservaService {
 
     List<Reserva> listarReservasCliente(String idCliente);
 
+    /**
+     * El cliente cancela su propia reserva pendiente o aceptada. Si estaba
+     * aceptada, el cubículo vuelve al inventario del parqueadero.
+     *
+     * @throws com.proyecto.parking.exception.RecursoNoEncontradoException
+     *         si la reserva no existe o es de otro cliente (mismo error a propósito)
+     * @throws com.proyecto.parking.exception.ReglaNegocioException
+     *         si ya no está en un estado cancelable
+     */
+    Reserva cancelarReserva(String idReserva, String idCliente);
+
     /** Reservas del parqueadero, comprobando antes que sea del administrador. */
     List<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador);
 
