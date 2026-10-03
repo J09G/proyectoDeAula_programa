@@ -1,5 +1,6 @@
 package com.proyecto.parking.controller;
 
+import com.proyecto.parking.exception.RecursoNoEncontradoException;
 import com.proyecto.parking.model.Usuario;
 import com.proyecto.parking.security.JwtService;
 import com.proyecto.parking.service.UsuarioService;
@@ -48,20 +49,32 @@ public class AuthController {
 
     public record ValidacionErrorResponse(String mensaje, Map<String, String> campos) {}
 
+    /**
+     * Hash BCrypt de una contraseña cualquiera. Cuando el correo no existe se
+     * compara contra él, para que la respuesta tarde lo mismo que con un correo
+     * existente: si no, el tiempo delataría qué correos están registrados.
+     */
+    private String hashSenuelo;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        Usuario usuario = usuarioService.obtenerUsuarioPorCorreo(request.correo());
+        Usuario usuario;
+        try {
+            usuario = usuarioService.obtenerUsuarioPorCorreo(request.correo());
+        } catch (RecursoNoEncontradoException e) {
+            // Mismo 401 y mismo mensaje que una contraseña incorrecta (US-01 AC2).
+            // Antes esta excepción salía como 404 y revelaba que el correo no existe.
+            passwordEncoder.matches(request.password(), hashSenuelo());
+            return credencialesInvalidas();
+        }
 
-        if (usuario == null
-                || usuario.getContrasena() == null
+        if (usuario.getContrasena() == null
                 || !passwordEncoder.matches(request.password(), usuario.getContrasena())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Correo o contraseña incorrectos."));
+            return credencialesInvalidas();
         }
 
         if (!usuario.isHabilitado()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Correo o contraseña incorrectos."));
+            return credencialesInvalidas();
         }
 
         String rol = usuario.getRol().getNombre();
@@ -90,6 +103,20 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new TokenResponse(token, jwtService.getExpirationMs(), creado.getRol().getNombre()));
+    }
+
+    private ResponseEntity<ErrorResponse> credencialesInvalidas() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Correo o contraseña incorrectos."));
+    }
+
+    private String hashSenuelo() {
+        // Se calcula una vez, en la primera petición, con el mismo codificador
+        // (y por lo tanto el mismo costo) que las contraseñas reales.
+        if (hashSenuelo == null) {
+            hashSenuelo = passwordEncoder.encode("senuelo-para-igualar-tiempos");
+        }
+        return hashSenuelo;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

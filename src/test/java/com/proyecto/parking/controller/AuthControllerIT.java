@@ -128,4 +128,26 @@ class AuthControllerIT {
         mockMvc.perform(post("/api/auth/login").contentType("application/json").content(body))
                 .andExpect(status().isUnauthorized());
     }
+
+    /**
+     * US-01 AC2: un correo inexistente responde exactamente igual que una
+     * contraseña incorrecta. Antes respondía 404 y delataba qué correos existen.
+     */
+    @Test
+    void loginConCorreoInexistenteRespondeIgualQueContrasenaIncorrecta() throws Exception {
+        usuarioService.registrarUsuario("Ana Torres", "1000000001", "ana@correo.com", "clave1234", "ABC123", "Cliente");
+
+        String existente = mockMvc.perform(post("/api/auth/login").contentType("application/json")
+                        .content("{\"correo\":\"ana@correo.com\",\"password\":\"clave-mala\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+
+        String inexistente = mockMvc.perform(post("/api/auth/login").contentType("application/json")
+                        .content("{\"correo\":\"nadie@correo.com\",\"password\":\"clave-mala\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+
+        org.junit.jupiter.api.Assertions.assertEquals(existente, inexistente,
+                "El cuerpo de la respuesta tampoco debe permitir distinguir los dos casos");
+    }
 }
