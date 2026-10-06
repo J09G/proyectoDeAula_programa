@@ -79,7 +79,10 @@ public class BrevoEmailService implements EmailService {
 
         try {
             restTemplate.postForEntity(apiUrl, new HttpEntity<>(payload, headers), String.class);
-            log.debug("Correo enviado a {}.", destinatario);
+            // En INFO a propósito: en Render es la única forma de saber que Brevo
+            // recibió el correo. Si aun así no llega, el motivo está en Brevo
+            // (remitente sin verificar, IP sin autorizar, spam).
+            log.info("Correo a {} aceptado por Brevo.", destinatario);
         } catch (RestClientException e) {
             // Un fallo de correo no debe tumbar la operación de negocio que lo disparó.
             log.error("No se pudo enviar el correo a {}: {}", destinatario, e.getMessage());

@@ -20,6 +20,7 @@ Aplicación web monolítica con **Spring Boot 3.5 + Thymeleaf + MongoDB**.
 - [Reglas de negocio](#reglas-de-negocio)
 - [Seguridad](#seguridad)
 - [Tests](#tests)
+- [Despliegue en Render](#despliegue-en-render)
 - [Despliegue con Docker](#despliegue-con-docker)
 - [Decisiones técnicas y limitaciones conocidas](#decisiones-técnicas-y-limitaciones-conocidas)
 
@@ -50,7 +51,7 @@ mongod --dbpath ./data
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-La aplicación queda en <http://localhost:8080>.
+La aplicación queda en <http://localhost:8081>.
 
 > En el perfil `dev` el TLS está desactivado y las cookies no exigen HTTPS.
 > En `prod` ocurre lo contrario: revisa [Variables de entorno](#variables-de-entorno).
@@ -72,11 +73,17 @@ completa está en [`.env.example`](.env.example).
 |----------|-------------|-------------|-------------|
 | `MONGODB_URI` | sí en producción | `mongodb://localhost:27017/parking` | Cadena de conexión |
 | `SPRING_PROFILES_ACTIVE` | no | `dev` | `dev` o `prod` |
-| `PORT` | no | `8080` | Puerto HTTP |
-| `SSL_ENABLED` | no | `true` (`false` en dev) | TLS en el backend |
+| `PORT` | no | `8081` | Puerto HTTP |
+| `JWT_SECRET` | sí en `prod` | secreto de desarrollo | Firma de los JWT. En `prod` la app no arranca sin él. Generar con `openssl rand -base64 48` |
+| `JWT_EXPIRATION_MS` | no | `1800000` (30 min) | Vigencia del JWT |
+| `APP_URL` | sí en producción | `http://localhost:8081` | URL pública; con ella se arman los enlaces de los correos |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | para el login con Google | `no-configurado` | Credenciales OAuth de Google Cloud |
+| `SSL_ENABLED` | no | `false` en `dev` y `prod` | TLS en el propio backend. En Render debe quedar en `false` |
 | `KEYSTORE_PASSWORD` | si `SSL_ENABLED=true` | — | Contraseña del keystore |
-| `BREVO_API_KEY` | no | vacía | Sin ella, los correos sólo se registran en el log |
-| `BREVO_SENDER_EMAIL` | no | `no-reply@parkingapp.local` | Remitente |
+| `COOKIE_SEGURA` | no | `true` (`false` en `dev`) | Atributo `Secure` de la cookie JWT |
+| `BREVO_API_KEY` | para enviar correos | vacía | Sin ella, los correos sólo se registran en el log |
+| `BREVO_SENDER_EMAIL` | sí si hay `BREVO_API_KEY` | `no-reply@parkingapp.local` | Remitente. Debe estar **verificado en Brevo**; si no, Brevo acepta el envío pero no lo entrega |
+| `BREVO_SENDER_NAME` | no | `ParkingApp` | Nombre visible del remitente |
 | `SUPERADMIN_EMAIL` | no | `superadmin@parking.com` | Superadmin inicial |
 | `SUPERADMIN_PASSWORD` | recomendada | generada al azar | Ver abajo |
 | `RESERVAS_MINUTOS_TOLERANCIA` | no | `120` | Margen antes de expirar una reserva |
@@ -254,6 +261,45 @@ hay una base de datos**:
 ```bash
 MONGODB_URI=mongodb://localhost:27017/parking-test ./mvnw test
 ```
+
+---
+
+## Despliegue en Render
+
+Demo: <https://proyectodeaula-programa.onrender.com>
+
+El servicio despliega solo cada `push` a la rama configurada (unos 3 minutos).
+
+**Variables mínimas:** `SPRING_PROFILES_ACTIVE=prod`, `MONGODB_URI` (Atlas),
+`JWT_SECRET`, `APP_URL` (la URL de arriba), `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, `BREVO_API_KEY` y `BREVO_SENDER_EMAIL`.
+
+**HTTPS.** Lo pone el proxy de Render; la app habla HTTP plano detrás de él
+(`SSL_ENABLED=false`). Con `server.forward-headers-strategy: native` Tomcat lee
+las cabeceras `X-Forwarded-*` del proxy, así sabe que el usuario llegó por
+`https://` (Google exige esa misma *redirect URI*) y cuál es su IP real.
+
+**Google.** En Google Cloud Console, la *redirect URI* autorizada debe ser
+`https://proyectodeaula-programa.onrender.com/login/oauth2/code/google`.
+
+**Brevo.** La primera vez que Render envía un correo, Brevo bloquea la IP nueva
+y manda un aviso a la cuenta: hay que autorizarla. Render sale a internet por
+varias IP (panel del servicio > *Connect* > *Outbound*); conviene autorizarlas
+todas en Brevo > Seguridad > IP autorizadas.
+
+### Limitaciones del plan gratuito
+
+- **El servidor se duerme.** Tras unos 15 minutos sin visitas, Render apaga la
+  instancia. La siguiente visita la vuelve a encender y **tarda alrededor de un
+  minuto** en responder; después funciona con normalidad. Antes de una demo,
+  abrir la URL un par de minutos antes.
+- **Recursos limitados** (512 MB de RAM, CPU compartida): pensado para pruebas,
+  no para carga real.
+- **Sin estado entre reinicios** en memoria: al dormirse se pierde el conteo de
+  intentos de login fallidos (`LoginAttemptService`). Los datos viven en Atlas y
+  no se ven afectados.
+- **Brevo gratuito:** 300 correos al día. Con remitente `@gmail.com`, algunos
+  proveedores pueden mandar los correos a spam.
 
 ---
 
