@@ -196,27 +196,44 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = obtenerUsuarioPorId(idUsuario);
         String correoNormalizado = correo.trim().toLowerCase(Locale.ROOT);
 
-        if (!correoNormalizado.equals(usuario.getCorreo())
-                && usuarioRepository.existsByCorreo(correoNormalizado)) {
+        boolean cambioCorreo = !correoNormalizado.equals(usuario.getCorreo());
+        boolean cambioPassword = passwordNueva != null && !passwordNueva.isBlank();
+
+        if (cambioCorreo && (passwordActual == null || passwordActual.isBlank())) {
+            throw new ReglaNegocioException("Escribe tu contraseña actual para cambiar el correo.");
+        }
+        // El correo pide la contraseña igual que la contraseña misma: es la
+        // llave de "¿Olvidaste tu contraseña?". Sin esto, quien encuentre una
+        // sesión abierta pondría su correo, pediría el enlace y se quedaría
+        // con la cuenta. Se comprueba aquí y no en el formulario porque
+        // requiere el hash guardado, que el DTO no conoce.
+        if (cambioCorreo || cambioPassword) {
+            verificarPasswordActual(usuario, passwordActual);
+        }
+
+        if (cambioCorreo && usuarioRepository.existsByCorreo(correoNormalizado)) {
             throw new ReglaNegocioException("Ese correo ya pertenece a otro usuario.");
         }
 
         usuario.setNombre(nombre.trim());
         usuario.setCorreo(correoNormalizado);
-
-        boolean cambioPassword = passwordNueva != null && !passwordNueva.isBlank();
         if (cambioPassword) {
-            // Se comprueba aquí y no en el formulario porque requiere el hash
-            // guardado, que el DTO no conoce.
-            if (!passwordEncoder.matches(passwordActual, usuario.getContrasena())) {
-                throw new ReglaNegocioException("La contraseña actual no es correcta.");
-            }
             usuario.setContrasena(passwordEncoder.encode(passwordNueva));
         }
 
         usuarioRepository.save(usuario);
         log.info("Perfil de {} actualizado{}.", idUsuario, cambioPassword ? " (con cambio de contraseña)" : "");
         return cambioPassword;
+    }
+
+    private void verificarPasswordActual(Usuario usuario, String passwordActual) {
+        if (usuario.getContrasena() == null) {
+            // Cuenta creada con Google: no hay contraseña con qué comparar.
+            throw new ReglaNegocioException(SIN_CONTRASENA);
+        }
+        if (!passwordEncoder.matches(passwordActual, usuario.getContrasena())) {
+            throw new ReglaNegocioException("La contraseña actual no es correcta.");
+        }
     }
 
     @Override

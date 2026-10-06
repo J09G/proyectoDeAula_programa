@@ -33,6 +33,7 @@
       <label for="correo" th:text="#{common.correo}">Correo electrónico</label>
       <input type="email" id="correo" th:field="*{correo}" required>
       <small class="campo-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
+      <small th:text="#{perfil.correoAyuda}">Para cambiar el correo también se pide tu contraseña actual.</small>
 
       <label th:text="#{perfil.rolAsignado}">Rol asignado</label>
       <!-- Sólo informativo: el rol no se cambia desde aquí. -->

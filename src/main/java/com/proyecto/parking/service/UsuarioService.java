@@ -6,6 +6,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface UsuarioService {
 
+    /** Respuesta cuando una cuenta creada con Google, sin contraseña, intenta un cambio que la exige. */
+    String SIN_CONTRASENA = "Tu cuenta aún no tiene contraseña. Créala con \"¿Olvidaste tu contraseña?\" en la pantalla de inicio de sesión.";
+
     Usuario registrarUsuario(String nombre, String cedula, String correo,
                              String contrasena, String placa, String rolNombre);
 
