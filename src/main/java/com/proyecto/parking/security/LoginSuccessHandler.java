@@ -51,6 +51,11 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     public void entregarCookieYRedirigir(HttpServletRequest request,
                                          HttpServletResponse response,
                                          UsuarioPrincipal principal) throws IOException {
+        // Token CSRF nuevo tras autenticarse: el que se usó siendo anónimo no
+        // debe servir con la sesión iniciada. Borrar la cookie basta; la
+        // siguiente página crea uno nuevo.
+        SecurityConfig.REPOSITORIO_CSRF.saveToken(null, request, response);
+
         String token = jwtService.generarToken(principal.getCorreo(), principal.getRol());
         response.addHeader(HttpHeaders.SET_COOKIE, jwtService.crearCookieJwt(token, cookieSegura).toString());
 

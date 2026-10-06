@@ -90,6 +90,8 @@ class NavegadorRealIT {
         HttpResponse<String> login = postFormulario("/login",
                 "email=ana%40correo.com&password=clave1234&_csrf=" + csrf);
         assertTrue(login.headers().firstValue("Location").orElse("").endsWith("/cliente"), "El login debe funcionar");
+        assertTrue(login.headers().allValues("Set-Cookie").stream().anyMatch(c -> c.startsWith("XSRF-TOKEN=;")),
+                "Al iniciar sesión se descarta el token CSRF que se usó siendo anónimo");
     }
 
     @Test
@@ -104,5 +106,25 @@ class NavegadorRealIT {
         assertEquals(302, logout.statusCode(), "Cerrar sesión no debe dar 403");
         assertTrue(logout.headers().firstValue("Location").orElse("").endsWith("/login?logout"));
         assertEquals(302, get("/cliente").statusCode(), "Tras cerrar sesión, el panel vuelve a pedir login");
+    }
+
+    @Test
+    void cerrarSesionFuncionaAunqueLaPaginaCargueSusArchivos() throws Exception {
+        iniciarSesion();
+
+        HttpResponse<String> panel = get("/cliente");
+        assertEquals(200, panel.statusCode());
+        // Un navegador real, tras recibir el HTML, pide el CSS, el JS, las fuentes y el icono.
+        for (String recurso : new String[] {"/css/style.css", "/css/cliente.css", "/js/app.js", "/favicon.svg"}) {
+            HttpResponse<String> r = get(recurso);
+            assertEquals(200, r.statusCode(), recurso);
+            assertTrue(r.headers().allValues("Set-Cookie").stream().noneMatch(c -> c.startsWith("XSRF-TOKEN=")),
+                    "Pedir " + recurso + " no debe tocar la cookie del token CSRF");
+        }
+
+        HttpResponse<String> logout = postFormulario("/logout", "_csrf=" + csrfDe(panel.body()));
+
+        assertEquals(302, logout.statusCode(), "Cerrar sesión no debe dar 403 por cargar el CSS o el JS");
+        assertTrue(logout.headers().firstValue("Location").orElse("").endsWith("/login?logout"));
     }
 }

@@ -12,13 +12,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    /**
+     * Dónde vive el token CSRF de la app web: la cookie XSRF-TOKEN. Es estático
+     * porque LoginSuccessHandler también lo usa, para cambiar el token al
+     * iniciar sesión (ver la configuración de csrf más abajo).
+     */
+    public static final CsrfTokenRepository REPOSITORIO_CSRF = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
     /**
      * Content-Security-Policy.
@@ -184,7 +193,17 @@ public class SecurityConfig {
             // El token CSRF ya no puede vivir en sesion (no hay); se guarda en su
             // propia cookie (legible por JS a proposito, es lo que exige el patron
             // "double submit cookie" para que Thymeleaf/JS puedan leerlo y mandarlo).
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            //
+            // Spring cambia el token en cada "inicio de sesión" que detecta. Con
+            // STATELESS, su SessionManagementFilter cree que CADA petición con la
+            // cookie JWT es un login nuevo, así que la primera petición tras
+            // cargar una página (el CSS) borraba la cookie XSRF-TOKEN y el
+            // siguiente formulario, como "Cerrar sesión", daba 403. Por eso se
+            // apaga ese cambio automático y LoginSuccessHandler lo hace a mano,
+            // solo en los logins de verdad.
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(REPOSITORIO_CSRF)
+                .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
             .addFilterBefore(jwtCookieAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(estadoCuentaFilter, JwtCookieAuthenticationFilter.class);
 
