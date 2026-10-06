@@ -95,3 +95,23 @@
   background: var(--surface);
 }
 .dashboard-wrapper iframe { width: 100%; height: 100%; border: none; display: block; }
+
+/* ── Ubicación en el mapa (configuración del parqueadero) ───────────────── */
+.ubicacion-ayuda,
+.ubicacion-actual {
+  font-size: 0.9375rem;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+}
+
+.mapa-ubicacion {
+  height: 360px;
+  margin-bottom: 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  /* Leaflet usa z-index altos internamente: se encierran aquí para que el
+     mapa no tape el menú de navegación al hacer scroll. */
+  isolation: isolate;
+  z-index: 0;
+  cursor: crosshair;
+}

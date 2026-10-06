@@ -3,6 +3,7 @@
 <head>
   <th:block th:replace="~{fragments/layout :: cabeza('admin.configuracion')}"></th:block>
   <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/js/leaflet/leaflet.css}">
 </head>
 <body>
 
@@ -104,8 +105,31 @@
     </div>
   </section>
 
+  <!-- Ubicación en el mapa del cliente (US-15) -->
+  <section class="seccion" id="ubicacion">
+    <h3 th:text="#{admin.ubicacion}">Ubicación en el mapa</h3>
+    <p class="ubicacion-ayuda" th:text="#{admin.ubicacionAyuda}">Haz clic en el mapa sobre la entrada del parqueadero y guarda.</p>
+
+    <div th:unless="${parqueadero.tieneUbicacion()}" class="alert alert-info" th:text="#{admin.sinUbicacion}"></div>
+    <p th:if="${parqueadero.tieneUbicacion()}" class="ubicacion-actual"
+       th:text="#{admin.ubicacionActual(${#strings.toString(parqueadero.latitud)}, ${#strings.toString(parqueadero.longitud)})}"></p>
+
+    <div id="mapa-ubicacion" class="mapa-ubicacion"
+         th:data-lat="${parqueadero.latitud}" th:data-lng="${parqueadero.longitud}"></div>
+
+    <form th:action="@{/admin/parqueadero/{id}/ubicacion(id=${parqueadero.id})}" method="post">
+      <input type="hidden" name="latitud" id="ubicacion-latitud" th:value="${parqueadero.latitud}">
+      <input type="hidden" name="longitud" id="ubicacion-longitud" th:value="${parqueadero.longitud}">
+      <!-- Se habilita al marcar un punto (mapa-ubicacion.js). -->
+      <button type="submit" class="btn-primary" id="ubicacion-guardar" disabled
+              th:text="#{admin.guardarUbicacion}">Guardar ubicación</button>
+    </form>
+  </section>
+
 </main>
 
 <th:block th:replace="~{fragments/layout :: pie}"></th:block>
+<script th:src="@{/js/leaflet/leaflet.js}"></script>
+<script th:src="@{/js/mapa-ubicacion.js}"></script>
 </body>
 </html>

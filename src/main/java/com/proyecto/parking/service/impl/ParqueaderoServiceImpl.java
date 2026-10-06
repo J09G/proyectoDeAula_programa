@@ -136,6 +136,18 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
+    public void actualizarUbicacion(String idParqueadero, String idAdministrador,
+                                    double latitud, double longitud) {
+        Parqueadero parqueadero = obtenerParqueaderoDeAdministrador(idParqueadero, idAdministrador);
+
+        parqueadero.setLatitud(latitud);
+        parqueadero.setLongitud(longitud);
+
+        parqueaderoRepository.save(parqueadero);
+        log.info("Ubicación del parqueadero {} actualizada.", idParqueadero);
+    }
+
+    @Override
     public void actualizarCapacidad(String idParqueadero, String idAdministrador,
                                     int espaciosTotales, int espaciosDisponibles) {
         Parqueadero parqueadero = obtenerParqueaderoDeAdministrador(idParqueadero, idAdministrador);

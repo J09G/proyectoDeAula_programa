@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -247,5 +248,70 @@ class AdminParqueaderoIT {
         assertFalse(html.contains("name=\"espaciosTotales\""), "La capacidad se cambia en /editar");
         assertFalse(html.contains("name=\"habilitado\""), "El estado se cambia en /editar");
         assertTrue(html.contains(panel + "/editar"), "El panel enlaza a la configuración");
+    }
+
+    // ── Ubicación en el mapa (US-15, TASK-37) ────────────────────────────────
+
+    private Parqueadero recargado() {
+        return parqueaderoRepository.findById(parqueadero.getId()).orElseThrow();
+    }
+
+    @Test
+    void laConfiguracionTraeElMiniMapa() throws Exception {
+        String html = mockMvc.perform(get(panel + "/editar").cookie(entrar("admin@correo.com")))
+                .andReturn().getResponse().getContentAsString();
+
+        assertTrue(html.contains("id=\"mapa-ubicacion\""), "Contenedor del mini-mapa");
+        assertTrue(html.contains("/js/leaflet/leaflet.js"), "Leaflet servido por la propia app");
+        assertTrue(html.contains("name=\"latitud\"") && html.contains("name=\"longitud\""));
+    }
+
+    @Test
+    void leafletSeSirveDesdeLaApp() throws Exception {
+        mockMvc.perform(get("/js/leaflet/leaflet.js")).andExpect(status().isOk());
+        mockMvc.perform(get("/js/leaflet/leaflet.css")).andExpect(status().isOk());
+        mockMvc.perform(get("/js/leaflet/images/marker-icon.png")).andExpect(status().isOk());
+    }
+
+    @Test
+    void ac1_guardarLaUbicacionMarcadaEnElMapa() throws Exception {
+        mockMvc.perform(post(panel + "/ubicacion").with(csrf()).cookie(entrar("admin@correo.com"))
+                        .param("latitud", "10.4236")
+                        .param("longitud", "-75.5478"))
+                .andExpect(redirectedUrl(panel + "/editar"))
+                .andExpect(flash().attribute("mensaje", "Ubicación guardada."));
+
+        assertEquals(10.4236, recargado().getLatitud());
+        assertEquals(-75.5478, recargado().getLongitud());
+    }
+
+    @Test
+    void unaLatitudFueraDeRangoSeRechaza() throws Exception {
+        mockMvc.perform(post(panel + "/ubicacion").with(csrf()).cookie(entrar("admin@correo.com"))
+                        .param("latitud", "95")
+                        .param("longitud", "-75.5478"))
+                .andExpect(redirectedUrl(panel + "/editar"))
+                .andExpect(flash().attributeExists("error"));
+
+        assertNull(recargado().getLatitud());
+    }
+
+    @Test
+    void sinMarcarUnPuntoNoSeGuardaNada() throws Exception {
+        mockMvc.perform(post(panel + "/ubicacion").with(csrf()).cookie(entrar("admin@correo.com")))
+                .andExpect(redirectedUrl(panel + "/editar"))
+                .andExpect(flash().attributeExists("error"));
+
+        assertNull(recargado().getLatitud());
+    }
+
+    @Test
+    void otroAdministradorNoPuedeMoverLaUbicacion() throws Exception {
+        mockMvc.perform(post(panel + "/ubicacion").with(csrf()).cookie(entrar("otro@correo.com"))
+                        .param("latitud", "10.4")
+                        .param("longitud", "-75.5"))
+                .andExpect(status().isForbidden());
+
+        assertNull(recargado().getLatitud());
     }
 }

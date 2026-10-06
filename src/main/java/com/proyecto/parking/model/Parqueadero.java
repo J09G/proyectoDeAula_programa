@@ -23,6 +23,14 @@ public class Parqueadero {
     private Boolean habilitado = true;
 
     /**
+     * Ubicación para el mapa del cliente (US-15). Ambas vacías mientras el
+     * administrador no marque el punto: entonces el parqueadero no sale en el
+     * mapa, pero sigue apareciendo en la búsqueda por zona.
+     */
+    private Double latitud;
+    private Double longitud;
+
+    /**
      * Foto del parqueadero que se muestra en las tarjetas del cliente.
      * Si está vacía, la vista cae en una imagen de respaldo.
      */
@@ -96,6 +104,11 @@ public class Parqueadero {
     public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
 
     public Boolean getHabilitado() { return habilitado; }
+    public Double getLatitud() { return latitud; }
+    public void setLatitud(Double latitud) { this.latitud = latitud; }
+    public Double getLongitud() { return longitud; }
+    public void setLongitud(Double longitud) { this.longitud = longitud; }
+    public boolean tieneUbicacion() { return latitud != null && longitud != null; }
     public void setHabilitado(Boolean habilitado) { this.habilitado = habilitado; }
 
     public Zona getZona() { return zona; }

@@ -40,6 +40,9 @@ public interface ParqueaderoService {
 
     void actualizarDatos(String idParqueadero, String idAdministrador, EditarParqueaderoForm form);
 
+    /** Guarda el punto marcado en el mini-mapa, comprobando que el parqueadero sea del administrador. */
+    void actualizarUbicacion(String idParqueadero, String idAdministrador, double latitud, double longitud);
+
     void actualizarCapacidad(String idParqueadero, String idAdministrador,
                              int espaciosTotales, int espaciosDisponibles);
 

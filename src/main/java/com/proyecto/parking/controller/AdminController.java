@@ -4,6 +4,7 @@ import com.proyecto.parking.dto.EditarParqueaderoForm;
 import com.proyecto.parking.dto.EntradaForm;
 import com.proyecto.parking.dto.EspaciosForm;
 import com.proyecto.parking.dto.ParqueaderoForm;
+import com.proyecto.parking.dto.UbicacionForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.RegistroParqueo;
@@ -201,6 +202,25 @@ public class AdminController {
             return volverAConfiguracion(id);
         }
         flash.addFlashAttribute("mensaje", "Información actualizada correctamente.");
+        return volverAConfiguracion(id);
+    }
+
+    @PostMapping("/parqueadero/{id}/ubicacion")
+    public String actualizarUbicacion(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                      @PathVariable String id,
+                                      @Valid @ModelAttribute UbicacionForm form,
+                                      BindingResult errores,
+                                      RedirectAttributes flash) {
+        if (errores.hasErrors()) {
+            // Se comprueba la propiedad aunque el formulario venga mal, para que
+            // un administrador ajeno reciba 403 y no un mensaje de validación.
+            parqueaderoService.obtenerParqueaderoDeAdministrador(id, admin.getId());
+            flash.addFlashAttribute("error", Errores.resumen(errores));
+            return volverAConfiguracion(id);
+        }
+
+        parqueaderoService.actualizarUbicacion(id, admin.getId(), form.getLatitud(), form.getLongitud());
+        flash.addFlashAttribute("mensaje", "Ubicación guardada.");
         return volverAConfiguracion(id);
     }
 
