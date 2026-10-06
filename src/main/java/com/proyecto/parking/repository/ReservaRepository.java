@@ -2,6 +2,8 @@ package com.proyecto.parking.repository;
 
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -15,6 +17,12 @@ import java.util.List;
 public interface ReservaRepository extends MongoRepository<Reserva, String> {
 
     List<Reserva> findByParqueadero_Id(String idParqueadero, Sort sort);
+
+    Page<Reserva> findByParqueadero_Id(String idParqueadero, Pageable pageable);
+
+    Page<Reserva> findByCliente_IdAndParqueadero_Id(String idCliente, String idParqueadero, Pageable pageable);
+
+    long countByParqueadero_IdAndEstado(String idParqueadero, EstadoReserva estado);
 
     List<Reserva> findByCliente_Id(String idCliente, Sort sort);
 

@@ -7,6 +7,8 @@ import com.proyecto.parking.dto.ParqueaderoForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.RegistroParqueo;
+import com.proyecto.parking.model.Reserva;
+import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.EspacioService;
@@ -31,8 +33,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -50,6 +55,7 @@ import java.util.List;
 public class AdminController {
 
     private static final int REGISTROS_POR_PAGINA = 10;
+    private static final int RESERVAS_POR_PAGINA = 10;
 
     private final ParqueaderoService parqueaderoService;
     private final ReservaService reservaService;
@@ -110,19 +116,71 @@ public class AdminController {
     @GetMapping("/parqueadero/{id}")
     public String verParqueadero(@AuthenticationPrincipal UsuarioPrincipal admin,
                                  @PathVariable String id,
+                                 @RequestParam(defaultValue = "0") int pagina,
+                                 @RequestParam(required = false) String cedula,
                                  Model model) {
         Parqueadero parqueadero = parqueaderoService.obtenerParqueaderoDeAdministrador(id, admin.getId());
 
-        if (!model.containsAttribute("reservas")) {
-            model.addAttribute("reservas", reservaService.listarReservasParqueadero(id, admin.getId()));
+        boolean buscando = cedula != null && !cedula.isBlank();
+        Page<Reserva> reservas = buscarReservas(id, admin.getId(), cedula, Math.max(pagina, 0));
+        // Al aceptar o eliminar la última reserva de la última página, esa
+        // página queda vacía: se muestra la anterior en vez de una tabla sin filas.
+        if (reservas.isEmpty() && pagina > 0 && reservas.getTotalPages() > 0) {
+            reservas = buscarReservas(id, admin.getId(), cedula, reservas.getTotalPages() - 1);
+        }
+
+        if (buscando && reservas.isEmpty()) {
+            model.addAttribute("error", "No se encontraron reservas para la cédula " + cedula + ".");
         }
 
         model.addAttribute("parqueadero", parqueadero);
+        model.addAttribute("reservas", reservas.getContent());
+        model.addAttribute("cedula", cedula);
+        model.addAttribute("filtros", buscando
+                ? "&cedula=" + URLEncoder.encode(cedula.trim(), StandardCharsets.UTF_8) : "");
+        model.addAttribute("paginaActual", reservas.getNumber());
+        model.addAttribute("totalPaginas", reservas.getTotalPages());
+        model.addAttribute("totalElementos", reservas.getTotalElements());
+        // Los indicadores cuentan todas las reservas, no sólo la página visible.
+        model.addAttribute("totalPendientes",
+                reservaService.contarReservasPorEstado(id, admin.getId(), EstadoReserva.PENDIENTE));
+        model.addAttribute("totalAceptadas",
+                reservaService.contarReservasPorEstado(id, admin.getId(), EstadoReserva.ACEPTADA));
         model.addAttribute("comentarios", comentarioService.listarPorParqueadero(id));
+        return "admin/parqueadero";
+    }
+
+    private Page<Reserva> buscarReservas(String idParqueadero, String idAdministrador, String cedula, int pagina) {
+        PageRequest pageable = PageRequest.of(pagina, RESERVAS_POR_PAGINA, Sort.by(Sort.Direction.DESC, "_id"));
+        return cedula != null && !cedula.isBlank()
+                ? reservaService.buscarReservasPorCedulaYParqueadero(cedula, idParqueadero, idAdministrador, pageable)
+                : reservaService.listarReservasParqueadero(idParqueadero, idAdministrador, pageable);
+    }
+
+    /** Vuelve a la tabla de reservas en la misma página y con la misma búsqueda. */
+    private static String volverAReservas(String idParqueadero, int pagina, String cedula) {
+        UriComponentsBuilder destino = UriComponentsBuilder.fromPath("/admin/parqueadero/{id}")
+                .queryParam("pagina", Math.max(pagina, 0));
+        if (cedula != null && !cedula.isBlank()) {
+            destino.queryParam("cedula", cedula.trim());
+        }
+        return "redirect:" + destino.fragment("reservas").buildAndExpand(idParqueadero).encode().toUriString();
+    }
+
+    // ── Configuración: datos, espacios y estado (página propia) ──────────────
+
+    @GetMapping("/parqueadero/{id}/editar")
+    public String mostrarConfiguracion(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                       @PathVariable String id,
+                                       Model model) {
+        model.addAttribute("parqueadero", parqueaderoService.obtenerParqueaderoDeAdministrador(id, admin.getId()));
         model.addAttribute("espaciosOcupados", espacioService.calcularEspaciosOcupados(id));
         model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(id));
-        model.addAttribute("zonas", zonaService.obtenerZonas());
-        return "admin/parqueadero";
+        return "admin/editar_parqueadero";
+    }
+
+    private static String volverAConfiguracion(String idParqueadero) {
+        return "redirect:/admin/parqueadero/" + idParqueadero + "/editar";
     }
 
     @PostMapping("/parqueadero/{id}/editar")
@@ -133,16 +191,17 @@ public class AdminController {
                                     RedirectAttributes flash) {
         if (errores.hasErrors()) {
             flash.addFlashAttribute("error", Errores.resumen(errores));
-            return "redirect:/admin/parqueadero/" + id;
+            return volverAConfiguracion(id);
         }
 
         try {
             parqueaderoService.actualizarDatos(id, admin.getId(), form);
-            flash.addFlashAttribute("mensaje", "Información actualizada correctamente.");
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
+            return volverAConfiguracion(id);
         }
-        return "redirect:/admin/parqueadero/" + id;
+        flash.addFlashAttribute("mensaje", "Información actualizada correctamente.");
+        return volverAConfiguracion(id);
     }
 
     @PostMapping("/parqueadero/{id}/espacios")
@@ -153,7 +212,7 @@ public class AdminController {
                                      RedirectAttributes flash) {
         if (errores.hasErrors()) {
             flash.addFlashAttribute("error", Errores.resumen(errores));
-            return "redirect:/admin/parqueadero/" + id;
+            return volverAConfiguracion(id);
         }
 
         try {
@@ -163,7 +222,7 @@ public class AdminController {
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/parqueadero/" + id;
+        return volverAConfiguracion(id);
     }
 
     @PostMapping("/parqueadero/{id}/estado")
@@ -174,30 +233,17 @@ public class AdminController {
         parqueaderoService.cambiarEstado(id, admin.getId(), habilitado);
         flash.addFlashAttribute("mensaje",
                 habilitado ? "Parqueadero habilitado." : "Parqueadero deshabilitado.");
-        return "redirect:/admin/parqueadero/" + id;
+        return volverAConfiguracion(id);
     }
 
     // ── Reservas ─────────────────────────────────────────────────────────────
-
-    @GetMapping("/parqueadero/{id}/reservas/buscar")
-    public String buscarReservaPorCedula(@AuthenticationPrincipal UsuarioPrincipal admin,
-                                         @PathVariable String id,
-                                         @RequestParam String cedula,
-                                         RedirectAttributes flash) {
-        var reservas = reservaService.buscarReservasPorCedulaYParqueadero(cedula, id, admin.getId());
-
-        if (reservas.isEmpty()) {
-            flash.addFlashAttribute("error", "No se encontraron reservas para la cédula " + cedula + ".");
-        } else {
-            flash.addFlashAttribute("reservas", reservas);
-        }
-        return "redirect:/admin/parqueadero/" + id;
-    }
 
     @PostMapping("/parqueadero/{id}/reserva/aceptar/{rid}")
     public String aceptarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
                                  @PathVariable String id,
                                  @PathVariable String rid,
+                                 @RequestParam(defaultValue = "0") int pagina,
+                                 @RequestParam(required = false) String cedula,
                                  RedirectAttributes flash) {
         try {
             reservaService.aceptarReserva(rid, admin.getId());
@@ -205,13 +251,15 @@ public class AdminController {
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/parqueadero/" + id;
+        return volverAReservas(id, pagina, cedula);
     }
 
     @PostMapping("/parqueadero/{id}/reserva/rechazar/{rid}")
     public String rechazarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
                                   @PathVariable String id,
                                   @PathVariable String rid,
+                                  @RequestParam(defaultValue = "0") int pagina,
+                                  @RequestParam(required = false) String cedula,
                                   RedirectAttributes flash) {
         try {
             reservaService.rechazarReserva(rid, admin.getId());
@@ -219,17 +267,19 @@ public class AdminController {
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/parqueadero/" + id;
+        return volverAReservas(id, pagina, cedula);
     }
 
     @PostMapping("/parqueadero/{id}/reserva/eliminar/{rid}")
     public String eliminarReserva(@AuthenticationPrincipal UsuarioPrincipal admin,
                                   @PathVariable String id,
                                   @PathVariable String rid,
+                                  @RequestParam(defaultValue = "0") int pagina,
+                                  @RequestParam(required = false) String cedula,
                                   RedirectAttributes flash) {
         reservaService.eliminarReserva(rid, admin.getId());
         flash.addFlashAttribute("mensaje", "Reserva eliminada.");
-        return "redirect:/admin/parqueadero/" + id;
+        return volverAReservas(id, pagina, cedula);
     }
 
     // ── Registros de parqueo ─────────────────────────────────────────────────

@@ -2,6 +2,9 @@ package com.proyecto.parking.service;
 
 import com.proyecto.parking.dto.ReservaForm;
 import com.proyecto.parking.model.Reserva;
+import com.proyecto.parking.model.Reserva.EstadoReserva;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -22,10 +25,14 @@ public interface ReservaService {
      */
     Reserva cancelarReserva(String idReserva, String idCliente);
 
-    /** Reservas del parqueadero, comprobando antes que sea del administrador. */
-    List<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador);
+    /** Reservas del parqueadero, por páginas, comprobando antes que sea del administrador. */
+    Page<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador, Pageable pageable);
 
-    List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero, String idAdministrador);
+    Page<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero, String idAdministrador,
+                                                      Pageable pageable);
+
+    /** Cuántas reservas del parqueadero están en ese estado, en todas las páginas. */
+    long contarReservasPorEstado(String idParqueadero, String idAdministrador, EstadoReserva estado);
 
     Reserva aceptarReserva(String idReserva, String idAdministrador);
 

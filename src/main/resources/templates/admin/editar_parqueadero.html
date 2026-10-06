@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('admin.configuracion')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('parqueaderos')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{admin.configuracion}">Configuración</h1>
+      <p th:text="${parqueadero.nombre + ' · ' + parqueadero.zona.nombreZona}"></p>
+    </div>
+    <div class="pagina-cabecera-acciones">
+      <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn">&larr; <span th:text="#{nav.volver}">Volver</span></a>
+    </div>
+  </div>
+
+  <div class="mensajes">
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+  </div>
+
+  <section class="seccion">
+    <div class="info-grid">
+
+      <div id="datos">
+        <h3 th:text="#{nav.editarInfo}">Editar información</h3>
+        <form th:action="@{/admin/parqueadero/{id}/editar(id=${parqueadero.id})}" method="post">
+          <label th:text="#{common.nombre}">Nombre</label>
+          <input type="text" name="nombre" th:value="${parqueadero.nombre}" required>
+
+          <label th:text="#{common.direccion}">Dirección</label>
+          <input type="text" name="direccion" th:value="${parqueadero.direccion}" required>
+
+          <div class="form-row" style="margin-bottom:18px;">
+            <div class="form-group">
+              <label th:text="#{common.horario}">Horario</label>
+              <input type="text" name="horario" th:value="${parqueadero.horario}" required>
+            </div>
+            <div class="form-group">
+              <label th:text="#{common.tarifaHora}">Tarifa por hora ($)</label>
+              <input type="number" name="tarifa" th:value="${parqueadero.tarifaHora}" step="0.01" min="0" required>
+            </div>
+          </div>
+
+          <label th:text="#{admin.urlMaps}">Enlace de Google Maps (opcional)</label>
+          <input type="url" name="urlMaps" th:value="${parqueadero.urlMaps}">
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="submit" class="btn-primary" th:text="#{common.guardar}">Guardar cambios</button>
+            <a th:href="@{/admin/parqueadero/{id}(id=${parqueadero.id})}" class="btn" th:text="#{common.cancelar}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+
+      <div id="espacios">
+        <h3 th:text="#{admin.espaciosYEstado}">Espacios y estado</h3>
+
+        <div class="cubiculos-legend">
+          <span><span class="legend-dot libre"></span><span th:text="#{cubiculo.libre}">Libre</span></span>
+          <span><span class="legend-dot pendiente"></span><span th:text="#{cubiculo.pendiente}">Solicitado</span></span>
+          <span><span class="legend-dot ocupado"></span><span th:text="#{cubiculo.ocupado}">Ocupado</span></span>
+        </div>
+        <div th:if="${parqueadero.espaciosTotales > 0}" class="cubiculos-grid">
+          <th:block th:each="i : ${#numbers.sequence(1, parqueadero.espaciosTotales)}">
+            <div th:class="${espaciosOcupados.contains(i)} ? 'cubiculo ocupado' :
+                           (${espaciosPendientes.contains(i)} ? 'cubiculo pendiente' : 'cubiculo libre')"
+                 th:text="${i}"></div>
+          </th:block>
+        </div>
+        <p style="font-size:0.875rem; color:var(--gray-500); margin:14px 0 26px;"
+           th:text="#{zona.libresDe(${parqueadero.espaciosDisponibles}, ${parqueadero.espaciosTotales})}"></p>
+
+        <form th:action="@{/admin/parqueadero/{id}/espacios(id=${parqueadero.id})}" method="post">
+          <div class="form-row" style="margin-bottom:18px;">
+            <div class="form-group">
+              <label th:text="#{admin.espaciosTotales}">Totales</label>
+              <input type="number" name="espaciosTotales" min="1" max="500" th:value="${parqueadero.espaciosTotales}" required>
+            </div>
+            <div class="form-group">
+              <label th:text="#{admin.espaciosDisponibles}">Disponibles</label>
+              <input type="number" name="espaciosDisponibles" min="0" th:value="${parqueadero.espaciosDisponibles}" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-secundario" th:text="#{admin.actualizarEspacios}">Actualizar espacios</button>
+        </form>
+
+        <hr style="margin:28px 0;">
+
+        <form th:action="@{/admin/parqueadero/{id}/estado(id=${parqueadero.id})}" method="post">
+          <label th:text="#{admin.estadoParqueadero}">Estado del parqueadero</label>
+          <input type="hidden" name="habilitado" th:value="${!parqueadero.habilitado}"/>
+          <button type="submit"
+                  th:class="${parqueadero.habilitado ? 'btn-eliminar' : 'btn-editar'}"
+                  th:text="${parqueadero.habilitado} ? #{admin.deshabilitarParqueadero} : #{admin.habilitarParqueadero}"
+                  style="border-color:var(--gray-300);"></button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

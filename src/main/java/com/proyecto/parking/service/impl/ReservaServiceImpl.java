@@ -19,6 +19,8 @@ import com.proyecto.parking.service.ReservaService;
 import com.proyecto.parking.service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -149,19 +151,27 @@ public class ReservaServiceImpl implements ReservaService {
     // ── Administrador ────────────────────────────────────────────────────────
 
     @Override
-    public List<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador) {
+    public Page<Reserva> listarReservasParqueadero(String idParqueadero, String idAdministrador,
+                                                   Pageable pageable) {
         parqueaderoService.obtenerParqueaderoDeAdministrador(idParqueadero, idAdministrador);
-        return reservaRepository.findByParqueadero_Id(idParqueadero, Sort.by(Sort.Direction.DESC, "_id"));
+        return reservaRepository.findByParqueadero_Id(idParqueadero, pageable);
     }
 
     @Override
-    public List<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero,
-                                                             String idAdministrador) {
+    public Page<Reserva> buscarReservasPorCedulaYParqueadero(String cedula, String idParqueadero,
+                                                             String idAdministrador, Pageable pageable) {
         parqueaderoService.obtenerParqueaderoDeAdministrador(idParqueadero, idAdministrador);
 
         return usuarioRepository.findByCedula(cedula.trim())
-                .map(cliente -> reservaRepository.findByCliente_IdAndParqueadero_Id(cliente.getId(), idParqueadero))
-                .orElseGet(List::of);
+                .map(cliente -> reservaRepository.findByCliente_IdAndParqueadero_Id(
+                        cliente.getId(), idParqueadero, pageable))
+                .orElseGet(() -> Page.empty(pageable));
+    }
+
+    @Override
+    public long contarReservasPorEstado(String idParqueadero, String idAdministrador, EstadoReserva estado) {
+        parqueaderoService.obtenerParqueaderoDeAdministrador(idParqueadero, idAdministrador);
+        return reservaRepository.countByParqueadero_IdAndEstado(idParqueadero, estado);
     }
 
     @Override
