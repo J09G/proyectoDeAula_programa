@@ -3,6 +3,7 @@ package com.proyecto.parking.dto;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -22,6 +23,18 @@ public class PerfilForm {
     @Email(message = "{validacion.correo.formato}")
     @Size(max = 120, message = "{validacion.correo.largo}")
     private String correo;
+
+    /*
+     * Cédula y placa sólo llegan desde el formulario de un cliente; para los
+     * demás roles quedan en null y el servicio no las toca. Se acepta el vacío
+     * ("^$|") para que sea el servicio quien diga "es obligatoria" con un
+     * mensaje claro, en vez de un error de formato.
+     */
+    @Pattern(regexp = "^$|" + Validaciones.CEDULA, message = "{validacion.cedula.formato}")
+    private String cedula;
+
+    @Pattern(regexp = "^$|" + Validaciones.PLACA, message = "{validacion.placa.formato}")
+    private String placa;
 
     private String passwordActual;
     private String passwordNueva;
@@ -58,6 +71,12 @@ public class PerfilForm {
 
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
+
+    public String getCedula() { return cedula; }
+    public void setCedula(String cedula) { this.cedula = cedula; }
+
+    public String getPlaca() { return placa; }
+    public void setPlaca(String placa) { this.placa = placa; }
 
     public String getPasswordActual() { return passwordActual; }
     public void setPasswordActual(String passwordActual) { this.passwordActual = passwordActual; }

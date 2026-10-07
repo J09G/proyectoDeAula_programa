@@ -191,39 +191,94 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public boolean actualizarPerfil(String idUsuario, String nombre, String correo,
+    public boolean actualizarPerfil(String idUsuario, String nombre, String correo, String cedula, String placa,
                                     String passwordActual, String passwordNueva) {
         Usuario usuario = obtenerUsuarioPorId(idUsuario);
         String correoNormalizado = correo.trim().toLowerCase(Locale.ROOT);
 
+        // Sólo el cliente tiene cédula y placa editables: aunque alguien las
+        // mande a mano en el formulario de un administrador, se ignoran.
+        boolean esCliente = usuario.getRol() != null && Rol.CLIENTE.equalsIgnoreCase(usuario.getRol().getNombre());
+        String cedulaNueva = esCliente ? normalizarObligatorio(cedula, usuario.getCedula(), "La cédula es obligatoria.") : null;
+        String placaNueva = esCliente ? normalizarObligatorio(placa, usuario.getPlaca(), "La placa es obligatoria.") : null;
+        if (placaNueva != null) {
+            placaNueva = placaNueva.toUpperCase(Locale.ROOT);
+        }
+
         boolean cambioCorreo = !correoNormalizado.equals(usuario.getCorreo());
         boolean cambioPassword = passwordNueva != null && !passwordNueva.isBlank();
+        // Poner la cédula por primera vez (cuenta de Google) no exige contraseña,
+        // igual que en "completar perfil"; cambiar una que ya existía, sí.
+        boolean cambioCedula = cedulaNueva != null && usuario.getCedula() != null
+                && !cedulaNueva.equals(usuario.getCedula());
+        boolean cambioPlaca = placaNueva != null && !placaNueva.equals(usuario.getPlaca());
 
-        if (cambioCorreo && (passwordActual == null || passwordActual.isBlank())) {
+        boolean sinPasswordActual = passwordActual == null || passwordActual.isBlank();
+        if (cambioCorreo && sinPasswordActual) {
             throw new ReglaNegocioException("Escribe tu contraseña actual para cambiar el correo.");
         }
-        // El correo pide la contraseña igual que la contraseña misma: es la
-        // llave de "¿Olvidaste tu contraseña?". Sin esto, quien encuentre una
-        // sesión abierta pondría su correo, pediría el enlace y se quedaría
-        // con la cuenta. Se comprueba aquí y no en el formulario porque
-        // requiere el hash guardado, que el DTO no conoce.
-        if (cambioCorreo || cambioPassword) {
+        if (cambioCedula && sinPasswordActual) {
+            throw new ReglaNegocioException("Escribe tu contraseña actual para cambiar la cédula.");
+        }
+        // El correo es la llave de "¿Olvidaste tu contraseña?" y la cédula es con
+        // lo que el administrador identifica a la persona al registrar su entrada:
+        // ambos piden la contraseña, igual que la contraseña misma. Sin esto, quien
+        // encuentre una sesión abierta podría quedarse con la cuenta o suplantarla.
+        // Se comprueba aquí y no en el formulario porque requiere el hash guardado.
+        if (cambioCorreo || cambioCedula || cambioPassword) {
             verificarPasswordActual(usuario, passwordActual);
         }
 
         if (cambioCorreo && usuarioRepository.existsByCorreo(correoNormalizado)) {
             throw new ReglaNegocioException("Ese correo ya pertenece a otro usuario.");
         }
+        boolean cedulaNuevaDistinta = cedulaNueva != null && !cedulaNueva.equals(usuario.getCedula());
+        if (cedulaNuevaDistinta && usuarioRepository.existsByCedula(cedulaNueva)) {
+            throw new ReglaNegocioException("Esa cédula ya pertenece a otro usuario.");
+        }
+        if (cambioPlaca && usuarioRepository.existsByPlaca(placaNueva)) {
+            throw new ReglaNegocioException("Esa placa ya pertenece a otro usuario.");
+        }
 
         usuario.setNombre(nombre.trim());
         usuario.setCorreo(correoNormalizado);
+        if (cedulaNueva != null) {
+            usuario.setCedula(cedulaNueva);
+        }
+        if (placaNueva != null) {
+            usuario.setPlaca(placaNueva);
+        }
         if (cambioPassword) {
             usuario.setContrasena(passwordEncoder.encode(passwordNueva));
         }
 
-        usuarioRepository.save(usuario);
+        try {
+            usuarioRepository.save(usuario);
+        } catch (DuplicateKeyException e) {
+            // Otro usuario tomó el mismo dato entre la comprobación y el guardado;
+            // el índice único lo frenó.
+            throw new ReglaNegocioException("El correo, la cédula o la placa ya pertenecen a otro usuario.");
+        }
         log.info("Perfil de {} actualizado{}.", idUsuario, cambioPassword ? " (con cambio de contraseña)" : "");
         return cambioPassword;
+    }
+
+    /**
+     * Devuelve el valor recortado, o {@code null} si no vino en el formulario.
+     * Vacío sólo se acepta si el usuario todavía no tenía ese dato.
+     */
+    private static String normalizarObligatorio(String valor, String actual, String mensajeSiFalta) {
+        if (valor == null) {
+            return null;
+        }
+        String recortado = valor.trim();
+        if (recortado.isEmpty()) {
+            if (actual != null) {
+                throw new ReglaNegocioException(mensajeSiFalta);
+            }
+            return null;
+        }
+        return recortado;
     }
 
     private void verificarPasswordActual(Usuario usuario, String passwordActual) {

@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -202,5 +204,139 @@ class PerfilIT {
                 .andExpect(model().attribute("error", UsuarioService.SIN_CONTRASENA));
 
         assertNull(usuarioRepository.findByCorreo("juan@gmail.com").orElseThrow().getContrasena());
+    }
+
+    // ── Cédula y placa del cliente ───────────────────────────────────────────
+
+    @Test
+    void elFormularioDelClienteTraeSuCedulaYSuPlaca() throws Exception {
+        String token = jwtService.generarToken(CORREO, Rol.CLIENTE);
+        String html = mockMvc.perform(get("/perfil").cookie(new Cookie(JwtService.NOMBRE_COOKIE, token)))
+                .andReturn().getResponse().getContentAsString();
+
+        assertTrue(html.contains("value=\"1000000001\""), "Cédula actual");
+        assertTrue(html.contains("value=\"ABC123\""), "Placa actual");
+    }
+
+    @Test
+    void cambiarLaPlacaNoPideContrasenaYSeGuardaEnMayusculas() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1000000001")
+                        .param("placa", "kmn45f"))
+                .andExpect(redirectedUrl("/perfil"));
+
+        assertEquals("KMN45F", ana().getPlaca());
+    }
+
+    @Test
+    void cambiarLaCedulaSinContrasenaSeRechaza() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1099999999")
+                        .param("placa", "ABC123"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("error", "Escribe tu contraseña actual para cambiar la cédula."));
+
+        assertEquals("1000000001", ana().getCedula());
+    }
+
+    @Test
+    void cambiarLaCedulaConLaContrasenaCorrecta() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1099999999")
+                        .param("placa", "ABC123")
+                        .param("passwordActual", CLAVE))
+                .andExpect(redirectedUrl("/perfil"));
+
+        assertEquals("1099999999", ana().getCedula());
+    }
+
+    @Test
+    void cambiarLaCedulaConContrasenaIncorrectaSeRechaza() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1099999999")
+                        .param("placa", "ABC123")
+                        .param("passwordActual", "noEsLaMia1"))
+                .andExpect(model().attribute("error", "La contraseña actual no es correcta."));
+
+        assertEquals("1000000001", ana().getCedula());
+    }
+
+    @Test
+    void unaCedulaDeOtroUsuarioSeRechaza() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1000000002")
+                        .param("placa", "ABC123")
+                        .param("passwordActual", CLAVE))
+                .andExpect(model().attribute("error", "Esa cédula ya pertenece a otro usuario."));
+
+        assertEquals("1000000001", ana().getCedula());
+    }
+
+    @Test
+    void unaPlacaDeOtroUsuarioSeRechaza() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1000000001")
+                        .param("placa", "xyz789"))
+                .andExpect(model().attribute("error", "Esa placa ya pertenece a otro usuario."));
+
+        assertEquals("ABC123", ana().getPlaca());
+    }
+
+    @Test
+    void unaPlacaConFormatoInvalidoSeRechaza() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1000000001")
+                        .param("placa", "123"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("form", "placa"));
+
+        assertEquals("ABC123", ana().getPlaca());
+    }
+
+    @Test
+    void elClienteNoPuedeDejarLaPlacaVacia() throws Exception {
+        mockMvc.perform(guardarPerfilComo(CORREO)
+                        .param("nombre", "Ana Torres")
+                        .param("correo", CORREO)
+                        .param("cedula", "1000000001")
+                        .param("placa", ""))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("error", "La placa es obligatoria."));
+
+        assertEquals("ABC123", ana().getPlaca());
+    }
+
+    @Test
+    void elPerfilDeUnAdministradorNoMuestraNiTocaCedulaYPlaca() throws Exception {
+        usuarioService.registrarUsuario("Admin", "2000000001", "admin@correo.com", CLAVE, null, Rol.ADMINISTRADOR);
+        String token = jwtService.generarToken("admin@correo.com", Rol.ADMINISTRADOR);
+        Cookie sesion = new Cookie(JwtService.NOMBRE_COOKIE, token);
+
+        String html = mockMvc.perform(get("/perfil").cookie(sesion))
+                .andReturn().getResponse().getContentAsString();
+        assertFalse(html.contains("name=\"placa\""), "El administrador no tiene placa");
+
+        mockMvc.perform(post("/perfil").cookie(sesion).with(csrf())
+                        .param("nombre", "Admin Nuevo")
+                        .param("correo", "admin@correo.com"))
+                .andExpect(redirectedUrl("/perfil"));
+
+        Usuario admin = usuarioRepository.findByCorreo("admin@correo.com").orElseThrow();
+        assertEquals("Admin Nuevo", admin.getNombre());
+        assertEquals("2000000001", admin.getCedula(), "Su cédula no se toca");
     }
 }

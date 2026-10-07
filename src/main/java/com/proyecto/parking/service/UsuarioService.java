@@ -54,7 +54,12 @@ public interface UsuarioService {
      * @throws com.proyecto.parking.exception.ReglaNegocioException
      *         si el correo ya es de otro usuario o la contraseña actual no coincide
      */
-    boolean actualizarPerfil(String idUsuario, String nombre, String correo,
+    /**
+     * Edita el propio perfil. {@code cedula} y {@code placa} sólo se aplican a
+     * clientes; {@code null} significa "no vienen en el formulario". Cambiar el
+     * correo, la cédula o la contraseña exige la contraseña actual.
+     */
+    boolean actualizarPerfil(String idUsuario, String nombre, String correo, String cedula, String placa,
                              String passwordActual, String passwordNueva);
 
     void cambiarEstadoUsuario(String idUsuario, boolean habilitado);

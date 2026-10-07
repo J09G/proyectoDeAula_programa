@@ -2,6 +2,7 @@ package com.proyecto.parking.controller;
 
 import com.proyecto.parking.dto.PerfilForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
+import com.proyecto.parking.model.Rol;
 import com.proyecto.parking.model.Usuario;
 import com.proyecto.parking.security.JwtService;
 import com.proyecto.parking.security.UsuarioPrincipal;
@@ -57,9 +58,12 @@ public class PerfilController {
             PerfilForm form = new PerfilForm();
             form.setNombre(usuario.getNombre());
             form.setCorreo(usuario.getCorreo());
+            form.setCedula(usuario.getCedula());
+            form.setPlaca(usuario.getPlaca());
             model.addAttribute("form", form);
         }
         model.addAttribute("principal", principal);
+        model.addAttribute("esCliente", principal.tieneRol(Rol.CLIENTE));
         return "perfil";
     }
 
@@ -76,17 +80,19 @@ public class PerfilController {
             // Se repinta la vista en vez de redirigir para conservar los errores
             // campo a campo junto a cada input.
             model.addAttribute("principal", principal);
+            model.addAttribute("esCliente", principal.tieneRol(Rol.CLIENTE));
             return "perfil";
         }
 
         boolean cambioPassword;
         try {
             cambioPassword = usuarioService.actualizarPerfil(
-                    principal.getId(), form.getNombre(), form.getCorreo(),
+                    principal.getId(), form.getNombre(), form.getCorreo(), form.getCedula(), form.getPlaca(),
                     form.getPasswordActual(), form.getPasswordNueva());
         } catch (ReglaNegocioException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("principal", principal);
+            model.addAttribute("esCliente", principal.tieneRol(Rol.CLIENTE));
             return "perfil";
         }
 

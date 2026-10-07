@@ -35,6 +35,18 @@
       <small class="campo-error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
       <small th:text="#{perfil.correoAyuda}">Para cambiar el correo también se pide tu contraseña actual.</small>
 
+      <!-- Cédula y placa: sólo los clientes las tienen y las pueden cambiar. -->
+      <th:block th:if="${esCliente}">
+        <label for="cedula" th:text="#{common.cedula}">Cédula</label>
+        <input type="text" id="cedula" th:field="*{cedula}" inputmode="numeric">
+        <small class="campo-error" th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}"></small>
+        <small th:text="#{perfil.cedulaAyuda}">Para cambiar la cédula también se pide tu contraseña actual.</small>
+
+        <label for="placa" th:text="#{common.placa}">Placa</label>
+        <input type="text" id="placa" th:field="*{placa}" style="text-transform:uppercase;">
+        <small class="campo-error" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}"></small>
+      </th:block>
+
       <label th:text="#{perfil.rolAsignado}">Rol asignado</label>
       <!-- Sólo informativo: el rol no se cambia desde aquí. -->
       <input type="text" th:value="${principal.rol}" disabled>
