@@ -4,6 +4,7 @@ import com.proyecto.parking.dto.ComentarioForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
+import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.ReservaService;
 import com.proyecto.parking.service.ZonaService;
@@ -24,15 +25,18 @@ public class ClienteController {
     private final ReservaService reservaService;
     private final ComentarioService comentarioService;
     private final PortadaService portadaService;
+    private final ParqueaderoService parqueaderoService;
 
     public ClienteController(ZonaService zonaService,
                              ReservaService reservaService,
                              ComentarioService comentarioService,
-                             PortadaService portadaService) {
+                             PortadaService portadaService,
+                             ParqueaderoService parqueaderoService) {
         this.zonaService = zonaService;
         this.reservaService = reservaService;
         this.comentarioService = comentarioService;
         this.portadaService = portadaService;
+        this.parqueaderoService = parqueaderoService;
     }
 
     @GetMapping("/cliente")
@@ -42,6 +46,13 @@ public class ClienteController {
         model.addAttribute("reservas", reservaService.listarReservasCliente(cliente.getId()));
         model.addAttribute("usuario", cliente);
         return "cliente/index";
+    }
+
+    /** Mapa con los parqueaderos ubicados (US-15). El rol lo exige SecurityConfig (/cliente/**). */
+    @GetMapping("/cliente/mapa")
+    public String mostrarMapa(Model model) {
+        model.addAttribute("parqueaderos", parqueaderoService.listarParaMapa());
+        return "cliente/mapa";
     }
 
     @PostMapping("/comentario/crear")

@@ -187,3 +187,64 @@ body { overflow-x: clip; }
 
 .link-maps { color: var(--accent); font-weight: 700; }
 .link-maps:hover { text-decoration: underline; }
+
+/* ── Mapa de parqueaderos (US-15) ────────────────────────────────────────── */
+.mapa-clientes-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.mapa-clientes {
+  height: 560px;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  /* Leaflet usa z-index altos: se encierran para no tapar el menú. */
+  isolation: isolate;
+  z-index: 0;
+}
+
+.mapa-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 560px;
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+}
+
+.mapa-item {
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.mapa-item:hover,
+.mapa-item:focus-visible { border-color: var(--brand); outline: none; }
+
+.mapa-ficha { display: grid; gap: 4px; }
+.mapa-nombre { color: var(--gray-900); }
+.mapa-direccion,
+.mapa-datos { font-size: 0.875rem; color: var(--gray-500); }
+.mapa-reservar { justify-self: start; margin-top: 6px; }
+
+/* El popup de Leaflet es blanco por defecto: en tema oscuro el texto claro
+   quedaría invisible. Se pinta con las mismas variables del tema. */
+.mapa-clientes .leaflet-popup-content-wrapper,
+.mapa-clientes .leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--gray-900);
+}
+.mapa-clientes .leaflet-popup-content { margin: 14px 16px; }
+/* leaflet.css pinta de azul todo enlace del mapa (.leaflet-container a) y le
+   ganaría al texto blanco del botón Reservar dentro del popup. */
+.mapa-clientes .leaflet-popup-content a.btn-primary { color: #FFFFFF; }
+
+@media (max-width: 900px) {
+  .mapa-clientes-layout { grid-template-columns: 1fr; }
+  .mapa-clientes { height: 420px; }
+  .mapa-lista { max-height: none; }
+}

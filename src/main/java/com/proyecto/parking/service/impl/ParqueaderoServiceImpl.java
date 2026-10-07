@@ -94,6 +94,13 @@ public class ParqueaderoServiceImpl implements ParqueaderoService {
     }
 
     @Override
+    public List<Parqueadero> listarParaMapa() {
+        // Mismo criterio que la búsqueda por zona (sólo habilitados), más tener
+        // ubicación: sin coordenadas no hay dónde dibujar el marcador.
+        return parqueaderoRepository.findByHabilitadoTrueAndLatitudNotNullAndLongitudNotNull();
+    }
+
+    @Override
     public Page<Parqueadero> listarParqueaderos(Pageable pageable) {
         return parqueaderoRepository.findAll(pageable);
     }

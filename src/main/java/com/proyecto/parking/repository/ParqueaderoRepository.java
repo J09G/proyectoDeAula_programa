@@ -23,6 +23,9 @@ public interface ParqueaderoRepository extends MongoRepository<Parqueadero, Stri
 
     List<Parqueadero> findByAdministrador_Id(String idAdministrador);
 
+    /** Los que salen en el mapa del cliente: abiertos y con el punto marcado. */
+    List<Parqueadero> findByHabilitadoTrueAndLatitudNotNullAndLongitudNotNull();
+
     Page<Parqueadero> findByAdministrador_Id(String idAdministrador, Pageable pageable);
 
     Page<Parqueadero> findByAdministrador_IdIn(List<String> adminIds, Pageable pageable);

@@ -30,6 +30,9 @@ public interface ParqueaderoService {
 
     List<Parqueadero> obtenerParqueaderosPorZona(String idZona);
 
+    /** Habilitados y con ubicación: los que el cliente ve en el mapa (US-15). */
+    List<Parqueadero> listarParaMapa();
+
     Page<Parqueadero> listarParqueaderos(Pageable pageable);
 
     Page<Parqueadero> buscarPorNombre(String nombre, Pageable pageable);

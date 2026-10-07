@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('mapa.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/cliente.css}">
+  <link rel="stylesheet" th:href="@{/js/leaflet/leaflet.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('mapa')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{mapa.titulo}">Parqueaderos en el mapa</h1>
+      <p th:text="#{mapa.subtitulo}">Toca un marcador o un parqueadero de la lista para verlo y reservar.</p>
+    </div>
+    <div class="pagina-cabecera-acciones">
+      <a th:href="@{/cliente}" class="btn">&larr; <span th:text="#{nav.volver}">Volver</span></a>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(parqueaderos)}" class="alert alert-info">
+    <span th:text="#{mapa.vacio}">Todavía no hay parqueaderos ubicados en el mapa.</span>
+    <a th:href="@{/cliente}" th:text="#{mapa.verZonas}">Ver zonas</a>
+  </div>
+
+  <div class="mapa-clientes-layout" th:unless="${#lists.isEmpty(parqueaderos)}">
+
+    <div id="mapa-clientes" class="mapa-clientes"></div>
+
+    <!--
+      La lista hace dos trabajos: es la alternativa accesible al mapa (se lee y
+      se navega con teclado) y es la fuente de datos de mapa-clientes.js, que
+      toma de cada <li> las coordenadas y copia su contenido al popup. Así los
+      textos pasan por el escapado de Thymeleaf y nunca se arman como HTML en JS.
+    -->
+    <ul class="mapa-lista" id="mapa-lista">
+      <li th:each="p : ${parqueaderos}" class="mapa-item"
+          th:with="libres=${p.espaciosDisponibles != null ? p.espaciosDisponibles : 0}"
+          th:data-lat="${p.latitud}" th:data-lng="${p.longitud}" tabindex="0">
+        <div class="mapa-ficha">
+          <strong class="mapa-nombre" th:text="${p.nombre}">Parqueadero</strong>
+          <span class="mapa-direccion" th:text="${p.direccion}">Calle 30 # 10-20</span>
+          <span class="mapa-datos">
+            <span th:text="'$' + ${#numbers.formatDecimal(p.tarifaHora, 1, 'POINT', 0, 'COMMA')} + ' ' + #{portada.cerca.porHora}">$3.000 / hora</span>
+            &middot;
+            <span th:text="${libres > 0} ? #{portada.cerca.espaciosLibres(${libres})} : #{portada.cerca.sinEspacios}">7 espacios libres</span>
+          </span>
+          <a th:if="${libres > 0}" class="btn-primary mapa-reservar"
+             th:href="@{'/reserva/' + ${p.id}}" th:text="#{zona.reservar}">Reservar aquí</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+<script th:src="@{/js/leaflet/leaflet.js}"></script>
+<script th:src="@{/js/mapa-clientes.js}"></script>
+</body>
+</html>
