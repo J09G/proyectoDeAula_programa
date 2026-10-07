@@ -27,7 +27,8 @@
   <!-- La doble barra baja es el preprocesado de Thymeleaf: resuelve la variable
        antes de buscar la clave, que es lo que permite un título dinámico. -->
   <title th:text="#{__${claveTitulo}__} + ' · ' + #{app.nombre}">ParkingApp</title>
-  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <link rel="icon" type="image/png" th:href="@{/favicon.png}">
+  <link rel="apple-touch-icon" th:href="@{/images/marca/apple-touch-icon.png}">
   <link rel="preload" th:href="@{/fonts/manrope.woff2}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" th:href="@{/fonts/dm-sans.woff2}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -52,7 +53,7 @@
   <div class="nav-inner">
 
     <a th:href="@{/}" class="marca nav-marca">
-      <span class="marca-icono">P</span>
+      <span class="marca-icono"><img th:src="@{/images/marca/pin.png}" alt=""></span>
       <span>Parking<span class="marca-app">App</span></span>
     </a>
 
@@ -163,7 +164,7 @@
   <footer class="pie">
     <div class="pie-inner">
       <a th:href="@{/}" class="marca marca-clara">
-        <span class="marca-icono">P</span>
+        <span class="marca-icono"><img th:src="@{/images/marca/pin.png}" alt=""></span>
         <span>Parking<span class="marca-app">App</span></span>
       </a>
       <span th:text="#{portada.footer.lema}">Moviéndote mejor por Cartagena.</span>
@@ -180,7 +181,7 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <aside th:fragment="ladoAuth(prefijo)" class="auth-lado">
   <a th:href="@{/}" class="marca marca-clara">
-    <span class="marca-icono">P</span>
+    <span class="marca-icono"><img th:src="@{/images/marca/pin.png}" alt=""></span>
     <span>Parking<span class="marca-app">App</span></span>
   </a>
 

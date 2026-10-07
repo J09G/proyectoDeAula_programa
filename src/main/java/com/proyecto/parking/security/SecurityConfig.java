@@ -147,7 +147,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/", "/login", "/registro/cliente", "/recuperar", "/restablecer",
-                        "/buscar", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.svg",
+                        "/buscar", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.png",
                         "/error", "/error/**",
                         "/actuator/health").permitAll()
                 .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")

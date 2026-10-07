@@ -115,7 +115,7 @@ class NavegadorRealIT {
         HttpResponse<String> panel = get("/cliente");
         assertEquals(200, panel.statusCode());
         // Un navegador real, tras recibir el HTML, pide el CSS, el JS, las fuentes y el icono.
-        for (String recurso : new String[] {"/css/style.css", "/css/cliente.css", "/js/app.js", "/favicon.svg"}) {
+        for (String recurso : new String[] {"/css/style.css", "/css/cliente.css", "/js/app.js", "/favicon.png"}) {
             HttpResponse<String> r = get(recurso);
             assertEquals(200, r.statusCode(), recurso);
             assertTrue(r.headers().allValues("Set-Cookie").stream().noneMatch(c -> c.startsWith("XSRF-TOKEN=")),

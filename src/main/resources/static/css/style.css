@@ -228,10 +228,11 @@ h1, h2, h3, h4, .fuente-titulo {
   width: 34px; height: 34px; border-radius: 10px;
   background: #FFFFFF; color: #0F5C5C;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 1.125rem; font-weight: 800;
   box-shadow: inset 0 0 0 1.5px rgba(15,92,92,.18);
   flex-shrink: 0;
 }
+/* El pin de ParkingApp sobre el cuadro blanco, igual en fondo claro u oscuro. */
+.marca-icono img { height: 26px; width: auto; display: block; }
 .marca-app { color: var(--teal); }
 /* Sobre fondo oscuro (hero, pie) la marca va en blanco y "App" en teal claro. */
 .marca-clara, .marca-clara:hover { color: #FFFFFF; }
@@ -257,7 +258,6 @@ h1, h2, h3, h4, .fuente-titulo {
   display: flex; align-items: center; gap: 36px;
 }
 .nav-marca { flex-shrink: 0; }
-.nav-marca .marca-icono { background: var(--teal); color: #FFFFFF; box-shadow: none; }
 
 .nav-links { display: flex; align-items: center; gap: 6px; flex: 1; }
 .nav-link {
@@ -434,7 +434,8 @@ h1, h2, h3, h4, .fuente-titulo {
   gap: 16px; flex-wrap: wrap;
 }
 .pie .marca { font-size: 1.0625rem; }
-.pie .marca-icono { width: 30px; height: 30px; font-size: 1rem; }
+.pie .marca-icono { width: 30px; height: 30px; }
+.pie .marca-icono img { height: 22px; }
 @media (max-width: 640px) {
   .pie-inner { flex-direction: column; text-align: center; padding: 28px 16px; }
 }
