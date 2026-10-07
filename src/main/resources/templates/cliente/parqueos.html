@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('parqueos.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/cliente.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('parqueos')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{parqueos.titulo}">Mis parqueos</h1>
+      <p th:text="#{parqueos.subtitulo}">Tus entradas y salidas, lo que pagaste y tus facturas.</p>
+    </div>
+    <div class="pagina-cabecera-acciones">
+      <a th:href="@{/cliente}" class="btn">&larr; <span th:text="#{nav.volver}">Volver</span></a>
+    </div>
+  </div>
+
+  <section class="seccion">
+    <p th:if="${#lists.isEmpty(registros)}" class="no-data" th:text="#{parqueos.vacio}"></p>
+
+    <div class="tabla-responsive" th:unless="${#lists.isEmpty(registros)}">
+      <table class="tabla-datos">
+        <thead>
+          <tr>
+            <th th:text="#{nav.parqueaderos}">Parqueadero</th>
+            <th th:text="#{common.placa}">Placa</th>
+            <th th:text="#{registros.entrada}">Entrada</th>
+            <th th:text="#{registros.salida}">Salida</th>
+            <th th:text="#{registros.tiempo}">Tiempo</th>
+            <th th:text="#{registros.valor}">Valor</th>
+            <th th:text="#{common.estado}">Estado</th>
+            <th th:text="#{registros.verFactura}">Factura</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="reg : ${registros}">
+            <td th:text="${reg.parqueadero != null ? reg.parqueadero.nombre : '—'}">Central</td>
+            <td><strong th:text="${reg.placa}">ABC123</strong></td>
+            <td th:text="${#temporals.format(reg.horaEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${reg.horaSalida != null ? #temporals.format(reg.horaSalida, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+            <td>
+              <span th:if="${reg.tiempoMinutos != null}"
+                    th:text="${reg.tiempoMinutos / 60} + 'h ' + ${reg.tiempoMinutos % 60} + 'min'"></span>
+              <span th:unless="${reg.tiempoMinutos != null}">—</span>
+            </td>
+            <td th:text="${reg.valorPagado != null}
+                         ? '$' + ${#numbers.formatDecimal(reg.valorPagado, 1, 'POINT', 0, 'COMMA')} : '—'"></td>
+            <td>
+              <span th:class="${reg.estado.name() == 'ACTIVO'} ? 'estado-activo' : 'estado-finalizado'"
+                    th:text="#{__${'estado.' + reg.estado.name()}__}"></span>
+            </td>
+            <td>
+              <!-- Sólo los finalizados tienen total y, por tanto, factura. -->
+              <a th:if="${reg.estado.name() == 'FINALIZADO'}"
+                 th:href="@{/cliente/parqueos/{id}/factura(id=${reg.id})}"
+                 class="btn-editar" th:text="#{parqueos.descargarFactura}">Descargar factura</a>
+              <span th:unless="${reg.estado.name() == 'FINALIZADO'}">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="~{fragments/paginacion :: nav(url='/cliente/parqueos', params='')}"></div>
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

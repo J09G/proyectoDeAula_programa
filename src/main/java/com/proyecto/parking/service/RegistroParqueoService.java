@@ -18,4 +18,13 @@ public interface RegistroParqueoService {
     Page<RegistroParqueo> listarHistorial(String idParqueadero, String idAdministrador, Pageable pageable);
 
     RegistroParqueo obtenerPorId(String idRegistro, String idAdministrador);
+
+    /** Parqueos del cliente, del más reciente al más antiguo (US-12). */
+    Page<RegistroParqueo> listarDelCliente(String idCliente, Pageable pageable);
+
+    /**
+     * Registro finalizado del propio cliente, para su factura. Si no existe,
+     * es de otro cliente o sigue activo, responde igual: no encontrado (404).
+     */
+    RegistroParqueo obtenerFinalizadoDelCliente(String idRegistro, String idCliente);
 }

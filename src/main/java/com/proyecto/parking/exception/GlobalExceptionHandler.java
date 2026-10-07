@@ -1,8 +1,11 @@
 package com.proyecto.parking.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
@@ -47,6 +50,26 @@ public class GlobalExceptionHandler {
         model.addAttribute("error", ex.getMessage());
         model.addAttribute("path", request.getRequestURI());
         return VISTA_404;
+    }
+
+    /**
+     * Los ids de MongoDB tienen 24 caracteres hexadecimales. Si llega otra cosa
+     * (/reserva/abc123), Spring Data no puede convertirlo a ObjectId: ese
+     * recurso no existe, así que es un 404 y no un error interno. Cualquier
+     * otra conversión fallida sí es un fallo nuestro y sigue siendo un 500.
+     */
+    @ExceptionHandler(ConversionFailedException.class)
+    public String manejarConversionFallida(ConversionFailedException ex, Model model,
+                                           HttpServletRequest request, HttpServletResponse response) {
+        if (ex.getTargetType() != null && ObjectId.class.equals(ex.getTargetType().getType())) {
+            log.info("Id con formato inválido en {}: {}", request.getRequestURI(), ex.getValue());
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            model.addAttribute("error", "El recurso solicitado no existe.");
+            model.addAttribute("path", request.getRequestURI());
+            return VISTA_404;
+        }
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return manejarErrorInterno(ex, model, request);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)

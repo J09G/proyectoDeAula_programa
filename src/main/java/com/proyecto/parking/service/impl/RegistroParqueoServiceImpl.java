@@ -181,6 +181,21 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         return registro;
     }
 
+    @Override
+    public Page<RegistroParqueo> listarDelCliente(String idCliente, Pageable pageable) {
+        return registroRepository.findByUsuario_Id(idCliente, pageable);
+    }
+
+    @Override
+    public RegistroParqueo obtenerFinalizadoDelCliente(String idRegistro, String idCliente) {
+        // Ajeno, inexistente o todavía activo dan la misma respuesta: así nadie
+        // puede averiguar qué ids existen probando con los de otros clientes.
+        return registroRepository.findById(idRegistro)
+                .filter(r -> r.getUsuario() != null && idCliente.equals(r.getUsuario().getId()))
+                .filter(r -> r.getEstado() == EstadoRegistro.FINALIZADO)
+                .orElseThrow(() -> RecursoNoEncontradoException.de("Registro", idRegistro));
+    }
+
     // ── Validaciones ─────────────────────────────────────────────────────────
 
     private void validarCubiculoExiste(Parqueadero parqueadero, Integer espacio) {

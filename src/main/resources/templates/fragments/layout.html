@@ -72,6 +72,9 @@
         <a th:href="@{/cliente(scroll='reservas')}" class="nav-link"
            th:classappend="${activo == 'reservas'} ? 'active'"
            th:text="#{nav.misReservas}">Mis reservas</a>
+        <a th:href="@{/cliente/parqueos}" class="nav-link"
+           th:classappend="${activo == 'parqueos'} ? 'active'"
+           th:text="#{nav.misParqueos}">Mis parqueos</a>
         <a th:href="@{/cliente/mapa}" class="nav-link"
            th:classappend="${activo == 'mapa'} ? 'active'"
            th:text="#{nav.mapa}">Mapa</a>

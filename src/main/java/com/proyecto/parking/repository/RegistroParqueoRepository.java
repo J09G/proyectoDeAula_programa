@@ -27,4 +27,7 @@ public interface RegistroParqueoRepository extends MongoRepository<RegistroParqu
     List<RegistroParqueo> findByParqueadero_Id(String idParqueadero, Sort sort);
 
     Page<RegistroParqueo> findByParqueadero_Id(String idParqueadero, Pageable pageable);
+
+    /** Historial de un cliente (US-12, "Mis parqueos"). */
+    Page<RegistroParqueo> findByUsuario_Id(String idUsuario, Pageable pageable);
 }
