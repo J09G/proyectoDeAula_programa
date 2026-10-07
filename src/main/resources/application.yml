@@ -169,7 +169,7 @@ spring:
       on-profile: prod
 
 server:
-  # Render (y el nginx de docker-compose) ponen el HTTPS; la app habla HTTP
+  # Render pone el HTTPS con su proxy; la app habla HTTP
   # plano detrás de ellos.
   ssl:
     enabled: ${SSL_ENABLED:false}

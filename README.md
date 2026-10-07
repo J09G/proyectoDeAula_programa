@@ -229,8 +229,10 @@ registrar la entrada.
 ### Rotar el certificado
 
 El `keystore.p12` incluido es **autofirmado y de desarrollo**; su clave privada
-está en el repositorio, así que no autentica nada. Para producción, o bien
-terminas TLS en nginx y arrancas con `SSL_ENABLED=false`, o generas uno propio:
+está en el repositorio, así que no autentica nada. Sólo se usa en el perfil
+`dev` con `SSL_ENABLED=true`. En producción (Render) el HTTPS lo pone el proxy
+de la plataforma y la app arranca con `SSL_ENABLED=false`. Si alguna vez la app
+tuviera que servir HTTPS por sí misma, genera uno propio:
 
 ```bash
 keytool -genkeypair -alias parking -keyalg RSA -keysize 4096 \
@@ -310,8 +312,13 @@ cp .env.example .env     # define MONGODB_URI y el resto
 docker compose up --build
 ```
 
-- `backend`: la aplicación Spring Boot
-- `frontend`: nginx como proxy inverso (puertos 80 y 443)
+Levanta un solo contenedor con la aplicación, construido con el mismo
+`Dockerfile` que usa Render, y queda en <http://localhost:8080> (o el `PORT`
+de tu `.env`). `MONGODB_URI` y `JWT_SECRET` son obligatorios.
+
+No hay nginx: en Render el HTTPS lo pone su propio proxy y en local se usa
+HTTP. La configuración anterior de Railway (nginx hacia su red interna) se
+retiró.
 
 El `docker-compose.yml` no contiene credenciales: todo sale de `.env`, que está
 en `.gitignore`.
