@@ -1,6 +1,6 @@
 # Historias de Usuario — Sistema de Parqueaderos
 
-> Ultima actualizacion: 2026-05-15
+> Ultima actualizacion: 2026-10-07
 
 | ID | Historia de Usuario |
 |----|---------------------|
@@ -30,3 +30,25 @@
 | RF0024 | Como sistema quiero restringir funcionalidades según el rol del usuario para proteger operaciones administrativas. |
 | RF0025 | Como usuario autenticado quiero cerrar sesión para finalizar mi acceso de manera segura. |
 | RF0026 | Como usuario quiero visualizar un mensaje de error 403 cuando intente acceder a una funcionalidad sin permisos para saber que no estoy autorizado. |
+
+## Agregadas en el periodo 2026-2
+
+Funcionalidades nuevas del aplicativo web. La columna **Planeación** indica la
+historia de `planeacion-scrum-v9.docx` en la que se construyó cada una.
+
+| ID | Historia de Usuario | Planeación |
+|----|---------------------|------------|
+| RF0027 | Como usuario quiero que mi sesión viaje en un token JWT guardado en una cookie segura del navegador para no depender de sesiones en el servidor, y que si mi cuenta se deshabilita o mi rol cambia, el acceso se ajuste de inmediato aunque el token no haya vencido. | US-01 |
+| RF0028 | Como usuario quiero iniciar sesión con mi cuenta de Google para entrar sin crear ni recordar otra contraseña; si mi correo ya está registrado, se usa la misma cuenta, y si soy nuevo, quedo registrado como cliente. | US-03 |
+| RF0029 | Como cliente que entró con Google quiero completar mi cédula y mi placa la primera vez que voy a reservar para poder usar el flujo normal de reservas. | US-04 |
+| RF0030 | Como usuario que olvidó su contraseña quiero recibir por correo un enlace para crear una nueva, que venza a los 30 minutos y sirva una sola vez, para recuperar mi cuenta de forma segura. | US-05 |
+| RF0031 | Como cliente quiero cancelar una reserva pendiente o aceptada que ya no voy a usar para liberar el cupo; si estaba aceptada, el espacio vuelve a quedar disponible. | US-06 |
+| RF0032 | Como usuario autenticado quiero editar mi nombre, mi correo y mi contraseña desde mi perfil; cambiar el correo o la contraseña exige mi contraseña actual para que nadie se apodere de mi cuenta desde una sesión abierta. | US-08 |
+| RF0033 | Como cliente quiero actualizar mi placa y mi cédula desde mi perfil; la placa se cambia libremente y la cédula exige mi contraseña actual. | US-08 |
+| RF0034 | Como usuario quiero cambiar entre tema claro y oscuro, y que el sistema recuerde mi elección, para usarlo cómodamente. | US-09 |
+| RF0035 | Como usuario quiero cambiar el idioma de la interfaz entre español e inglés para usar el sistema en el idioma que prefiera. | — |
+| RF0036 | Como administrador o superadministrador quiero que los listados largos (usuarios, parqueaderos, reservas y registros) se muestren por páginas, conservando las búsquedas, para que el sistema siga siendo rápido a medida que crecen los datos. | US-10 |
+| RF0037 | Como administrador quiero tener en una página de configuración los datos de mi parqueadero, su capacidad, su estado y su ubicación, separada del panel donde atiendo las reservas. | US-10 |
+| RF0038 | Como administrador quiero marcar en un mapa la ubicación de la entrada de mi parqueadero para que los clientes lo encuentren en el mapa. | US-11 |
+| RF0039 | Como cliente quiero ver en un mapa los parqueaderos habilitados, con su tarifa y espacios libres, para elegir el más cercano a donde voy y reservar desde ahí. | US-11 |
+| RF0040 | Como cliente quiero ver el historial de mis parqueos (entrada, salida, tiempo, valor y estado) y descargar la factura en PDF de los finalizados, sin poder ver los de otros clientes. | US-12 |
