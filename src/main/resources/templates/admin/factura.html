@@ -55,9 +55,11 @@
         </tr>
         <tr>
           <td th:text="#{factura.conReserva}">Con reserva</td>
-          <td th:text="${registro.reserva != null}
-                       ? #messages.msg('common.si') + ' · #' + ${registro.reserva.id}
-                       : #messages.msg('common.no')"></td>
+          <!-- #messages sólo existe dentro de ${...}: fuera de él Thymeleaf no
+               puede leer la expresión y la página entera fallaba con un 500. -->
+          <td th:text="${registro.reserva != null
+                         ? #messages.msg('common.si') + ' · #' + registro.reserva.id
+                         : #messages.msg('common.no')}"></td>
         </tr>
         <tr>
           <td th:text="#{factura.horaEntrada}">Entrada</td>
