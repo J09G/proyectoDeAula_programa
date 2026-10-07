@@ -47,7 +47,9 @@ src/main/resources/application.properties
 ### Claves y certificados ###
 *.pem
 *.key
+*.p12
 *.p12.local
+*.jks
 
 ### Script de arranque local (contiene valores personales) ###
 run-local.ps1

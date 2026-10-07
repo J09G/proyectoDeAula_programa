@@ -79,7 +79,7 @@ completa está en [`.env.example`](.env.example).
 | `APP_URL` | sí en producción | `http://localhost:8081` | URL pública; con ella se arman los enlaces de los correos |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | para el login con Google | `no-configurado` | Credenciales OAuth de Google Cloud |
 | `SSL_ENABLED` | no | `false` en `dev` y `prod` | TLS en el propio backend. En Render debe quedar en `false` |
-| `KEYSTORE_PASSWORD` | si `SSL_ENABLED=true` | — | Contraseña del keystore |
+| `KEYSTORE_PATH` / `KEYSTORE_PASSWORD` | si `SSL_ENABLED=true` | — | Certificado propio y su contraseña (ver "HTTPS en local") |
 | `COOKIE_SEGURA` | no | `true` (`false` en `dev`) | Atributo `Secure` de la cookie JWT |
 | `BREVO_API_KEY` | para enviar correos | vacía | Sin ella, los correos sólo se registran en el log |
 | `BREVO_SENDER_EMAIL` | sí si hay `BREVO_API_KEY` | `no-reply@parkingapp.local` | Remitente. Debe estar **verificado en Brevo**; si no, Brevo acepta el envío pero no lo entrega |
@@ -226,18 +226,25 @@ registrar la entrada.
 | Mensajes de login que no revelan si un correo existe | `LoginFailureHandler` |
 | Los errores internos no se muestran al usuario | `GlobalExceptionHandler` |
 
-### Rotar el certificado
+### HTTPS en local
 
-El `keystore.p12` incluido es **autofirmado y de desarrollo**; su clave privada
-está en el repositorio, así que no autentica nada. Sólo se usa en el perfil
-`dev` con `SSL_ENABLED=true`. En producción (Render) el HTTPS lo pone el proxy
-de la plataforma y la app arranca con `SSL_ENABLED=false`. Si alguna vez la app
-tuviera que servir HTTPS por sí misma, genera uno propio:
+El repositorio **no incluye ningún certificado ni llave privada**. En producción
+(Render) el HTTPS lo pone el proxy de la plataforma y la app habla HTTP
+(`SSL_ENABLED=false`, el valor por defecto). Si quieres probar HTTPS en tu
+equipo, genera un certificado autofirmado **fuera del repositorio**:
 
 ```bash
 keytool -genkeypair -alias parking -keyalg RSA -keysize 4096 \
-        -storetype PKCS12 -keystore keystore.p12 -validity 365
+        -storetype PKCS12 -keystore C:/certs/parking.p12 -validity 365
 ```
+
+y arranca con `SSL_ENABLED=true`, `KEYSTORE_PATH=file:C:/certs/parking.p12` y
+`KEYSTORE_PASSWORD=<la que elegiste>`.
+
+> Hasta octubre de 2026 el repositorio llevaba un `keystore.p12` de desarrollo,
+> y su contraseña quedó en commits antiguos. Era un certificado autofirmado que
+> no se usaba en producción ni protegía nada; se retiró en vez de reescribir el
+> historial de git.
 
 ---
 
