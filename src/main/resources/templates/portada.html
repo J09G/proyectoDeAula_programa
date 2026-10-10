@@ -10,6 +10,8 @@
      HERO
      ═══════════════════════════════════════════════════════════════════════ -->
 <header class="hero">
+  <!-- Barra fija: transparente sobre la foto y con fondo al hacer scroll (ver el script al final) -->
+  <div class="hero-barra en-el-tope">
   <nav class="hero-nav">
     <a th:href="@{/}" class="marca marca-clara">
       <span class="marca-icono"><img th:src="@{/images/marca/pin.png}" alt=""></span>
@@ -28,11 +30,12 @@
       <a th:href="@{/registro/cliente}" class="btn-primary hero-crear" th:text="#{portada.nav.crearCuenta}">Crear cuenta</a>
     </div>
   </nav>
+  </div>
 
   <div class="hero-cuerpo">
-    <span class="etiqueta etiqueta-guion hero-etiqueta" th:text="#{portada.hero.etiqueta}">Parquea fácil en Cartagena</span>
-    <h1 th:text="#{portada.hero.titulo}">Tu espacio te está esperando.</h1>
-    <p class="hero-texto" th:text="#{portada.hero.texto}">Encuentra y reserva parqueaderos seguros cerca de ti.</p>
+    <!-- Jerarquía de mayor a menor: primero el título y debajo el texto, sin etiqueta pequeña encima. -->
+    <h1 th:text="#{portada.hero.titulo}">Parquea antes de llegar.</h1>
+    <p class="hero-texto" th:text="#{portada.hero.texto}">La app de parqueo de Cartagena. Elige tu zona, reserva tu cubículo y llega con el puesto asegurado.</p>
 
     <!-- Buscador: lleva a la zona elegida. Sin sesión, la zona pide login. -->
     <form class="buscador" th:action="@{/buscar}" method="get">
@@ -85,7 +88,6 @@
     <div class="bloque-inner">
       <div class="bloque-cabecera">
         <div>
-          <span class="etiqueta" th:text="#{portada.zonas.etiqueta}">Explora Cartagena</span>
           <h2 th:text="#{portada.zonas.titulo}">Parquea por zonas</h2>
           <p th:text="#{portada.zonas.texto}">Encuentra el lugar perfecto cerca de tu destino.</p>
         </div>
@@ -122,7 +124,6 @@
     <div class="bloque-inner">
       <div class="bloque-cabecera">
         <div>
-          <span class="etiqueta" th:text="#{portada.cerca.etiqueta}">Disponibles ahora</span>
           <h2 th:text="#{portada.cerca.titulo}">Cerca de ti</h2>
           <p th:text="#{portada.cerca.texto}">Espacios verificados y listos para reservar.</p>
         </div>
@@ -144,7 +145,6 @@
   <section class="bloque bloque-crema" id="como-funciona">
     <div class="bloque-inner pasos">
       <div class="pasos-intro">
-        <span class="etiqueta" th:text="#{portada.pasos.etiqueta}">Simple y rápido</span>
         <h2 th:text="#{portada.pasos.titulo}">Parquea sin perder tiempo.</h2>
         <p th:text="#{portada.pasos.texto}">Desde la búsqueda hasta tu llegada…</p>
       </div>
@@ -218,6 +218,15 @@
     if (!campo) { return; }
     var ahora = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
     campo.min = ahora.toISOString().slice(0, 16);
+  })();
+
+  // La barra de navegación es transparente sólo en lo alto de la página; al bajar toma fondo.
+  (function () {
+    var barra = document.querySelector('.hero-barra');
+    if (!barra) { return; }
+    function actualizar() { barra.classList.toggle('en-el-tope', window.scrollY < 12); }
+    actualizar();
+    window.addEventListener('scroll', actualizar, { passive: true });
   })();
 </script>
 </body>

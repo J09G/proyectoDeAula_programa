@@ -24,19 +24,40 @@
     linear-gradient(0deg, rgba(8,40,44,.55) 0%, rgba(8,40,44,0) 40%);
 }
 
+/* Barra de navegación fija. Vive dentro del hero, que crea su propio contexto de
+   apilamiento (isolation): por eso el hero lleva z-index, para que la barra quede
+   por encima de las secciones que vienen después. */
+.hero { z-index: 60; padding-top: var(--alto-barra, 93px); }
+.hero-barra {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+  background: #083A3E;
+  box-shadow: 0 6px 24px rgba(4,30,32,.22);
+  transition: background .25s, box-shadow .25s;
+}
+/* En lo alto de la página se ve la foto a través de la barra, como antes de ser fija. */
+.hero-barra.en-el-tope { background: transparent; box-shadow: none; }
+
 .hero-nav {
   width: 100%; max-width: var(--contenido);
   margin: 0 auto;
   padding: 22px 24px;
   display: flex; align-items: center; gap: 32px;
-  border-bottom: 1px solid rgba(255,255,255,.14);
+  border-bottom: 1px solid transparent;
+  transition: padding .25s, border-color .25s;
 }
+.hero-barra.en-el-tope .hero-nav { border-bottom-color: rgba(255,255,255,.14); }
+.hero-barra:not(.en-el-tope) .hero-nav { padding-top: 14px; padding-bottom: 14px; }
 .hero-nav-links { display: flex; gap: 30px; flex: 1; justify-content: center; }
 .hero-nav-links a {
   color: rgba(255,255,255,.88); font-weight: 600; font-size: 0.9375rem;
   transition: color .15s;
 }
-.hero-nav-links a:hover { color: #FFFFFF; }
+/* La misma raya blanca que "Iniciar sesión" */
+.hero-nav-links a:hover,
+.hero-nav-links a:focus-visible { color: #FFFFFF; text-decoration: underline; text-underline-offset: 4px; }
+
+/* Al saltar a una sección desde el menú, la barra fija no debe tapar su comienzo. */
+.portada section[id] { scroll-margin-top: 56px; }
 .hero-nav-acciones { display: flex; align-items: center; gap: 18px; }
 .hero-entrar { color: #FFFFFF; font-weight: 600; font-size: 0.9375rem; }
 .hero-entrar:hover { color: #FFFFFF; text-decoration: underline; text-underline-offset: 4px; }
@@ -54,7 +75,6 @@
   flex: 1;
   display: flex; flex-direction: column; justify-content: center;
 }
-.hero-etiqueta { color: #FFFFFF; margin-bottom: 26px; }
 .hero h1 {
   color: #FFFFFF;
   font-size: clamp(2.75rem, 7vw, 5.25rem);
@@ -136,7 +156,7 @@
   font-size: clamp(2.25rem, 4.5vw, 3.25rem);
   font-weight: 500;
   line-height: 1.05; letter-spacing: -.045em;
-  margin: 14px 0 10px;
+  margin: 0 0 10px;
 }
 .bloque-cabecera p, .pasos-intro p { color: var(--gray-500); font-size: 1.0625rem; }
 
@@ -222,7 +242,9 @@
   .buscador-boton { margin-top: 6px; }
 }
 @media (max-width: 640px) {
+  .hero { --alto-barra: 81px; }
   .hero-nav { padding: 16px; gap: 12px; }
+  .hero-barra:not(.en-el-tope) .hero-nav { padding-top: 10px; padding-bottom: 10px; }
   .hero-entrar { display: none; }
   .hero-cuerpo { padding: 56px 16px 56px; }
   .hero-texto { font-size: 1.0625rem; }
