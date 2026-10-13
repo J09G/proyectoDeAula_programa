@@ -24,4 +24,8 @@ public interface ComentarioRepository extends MongoRepository<Comentario, String
      * sola consulta en vez de una por tarjeta.</p>
      */
     List<Comentario> findByParqueaderoIn(List<Parqueadero> parqueaderos);
+
+    List<Comentario> findByReportadoTrue(Sort sort);
+
+    long countByReportadoTrue();
 }

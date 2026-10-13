@@ -102,6 +102,9 @@
         <a th:href="@{/superadmin/zonas}" class="nav-link"
            th:classappend="${activo == 'zonas'} ? 'active'"
            th:text="#{nav.zonas}">Zonas</a>
+        <a th:href="@{/superadmin/comentarios}" class="nav-link"
+           th:classappend="${activo == 'comentarios'} ? 'active'"
+           th:text="#{nav.comentarios}">Comentarios</a>
         <a th:href="@{/superadmin/dashboard}" class="nav-link"
            th:classappend="${activo == 'dashboard'} ? 'active'"
            th:text="#{nav.dashboard}">Dashboard</a>

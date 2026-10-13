@@ -1,5 +1,7 @@
 package com.proyecto.parking.service.impl;
 
+import com.proyecto.parking.exception.RecursoNoEncontradoException;
+import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Comentario;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Usuario;
@@ -19,6 +21,8 @@ import java.util.List;
 public class ComentarioServiceImpl implements ComentarioService {
 
     private static final Logger log = LoggerFactory.getLogger(ComentarioServiceImpl.class);
+
+    static final int LARGO_MAXIMO_MOTIVO = 200;
 
     private final ComentarioRepository comentarioRepository;
     private final UsuarioService usuarioService;
@@ -54,5 +58,60 @@ public class ComentarioServiceImpl implements ComentarioService {
     public List<Comentario> listarPorParqueadero(String idParqueadero) {
         return comentarioRepository.findByParqueadero_Id(
                 idParqueadero, Sort.by(Sort.Direction.DESC, "_id"));
+    }
+
+    @Override
+    public void reportarComentario(String idComentario, String idAdministrador, String motivo) {
+        Comentario comentario = obtener(idComentario);
+        // Lanza AccesoDenegadoException si el parqueadero no es suyo.
+        parqueaderoService.obtenerParqueaderoDeAdministrador(
+                comentario.getParqueadero().getId(), idAdministrador);
+
+        if (motivo == null || motivo.isBlank()) {
+            throw new ReglaNegocioException("Indica por qué debería revisarse el comentario.");
+        }
+        if (comentario.isReportado()) {
+            throw new ReglaNegocioException("Este comentario ya está en revisión.");
+        }
+
+        String limpio = motivo.trim();
+        comentario.setReportado(true);
+        comentario.setMotivoReporte(limpio.length() > LARGO_MAXIMO_MOTIVO
+                ? limpio.substring(0, LARGO_MAXIMO_MOTIVO) : limpio);
+        comentario.setReportadoEn(LocalDateTime.now());
+        comentarioRepository.save(comentario);
+        log.info("Comentario {} reportado por el administrador {}.", idComentario, idAdministrador);
+    }
+
+    @Override
+    public List<Comentario> listarReportados() {
+        return comentarioRepository.findByReportadoTrue(Sort.by(Sort.Direction.DESC, "reportadoEn"));
+    }
+
+    @Override
+    public long contarReportados() {
+        return comentarioRepository.countByReportadoTrue();
+    }
+
+    @Override
+    public void eliminarComentario(String idComentario) {
+        Comentario comentario = obtener(idComentario);
+        comentarioRepository.delete(comentario);
+        log.info("Comentario {} eliminado por el superadministrador.", idComentario);
+    }
+
+    @Override
+    public void descartarReporte(String idComentario) {
+        Comentario comentario = obtener(idComentario);
+        comentario.setReportado(false);
+        comentario.setMotivoReporte(null);
+        comentario.setReportadoEn(null);
+        comentarioRepository.save(comentario);
+        log.info("Reporte del comentario {} descartado: sigue publicado.", idComentario);
+    }
+
+    private Comentario obtener(String idComentario) {
+        return comentarioRepository.findById(idComentario)
+                .orElseThrow(() -> RecursoNoEncontradoException.de("Comentario", idComentario));
     }
 }

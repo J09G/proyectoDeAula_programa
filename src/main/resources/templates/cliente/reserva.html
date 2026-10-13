@@ -173,10 +173,12 @@
         <p th:if="${#lists.isEmpty(comentarios)}" class="mensaje-vacio" th:text="#{reserva.sinComentarios}"></p>
 
         <article th:each="c : ${comentarios}" class="comentario-item">
-          <span class="comentario-avatar" th:text="${#strings.substring(c.cliente.nombre, 0, 1)}">A</span>
+          <span class="comentario-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2-7 4.5V20h14v-1.5C19 16 16 14 12 14z"/></svg>
+          </span>
           <div class="comentario-cuerpo">
             <div class="comentario-meta">
-              <span class="comentario-autor" th:text="${c.cliente.nombre}">Cliente</span>
+              <span class="comentario-autor" th:text="#{comentario.autorAnonimo}">Cliente verificado</span>
               <span class="comentario-estrellas" th:if="${c.puntuacion != null}"
                     th:title="${c.puntuacion} + ' / 5'">
                 <th:block th:each="n : ${#numbers.sequence(1, 5)}">

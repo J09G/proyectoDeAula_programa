@@ -137,10 +137,23 @@
     <p th:if="${#lists.isEmpty(comentarios)}" class="no-data" th:text="#{admin.sinComentarios}"></p>
     <div th:each="c : ${comentarios}" class="comment-card">
       <div class="comment-meta">
-        <span class="comment-author" th:text="${c.cliente.nombre}">Cliente</span>
+        <span class="comment-author" th:text="#{comentario.autorAnonimo}">Cliente verificado</span>
+        <span class="comment-stars" th:if="${c.puntuacion != null}" th:text="${c.puntuacion} + ' / 5'"></span>
         <span class="comment-date" th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
       </div>
       <p class="comment-body" th:text="${c.texto}">Comentario</p>
+
+      <p th:if="${c.reportado}" class="comment-reportado" th:text="#{comentario.enRevision}">En revisión</p>
+      <details th:unless="${c.reportado}" class="comment-reportar">
+        <summary th:text="#{comentario.reportar}">Reportar</summary>
+        <form th:action="@{/admin/parqueadero/{id}/comentario/{cid}/reportar(id=${parqueadero.id}, cid=${c.id})}" method="post">
+          <label th:for="'motivo-' + ${c.id}" th:text="#{comentario.motivo}">Motivo</label>
+          <input type="text" name="motivo" th:id="'motivo-' + ${c.id}" required minlength="5" maxlength="200"
+                 th:placeholder="#{comentario.motivoEjemplo}">
+          <button type="submit" class="btn-eliminar" th:text="#{comentario.enviarReporte}">Enviar reporte</button>
+        </form>
+        <p class="comment-ayuda" th:text="#{comentario.reportarAyuda}"></p>
+      </details>
     </div>
   </section>
 

@@ -7,6 +7,7 @@ import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Rol;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.UsuarioService;
 import com.proyecto.parking.service.ZonaService;
@@ -38,10 +39,13 @@ public class SuperAdminController {
     private final ParqueaderoService parqueaderoService;
     private final ZonaService zonaService;
     private final UsuarioService usuarioService;
+    private final ComentarioService comentarioService;
 
     public SuperAdminController(ParqueaderoService parqueaderoService,
                                 ZonaService zonaService,
-                                UsuarioService usuarioService) {
+                                UsuarioService usuarioService,
+                                ComentarioService comentarioService) {
+        this.comentarioService = comentarioService;
         this.parqueaderoService = parqueaderoService;
         this.zonaService = zonaService;
         this.usuarioService = usuarioService;
@@ -234,6 +238,28 @@ public class SuperAdminController {
         flash.addFlashAttribute("mensaje",
                 "Zona " + (habilitado ? "habilitada" : "deshabilitada") + " correctamente.");
         return "redirect:/superadmin/zonas";
+    }
+
+    // ── Comentarios reportados ───────────────────────────────────────────────
+
+    @GetMapping("/comentarios")
+    public String verComentariosReportados(Model model) {
+        model.addAttribute("comentarios", comentarioService.listarReportados());
+        return "superadmin/comentarios";
+    }
+
+    @PostMapping("/comentarios/eliminar")
+    public String eliminarComentario(@RequestParam String idComentario, RedirectAttributes flash) {
+        comentarioService.eliminarComentario(idComentario);
+        flash.addFlashAttribute("mensaje", "Comentario eliminado.");
+        return "redirect:/superadmin/comentarios";
+    }
+
+    @PostMapping("/comentarios/descartar")
+    public String descartarReporte(@RequestParam String idComentario, RedirectAttributes flash) {
+        comentarioService.descartarReporte(idComentario);
+        flash.addFlashAttribute("mensaje", "Reporte descartado: el comentario sigue publicado.");
+        return "redirect:/superadmin/comentarios";
     }
 
     // ── Auxiliares ───────────────────────────────────────────────────────────

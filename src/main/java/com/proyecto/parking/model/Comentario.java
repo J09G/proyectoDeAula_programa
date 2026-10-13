@@ -29,12 +29,25 @@ public class Comentario {
      */
     private Integer puntuacion;
 
+    /**
+     * Quién lo escribió. Se guarda para poder moderar, pero no se muestra ni a
+     * los demás clientes ni al parqueadero: así se opina sin temor.
+     */
     @DBRef(lazy = true)
     private Usuario cliente;
 
     @Indexed
     @DBRef(lazy = true)
     private Parqueadero parqueadero;
+
+    /**
+     * El parqueadero pidió que se revise. No puede borrarlo él mismo, porque
+     * borraría las malas notas: lo decide el superadministrador.
+     */
+    @Indexed
+    private boolean reportado;
+    private String motivoReporte;
+    private LocalDateTime reportadoEn;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -53,4 +66,13 @@ public class Comentario {
 
     public Parqueadero getParqueadero() { return parqueadero; }
     public void setParqueadero(Parqueadero parqueadero) { this.parqueadero = parqueadero; }
+
+    public boolean isReportado() { return reportado; }
+    public void setReportado(boolean reportado) { this.reportado = reportado; }
+
+    public String getMotivoReporte() { return motivoReporte; }
+    public void setMotivoReporte(String motivoReporte) { this.motivoReporte = motivoReporte; }
+
+    public LocalDateTime getReportadoEn() { return reportadoEn; }
+    public void setReportadoEn(LocalDateTime reportadoEn) { this.reportadoEn = reportadoEn; }
 }

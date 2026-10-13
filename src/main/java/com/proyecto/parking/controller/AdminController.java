@@ -302,6 +302,27 @@ public class AdminController {
         return volverAReservas(id, pagina, cedula);
     }
 
+    // ── Comentarios ──────────────────────────────────────────────────────────
+
+    /**
+     * El administrador no borra comentarios: los reporta y decide el
+     * superadministrador. Si pudiera borrarlos, borraría las malas notas.
+     */
+    @PostMapping("/parqueadero/{id}/comentario/{cid}/reportar")
+    public String reportarComentario(@AuthenticationPrincipal UsuarioPrincipal admin,
+                                     @PathVariable String id,
+                                     @PathVariable String cid,
+                                     @RequestParam(required = false) String motivo,
+                                     RedirectAttributes flash) {
+        try {
+            comentarioService.reportarComentario(cid, admin.getId(), motivo);
+            flash.addFlashAttribute("mensaje", "Comentario reportado. El superadministrador lo revisará.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/parqueadero/" + id;
+    }
+
     // ── Registros de parqueo ─────────────────────────────────────────────────
 
     @GetMapping("/parqueadero/{id}/registros")

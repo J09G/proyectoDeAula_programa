@@ -52,3 +52,6 @@ historia de `planeacion-scrum-v9.docx` en la que se construyó cada una.
 | RF0038 | Como administrador quiero marcar en un mapa la ubicación de la entrada de mi parqueadero para que los clientes lo encuentren en el mapa. | US-11 |
 | RF0039 | Como cliente quiero ver en un mapa los parqueaderos habilitados, con su tarifa y espacios libres, para elegir el más cercano a donde voy y reservar desde ahí. | US-11 |
 | RF0040 | Como cliente quiero ver el historial de mis parqueos (entrada, salida, tiempo, valor y estado) y descargar la factura en PDF de los finalizados, sin poder ver los de otros clientes. | US-12 |
+| RF0041 | Como cliente quiero que mis comentarios se publiquen sin mi nombre, para opinar con sinceridad sobre un parqueadero. | — |
+| RF0042 | Como administrador quiero reportar un comentario ofensivo o falso de mi parqueadero, indicando el motivo, para que sea revisado. | — |
+| RF0043 | Como superadministrador quiero ver los comentarios reportados, con su autor y el motivo, y decidir si se eliminan o siguen publicados. | — |

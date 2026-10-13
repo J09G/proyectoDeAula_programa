@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('superadmin.comentarios')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('comentarios')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{superadmin.comentarios}">Comentarios reportados</h1>
+      <p th:text="#{superadmin.comentariosSub}">Los parqueaderos piden revisar estos comentarios. Tú decides.</p>
+    </div>
+  </div>
+
+  <div class="mensajes">
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+  </div>
+
+  <section class="seccion">
+    <p th:if="${#lists.isEmpty(comentarios)}" class="no-data" th:text="#{superadmin.sinReportes}"></p>
+
+    <div th:each="c : ${comentarios}" class="comment-card">
+      <div class="comment-meta">
+        <span class="comment-author" th:text="${c.parqueadero?.nombre}">Parqueadero</span>
+        <span class="comment-stars" th:if="${c.puntuacion != null}" th:text="${c.puntuacion} + ' / 5'"></span>
+        <span class="comment-date" th:text="${#temporals.format(c.fecha, 'dd/MM/yyyy HH:mm')}"></span>
+      </div>
+      <p class="comment-body" th:text="${c.texto}">Comentario</p>
+      <p class="comment-ayuda">
+        <strong th:text="#{superadmin.escritoPor}">Escrito por</strong>:
+        <span th:text="${c.cliente != null ? c.cliente.nombre + ' (' + c.cliente.correo + ')' : '—'}"></span>
+      </p>
+      <p class="comment-reportado">
+        <strong th:text="#{comentario.motivo}">Motivo</strong>:
+        <span th:text="${c.motivoReporte}"></span>
+        <span th:if="${c.reportadoEn != null}" th:text="' · ' + ${#temporals.format(c.reportadoEn, 'dd/MM/yyyy HH:mm')}"></span>
+      </p>
+      <div class="comment-acciones">
+        <form th:action="@{/superadmin/comentarios/eliminar}" method="post">
+          <input type="hidden" name="idComentario" th:value="${c.id}">
+          <button type="submit" class="btn-eliminar" th:text="#{superadmin.eliminarComentario}">Eliminar comentario</button>
+        </form>
+        <form th:action="@{/superadmin/comentarios/descartar}" method="post">
+          <input type="hidden" name="idComentario" th:value="${c.id}">
+          <button type="submit" class="btn-editar" th:text="#{superadmin.descartarReporte}">Dejarlo publicado</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

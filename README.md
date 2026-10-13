@@ -89,6 +89,7 @@ completa está en [`.env.example`](.env.example).
 | `RESERVAS_MINUTOS_TOLERANCIA` | no | `120` | Margen antes de expirar una reserva |
 | `MAX_INTENTOS_LOGIN` | no | `5` | Intentos antes de bloquear la IP |
 | `MINUTOS_BLOQUEO_LOGIN` | no | `30` | Duración del bloqueo |
+| `ZONA_HORARIA` | no | `America/Bogota` | Hora con la que trabaja la app. Los servidores en la nube van en UTC: sin esto, las reservas de la noche se rechazaban por "ya pasadas" |
 
 ---
 
@@ -196,6 +197,12 @@ Los índices se crean solos (`spring.data.mongodb.auto-index-creation: true`).
 vuelve al inventario cuando: el vehículo sale, la reserva se elimina estando
 aceptada, o el job de expiración la caduca.
 
+**Comentarios.** Se publican como "Cliente verificado": ni los demás clientes ni
+el parqueadero ven quién los escribió, para que se pueda opinar sin temor. El
+parqueadero **no puede borrarlos** (borraría las malas notas y la valoración
+dejaría de ser creíble): los reporta con un motivo y el superadministrador, que
+sí ve al autor, decide si se eliminan o siguen publicados.
+
 **Expiración.** `ExpiracionReservasJob` corre cada 15 minutos (configurable) y
 caduca las reservas aceptadas cuya hora de llegada pasó hace más de
 `RESERVAS_MINUTOS_TOLERANCIA`.
@@ -263,6 +270,7 @@ y arranca con `SSL_ENABLED=true`, `KEYSTORE_PATH=file:C:/certs/parking.p12` y
 | `ReservaServiceImplTest` | Ciclo de vida de la reserva, compensación de cupo, expiración |
 | `RegistroParqueoServiceImplTest` | Entradas, cubículos ocupados, tarifa congelada |
 | `RegistroClienteFormTest` | Validación del registro (contraseñas, placa, cédula) |
+| `ComentariosModeracionIT` | Comentarios anónimos; el parqueadero reporta y sólo el superadministrador elimina |
 
 `ParkingApplicationTests` levanta el contexto completo y **sólo se ejecuta si
 hay una base de datos**:
