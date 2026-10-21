@@ -90,11 +90,8 @@ completa está en [`.env.example`](.env.example).
 | `MAX_INTENTOS_LOGIN` | no | `5` | Intentos antes de bloquear la IP |
 | `MINUTOS_BLOQUEO_LOGIN` | no | `30` | Duración del bloqueo |
 | `ZONA_HORARIA` | no | `America/Bogota` | Hora con la que trabaja la app. Los servidores en la nube van en UTC: sin esto, las reservas de la noche se rechazaban por "ya pasadas" |
-| `WOMPI_PUBLIC_KEY` | para cobrar | vacía | Llave pública de Wompi. Sin ella y sin el secreto de integridad, las reservas no cobran anticipo |
-| `WOMPI_INTEGRITY_SECRET` | para cobrar | vacía | Firma el importe y la referencia de cada pago |
-| `WOMPI_PRIVATE_KEY` | no | vacía | Permite anular cobros (devoluciones) y recuperar pagos sin aviso. Sin ella las devoluciones son manuales. Las que Wompi no puede hacer sola (Nequi, PSE) aparecen en Superadministrador > Devoluciones |
-| `WOMPI_EVENTS_SECRET` | no | vacía | Verifica los avisos de Wompi. Sin él los avisos se ignoran |
-| `WOMPI_API_URL` | no | sandbox | `https://production.wompi.co/v1` en producción |
+| `MERCADOPAGO_ACCESS_TOKEN` | para cobrar | vacía | Access token de la aplicación de Mercado Pago (credenciales de prueba para el sandbox). Crea los pagos, los consulta y hace las devoluciones. Sin él las reservas no cobran anticipo |
+| `MERCADOPAGO_WEBHOOK_SECRET` | no | vacía | Clave secreta de los webhooks: verifica los avisos de Mercado Pago. Sin ella los avisos se ignoran y el pago se confirma cuando el cliente vuelve. Las devoluciones que fallen aparecen en Superadministrador > Devoluciones |
 | `PAGOS_MINUTOS_PARA_PAGAR` | no | `15` | Plazo para pagar antes de liberar el cubículo |
 | `PAGOS_MINUTOS_ANTELACION_DEVOLUCION` | no | `60` | Antelación mínima al cancelar para recuperar el anticipo |
 
@@ -210,20 +207,23 @@ vuelve al inventario cuando: el vehículo sale, la reserva se elimina estando
 aceptada, o el job de expiración la caduca.
 
 **Anticipo.** Para que quien aparta un cubículo tenga intención de llegar, al
-reservar se cobra por Wompi un anticipo igual a la primera hora:
+reservar se cobra por Mercado Pago un anticipo igual a la primera hora:
 
 - La reserva nace `PENDIENTE_PAGO` y aparta el cubículo durante
   `PAGOS_MINUTOS_PARA_PAGAR`. Si no se paga, se cancela sola.
 - Con el pago aprobado pasa a `PENDIENTE` y el parqueadero decide como siempre.
-- **Se devuelve** si el parqueadero la rechaza o la elimina, o si el cliente
-  cancela con al menos `PAGOS_MINUTOS_ANTELACION_DEVOLUCION` de antelación.
-- **Se lo queda el parqueadero** si el cliente cancela más tarde o no llega.
+- **Se devuelve** si el parqueadero la rechaza o la elimina, si no responde
+  antes de la hora de llegada, si el cliente cancela antes de que la acepte, o
+  si la cancela ya aceptada con al menos `PAGOS_MINUTOS_ANTELACION_DEVOLUCION`
+  de antelación.
+- **Se lo queda el parqueadero** si el cliente cancela tarde una reserva ya
+  aceptada, o no llega.
 - Al salir, el anticipo se descuenta: la factura muestra el valor del servicio,
   el anticipo y el saldo.
 
 El estado, el importe y la referencia de cada pago se leen siempre de la API de
-Wompi: ni la URL de retorno ni los avisos se dan por buenos por sí solos. Sin las
-llaves de Wompi, los pagos quedan apagados y las reservas funcionan sin cobro.
+Mercado Pago: ni la URL de retorno ni los avisos se dan por buenos por sí solos.
+Sin el access token, los pagos quedan apagados y las reservas funcionan sin cobro.
 
 **Comentarios.** Se publican como "Cliente verificado": ni los demás clientes ni
 el parqueadero ven quién los escribió, para que se pueda opinar sin temor. El
@@ -260,7 +260,7 @@ registrar la entrada.
 | Validación en servidor de todos los formularios | `dto/` + `@Valid` |
 | Mensajes de login que no revelan si un correo existe | `LoginFailureHandler` |
 | Los errores internos no se muestran al usuario | `GlobalExceptionHandler` |
-| Pagos: importe firmado, verificación contra la API de la pasarela y avisos con firma | `WompiPasarela`, `PagoServiceImpl` |
+| Pagos: importe fijado de servidor a servidor, verificación contra la API de la pasarela y avisos con firma HMAC | `MercadoPagoPasarela`, `PagoServiceImpl` |
 
 ### HTTPS en local
 
@@ -300,7 +300,7 @@ Tests unitarios y de integración sobre la lógica que puede costar dinero o abr
 | `RegistroParqueoServiceImplTest` | Entradas, cubículos ocupados, tarifa congelada |
 | `RegistroClienteFormTest` | Validación del registro (contraseñas, placa, cédula) |
 | `PagoServiceImplTest` | Anticipo: confirmación contra la pasarela, importes alterados, devolución y retención |
-| `WompiPasarelaTest` | Firma de integridad (ejemplo oficial de Wompi) y firma de los avisos |
+| `MercadoPagoPasarelaTest` | Preferencia de pago, consulta, devolución y firma de los avisos, contra una API de Mercado Pago simulada |
 | `ComentariosModeracionIT` | Comentarios anónimos; el parqueadero reporta y sólo el superadministrador elimina |
 | `PagoAnticipoIT` | Flujo completo: reservar, pagar, rechazo, cancelación y factura con saldo |
 

@@ -65,8 +65,7 @@ class PagoServiceImplTest {
     @BeforeEach
     void preparar() {
         properties = new ParkingProperties();
-        properties.getPagos().getWompi().setLlavePublica("pub_test_abc");
-        properties.getPagos().getWompi().setSecretoIntegridad("test_integrity_abc");
+        properties.getPagos().getMercadoPago().setAccessToken("TEST-token-de-prueba");
         properties.getPagos().setMinutosParaPagar(15);
         properties.getPagos().setMinutosAntelacionDevolucion(60);
         properties.getPagos().setMontoMinimo(1_500);
@@ -105,7 +104,7 @@ class PagoServiceImplTest {
         when(reservaRepository.cambiarEstadoSi(anyString(), any(), any())).thenReturn(1L);
     }
 
-    private void wompiDice(String estado, long centavos) {
+    private void pasarelaDice(String estado, long centavos) {
         when(pasarela.consultarTransaccion("txn-1")).thenReturn(Optional.of(
                 new Transaccion("txn-1", REFERENCIA, estado, centavos, "COP", "CARD")));
     }
@@ -130,7 +129,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("sin llaves de la pasarela, los pagos están apagados")
         void apagadosSinLlaves() {
-            properties.getPagos().getWompi().setLlavePublica("");
+            properties.getPagos().getMercadoPago().setAccessToken("");
             assertThat(servicio.pagosHabilitados()).isFalse();
         }
 
@@ -149,18 +148,18 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("crea un intento con referencia propia y devuelve la URL de la pasarela")
         void creaElIntento() {
-            when(pasarela.urlDePago(any(), anyString())).thenReturn("https://checkout.wompi.co/p/?x=1");
+            when(pasarela.urlDePago(any(), anyString())).thenReturn("https://www.mercadopago.com.co/checkout/v1/redirect?pref_id=x");
 
             String url = servicio.iniciarPago(ID_RESERVA, ID_CLIENTE);
 
             ArgumentCaptor<Pago> guardado = ArgumentCaptor.forClass(Pago.class);
             verify(pagoRepository).save(guardado.capture());
-            assertThat(url).isEqualTo("https://checkout.wompi.co/p/?x=1");
+            assertThat(url).isEqualTo("https://www.mercadopago.com.co/checkout/v1/redirect?pref_id=x");
             assertThat(guardado.getValue().getMontoCentavos()).isEqualTo(CENTAVOS);
             assertThat(guardado.getValue().getReferencia()).startsWith("PKG-AB34CD-");
             assertThat(guardado.getValue().getEstado()).isEqualTo(EstadoPago.PENDIENTE);
             // El retorno sale de la configuración, no de lo que mande el navegador.
-            verify(pasarela).urlDePago(any(), org.mockito.ArgumentMatchers.eq("https://parking.test/pagos/wompi/retorno"));
+            verify(pasarela).urlDePago(any(), org.mockito.ArgumentMatchers.eq("https://parking.test/pagos/retorno"));
         }
 
         @Test
@@ -209,7 +208,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("un pago aprobado deja la reserva lista para el parqueadero")
         void aprobado() {
-            wompiDice("APPROVED", CENTAVOS);
+            pasarelaDice("APPROVED", CENTAVOS);
 
             assertThat(servicio.confirmarTransaccion("txn-1")).isEqualTo(Resultado.APROBADO);
 
@@ -222,7 +221,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("un pago rechazado no mueve la reserva y se puede reintentar")
         void rechazado() {
-            wompiDice("DECLINED", CENTAVOS);
+            pasarelaDice("DECLINED", CENTAVOS);
 
             assertThat(servicio.confirmarTransaccion("txn-1")).isEqualTo(Resultado.RECHAZADO);
 
@@ -232,7 +231,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("aprobado por menos dinero del debido no confirma nada")
         void montoDistinto() {
-            wompiDice("APPROVED", 100);
+            pasarelaDice("APPROVED", 100);
 
             assertThat(servicio.confirmarTransaccion("txn-1")).isEqualTo(Resultado.RECHAZADO);
 
@@ -243,7 +242,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("mientras la pasarela lo procesa, nada cambia")
         void enProceso() {
-            wompiDice("PENDING", CENTAVOS);
+            pasarelaDice("PENDING", CENTAVOS);
 
             assertThat(servicio.confirmarTransaccion("txn-1")).isEqualTo(Resultado.EN_PROCESO);
 
@@ -253,7 +252,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("confirmar dos veces el mismo pago no lo aplica dos veces")
         void idempotente() {
-            wompiDice("APPROVED", CENTAVOS);
+            pasarelaDice("APPROVED", CENTAVOS);
             pago.setEstado(EstadoPago.APROBADO);
 
             assertThat(servicio.confirmarTransaccion("txn-1")).isEqualTo(Resultado.APROBADO);
@@ -283,7 +282,7 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("si se pagó cuando la reserva ya se había cancelado, el dinero se devuelve")
         void reservaYaCerrada() {
-            wompiDice("APPROVED", CENTAVOS);
+            pasarelaDice("APPROVED", CENTAVOS);
             when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE_PAGO, EstadoReserva.PENDIENTE))
                     .thenReturn(0L);
             when(pasarela.devolver("txn-1")).thenReturn(true);
@@ -299,13 +298,15 @@ class PagoServiceImplTest {
     @DisplayName("Avisos de la pasarela")
     class Avisos {
 
-        private final Map<String, Object> aviso =
-                Map.of("data", Map.of("transaction", Map.of("id", "txn-1", "status", "APPROVED")));
+        private final PasarelaPago.Aviso aviso = new PasarelaPago.Aviso(
+                Map.of("type", "payment", "data", Map.of("id", "txn-1")),
+                Map.of("x-signature", "ts=1,v1=abc"),
+                Map.of("type", "payment", "data.id", "txn-1"));
 
         @Test
         @DisplayName("un aviso sin la firma de la pasarela se descarta")
         void sinFirma() {
-            when(pasarela.avisoEsAutentico(aviso)).thenReturn(false);
+            when(pasarela.transaccionDelAviso(aviso)).thenReturn(Optional.empty());
 
             servicio.procesarAviso(aviso);
 
@@ -316,8 +317,8 @@ class PagoServiceImplTest {
         @Test
         @DisplayName("aunque el aviso diga APROBADO, manda lo que responda la API de la pasarela")
         void mandaLaApi() {
-            when(pasarela.avisoEsAutentico(aviso)).thenReturn(true);
-            wompiDice("DECLINED", CENTAVOS);
+            when(pasarela.transaccionDelAviso(aviso)).thenReturn(Optional.of("txn-1"));
+            pasarelaDice("DECLINED", CENTAVOS);
 
             servicio.procesarAviso(aviso);
 

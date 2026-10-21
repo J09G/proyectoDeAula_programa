@@ -47,12 +47,12 @@
       <p class="pago-nota" th:text="#{pago.descuento}">Se descuenta de lo que pagues al salir.</p>
 
       <a th:href="@{/reserva/pago/{id}/ir(id=${reserva.id})}" class="btn-primary btn-ancho pago-boton">
-        <span th:text="#{pago.boton}">Pagar con Wompi</span>
+        <span th:text="#{pago.boton(${pasarela})}">Pagar con Mercado Pago</span>
         <svg th:replace="~{fragments/layout :: flecha}"></svg>
       </a>
       <p class="pago-plazo"
          th:text="#{pago.limite(${#temporals.format(limite, 'HH:mm')})}">Paga antes de las 18:15; después el cubículo se libera.</p>
-      <p class="pago-seguro" th:text="#{pago.seguro}">Pago seguro procesado por Wompi.</p>
+      <p class="pago-seguro" th:text="#{pago.seguro(${pasarela})}">Pago seguro procesado por Mercado Pago.</p>
     </div>
 
     <!-- Qué pasa con el dinero si cambian los planes -->

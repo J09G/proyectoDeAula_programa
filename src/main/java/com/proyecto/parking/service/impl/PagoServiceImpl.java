@@ -156,7 +156,7 @@ public class PagoServiceImpl implements PagoService {
 
         log.info("Pago {} iniciado para la reserva {} ({} centavos).",
                 pago.getReferencia(), idReserva, pago.getMontoCentavos());
-        return pasarela.urlDePago(pago, properties.getUrlPublica() + "/pagos/wompi/retorno");
+        return pasarela.urlDePago(pago, properties.getUrlPublica() + "/pagos/retorno");
     }
 
     @Override
@@ -167,18 +167,17 @@ public class PagoServiceImpl implements PagoService {
     }
 
     @Override
-    public void procesarAviso(Map<String, Object> aviso) {
-        if (!pasarela.avisoEsAutentico(aviso)) {
-            log.warn("Aviso de pago descartado: no trae la firma de la pasarela.");
-            return;
-        }
+    public void procesarAviso(PasarelaPago.Aviso aviso) {
         // La firma dice que el aviso es de la pasarela, pero el estado se lee
         // igualmente de su API: así un aviso viejo reenviado no cambia nada.
-        if (aviso.get("data") instanceof Map<?, ?> datos
-                && datos.get("transaction") instanceof Map<?, ?> transaccion
-                && transaccion.get("id") != null) {
-            confirmarTransaccion(String.valueOf(transaccion.get("id")));
-        }
+        pasarela.transaccionDelAviso(aviso).ifPresentOrElse(
+                this::confirmarTransaccion,
+                () -> log.warn("Aviso de pago descartado: no trae la firma de la pasarela o no es de un pago."));
+    }
+
+    @Override
+    public String nombrePasarela() {
+        return pasarela.nombre();
     }
 
     @Override

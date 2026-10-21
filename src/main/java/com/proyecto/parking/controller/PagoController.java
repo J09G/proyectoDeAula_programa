@@ -7,7 +7,9 @@ import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.PagoService.Resultado;
+import com.proyecto.parking.service.PasarelaPago;
 import com.proyecto.parking.service.ReservaService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -16,16 +18,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * Pago del anticipo de una reserva.
  *
  * <p>{@code /reserva/pago/**} es del cliente (lo protege la regla de
- * {@code /reserva/**}). {@code /pagos/wompi/**} es público: lo usan la pasarela y
+ * {@code /reserva/**}). {@code /pagos/retorno} y {@code /pagos/eventos} son públicos: los usan la pasarela y
  * el navegador del cliente al volver de pagar, y nada de lo que llega ahí se da
  * por bueno sin comprobarlo contra la API de la pasarela.</p>
  */
@@ -57,6 +62,7 @@ public class PagoController {
         model.addAttribute("reserva", reserva);
         model.addAttribute("limite", pagoService.limiteParaPagar(reserva));
         model.addAttribute("minutosAntelacion", pagoService.minutosAntelacionDevolucion());
+        model.addAttribute("pasarela", pagoService.nombrePasarela());
         return "cliente/pago";
     }
 
@@ -77,11 +83,17 @@ public class PagoController {
         }
     }
 
-    /** La pasarela devuelve aquí al cliente, con el id de la transacción en la URL. */
-    @GetMapping("/pagos/wompi/retorno")
-    public String retorno(@RequestParam(name = "id", required = false) String idTransaccion,
+    /**
+     * Mercado Pago devuelve aquí al cliente con el id del pago en la URL
+     * ({@code payment_id}, también repetido como {@code collection_id}).
+     */
+    @GetMapping("/pagos/retorno")
+    public String retorno(@RequestParam(name = "payment_id", required = false) String idPago,
+                          @RequestParam(name = "collection_id", required = false) String idCobro,
                           RedirectAttributes flash) {
-        Resultado resultado = idTransaccion == null || idTransaccion.isBlank()
+        String idTransaccion = conTexto(idPago) ? idPago : idCobro;
+        // Si el cliente abandona el pago, Mercado Pago manda el texto "null".
+        Resultado resultado = !conTexto(idTransaccion) || "null".equals(idTransaccion)
                 ? Resultado.NO_ENCONTRADO
                 : pagoService.confirmarTransaccion(idTransaccion);
 
@@ -100,11 +112,27 @@ public class PagoController {
         return "redirect:/cliente?scroll=reservas";
     }
 
-    /** Aviso de la pasarela. Siempre responde 200: un error haría que lo reintentara sin fin. */
-    @PostMapping("/pagos/wompi/eventos")
-    public ResponseEntity<Void> aviso(@RequestBody(required = false) Map<String, Object> aviso) {
-        pagoService.procesarAviso(aviso);
+    /**
+     * Aviso (webhook) de la pasarela. Su firma viene en las cabeceras y el id
+     * del pago en la URL, así que se entregan junto con el cuerpo. Siempre
+     * responde 200: un error haría que lo reintentara sin fin.
+     */
+    @PostMapping("/pagos/eventos")
+    public ResponseEntity<Void> aviso(@RequestBody(required = false) Map<String, Object> cuerpo,
+                                      @RequestHeader HttpHeaders cabeceras,
+                                      @RequestParam Map<String, String> parametros) {
+        Map<String, String> cabecerasEnMinuscula = new HashMap<>();
+        cabeceras.forEach((nombre, valores) -> {
+            if (!valores.isEmpty()) {
+                cabecerasEnMinuscula.put(nombre.toLowerCase(Locale.ROOT), valores.get(0));
+            }
+        });
+        pagoService.procesarAviso(new PasarelaPago.Aviso(cuerpo, cabecerasEnMinuscula, parametros));
         return ResponseEntity.ok().build();
+    }
+
+    private static boolean conTexto(String valor) {
+        return valor != null && !valor.isBlank();
     }
 
     private Reserva reservaDelCliente(String idReserva, String idCliente) {

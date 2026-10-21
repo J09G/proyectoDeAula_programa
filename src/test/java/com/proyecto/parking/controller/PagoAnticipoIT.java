@@ -61,14 +61,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "spring.data.mongodb.database=parking-test",
                 "brevo.api.key=test-key-no-se-usa",
                 "de.flapdoodle.mongodb.embedded.version=7.0.5",
-                // Con estas dos llaves los pagos quedan activos.
-                "parking.pagos.wompi.llave-publica=pub_test_prueba",
-                "parking.pagos.wompi.secreto-integridad=test_integrity_prueba"
+                // Con el access token de Mercado Pago los pagos quedan activos.
+                "parking.pagos.mercado-pago.access-token=TEST-prueba"
+
         })
 @AutoConfigureMockMvc
 class PagoAnticipoIT {
 
-    private static final String URL_WOMPI = "https://checkout.wompi.co/p/?public-key=pub_test_prueba";
+    private static final String URL_PAGO = "https://www.mercadopago.com.co/checkout/v1/redirect?pref_id=prueba";
 
     @Autowired private MockMvc mockMvc;
     @Autowired private RolRepository rolRepository;
@@ -80,7 +80,7 @@ class PagoAnticipoIT {
     @Autowired private PagoRepository pagoRepository;
     @Autowired private UsuarioService usuarioService;
 
-    /** La pasarela real no se toca: aquí se decide qué "responde Wompi". */
+    /** La pasarela real no se toca: aquí se decide qué "responde Mercado Pago". */
     @MockitoBean private PasarelaPago pasarela;
 
     private Usuario ana;
@@ -119,7 +119,8 @@ class PagoAnticipoIT {
         parqueadero.setAdministrador(admin);
         parqueadero = parqueaderoRepository.save(parqueadero);
 
-        when(pasarela.urlDePago(any(), anyString())).thenReturn(URL_WOMPI);
+        when(pasarela.urlDePago(any(), anyString())).thenReturn(URL_PAGO);
+        when(pasarela.nombre()).thenReturn("Mercado Pago");
     }
 
     private Cookie entrar(String correo) throws Exception {
@@ -140,15 +141,15 @@ class PagoAnticipoIT {
         return reservas.get(0);
     }
 
-    /** Ana pulsa "Pagar" y Wompi aprueba (o no) ese intento. */
-    private Pago anaPaga(Reserva reserva, String estadoEnWompi) throws Exception {
+    /** Ana pulsa "Pagar" y Mercado Pago aprueba (o no) ese intento. */
+    private Pago anaPaga(Reserva reserva, String estadoEnLaPasarela) throws Exception {
         mockMvc.perform(get("/reserva/pago/" + reserva.getId() + "/ir").cookie(entrar("ana@correo.com")))
-                .andExpect(redirectedUrl(URL_WOMPI));
+                .andExpect(redirectedUrl(URL_PAGO));
         Pago pago = pagoRepository.findByIdReserva(reserva.getId()).get(0);
         when(pasarela.consultarTransaccion("txn-1")).thenReturn(Optional.of(new Transaccion(
-                "txn-1", pago.getReferencia(), estadoEnWompi, pago.getMontoCentavos(), "COP", "CARD")));
+                "txn-1", pago.getReferencia(), estadoEnLaPasarela, pago.getMontoCentavos(), "COP", "CARD")));
         // El cliente vuelve de la pasarela; esta ruta no exige sesión.
-        mockMvc.perform(get("/pagos/wompi/retorno").param("id", "txn-1"))
+        mockMvc.perform(get("/pagos/retorno").param("payment_id", "txn-1"))
                 .andExpect(redirectedUrl("/cliente?scroll=reservas"));
         return pagoRepository.findById(pago.getId()).orElseThrow();
     }
@@ -180,7 +181,7 @@ class PagoAnticipoIT {
         mockMvc.perform(get("/reserva/pago/" + reserva.getId()).cookie(entrar("ana@correo.com")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("$5.000")))
-                .andExpect(content().string(containsString("Pagar con Wompi")));
+                .andExpect(content().string(containsString("Pagar con Mercado Pago")));
 
         // Mientras Ana paga, Beto no puede pedir el mismo cubículo.
         mockMvc.perform(post("/reserva/crear").with(csrf()).cookie(entrar("beto@correo.com"))
@@ -250,8 +251,11 @@ class PagoAnticipoIT {
     void elRetornoSinTransaccionNoRompeNada() throws Exception {
         Reserva reserva = anaReserva();
 
-        mockMvc.perform(get("/pagos/wompi/retorno")).andExpect(redirectedUrl("/cliente?scroll=reservas"));
-        mockMvc.perform(get("/pagos/wompi/retorno").param("id", "inventada"))
+        mockMvc.perform(get("/pagos/retorno")).andExpect(redirectedUrl("/cliente?scroll=reservas"));
+        mockMvc.perform(get("/pagos/retorno").param("payment_id", "inventada"))
+                .andExpect(redirectedUrl("/cliente?scroll=reservas"));
+        // Si el cliente abandona el pago, Mercado Pago devuelve payment_id=null.
+        mockMvc.perform(get("/pagos/retorno").param("payment_id", "null"))
                 .andExpect(redirectedUrl("/cliente?scroll=reservas"));
 
         assertEquals(EstadoReserva.PENDIENTE_PAGO, recargar(reserva).getEstado());
@@ -260,8 +264,9 @@ class PagoAnticipoIT {
     @Test
     void elAvisoDeLaPasarelaEntraSinSesionNiTokenCsrf() throws Exception {
         // Sin firma válida se descarta, pero la ruta responde 200 y no 403.
-        mockMvc.perform(post("/pagos/wompi/eventos").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"event\":\"transaction.updated\",\"data\":{\"transaction\":{\"id\":\"txn-1\"}}}"))
+        mockMvc.perform(post("/pagos/eventos").param("type", "payment").param("data.id", "123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"payment\",\"action\":\"payment.updated\",\"data\":{\"id\":\"123\"}}"))
                 .andExpect(status().isOk());
     }
 
@@ -319,10 +324,10 @@ class PagoAnticipoIT {
     // ── Devoluciones manuales ────────────────────────────────────────────────
 
     @Test
-    void laDevolucionQueWompiNoPudoHacerLaVeYLaCierraElSuperadministrador() throws Exception {
+    void laDevolucionQueLaPasarelaNoPudoHacerLaVeYLaCierraElSuperadministrador() throws Exception {
         Reserva reserva = anaReserva();
         Pago pago = anaPaga(reserva, "APPROVED");
-        // Pagó con Nequi: Wompi no puede anularlo solo.
+        // Mercado Pago no pudo devolverlo (por ejemplo, sin saldo en la cuenta).
         when(pasarela.devolver("txn-1")).thenReturn(false);
 
         mockMvc.perform(post("/admin/parqueadero/" + parqueadero.getId() + "/reserva/rechazar/" + reserva.getId())

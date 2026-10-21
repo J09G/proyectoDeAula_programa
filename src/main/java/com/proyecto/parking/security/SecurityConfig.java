@@ -152,7 +152,7 @@ public class SecurityConfig {
                         "/actuator/health").permitAll()
                 // Retorno y avisos de la pasarela de pagos: llegan sin sesión. Lo que
                 // traen no se da por bueno; se comprueba contra la API de la pasarela.
-                .requestMatchers("/pagos/wompi/**").permitAll()
+                .requestMatchers("/pagos/retorno", "/pagos/eventos").permitAll()
                 .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
                 // /comentario/** faltaba aquí: caía en anyRequest() y cualquier
@@ -207,7 +207,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 // El aviso lo envía el servidor de la pasarela, que no tiene nuestro
                 // token CSRF; su autenticidad se comprueba con su firma.
-                .ignoringRequestMatchers("/pagos/wompi/eventos")
+                .ignoringRequestMatchers("/pagos/eventos")
                 .csrfTokenRepository(REPOSITORIO_CSRF)
                 .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
             .addFilterBefore(jwtCookieAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

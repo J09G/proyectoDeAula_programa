@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Lo que ParkingApp necesita de una pasarela de pagos. La implementación actual
- * es Wompi; el resto de la aplicación sólo conoce esta interfaz, así que cambiar
- * de proveedor no obliga a tocar las reglas de negocio.
+ * Lo que ParkingApp necesita de una pasarela de pagos. La implementación es
+ * Mercado Pago; el resto de la aplicación sólo conoce esta interfaz, así que
+ * cambiar de proveedor no obliga a tocar las reglas de negocio.
  */
 public interface PasarelaPago {
 
@@ -22,7 +22,25 @@ public interface PasarelaPago {
         public boolean pendiente() { return "PENDING".equals(estado); }
     }
 
-    /** Dirección de la página de pago a la que se envía al cliente. */
+    /**
+     * Lo que llega en un aviso de la pasarela. Cada proveedor pone la firma y el
+     * id en un sitio distinto (Mercado Pago: cabeceras y URL), así que se
+     * entrega todo y la implementación toma lo que necesita.
+     *
+     * @param cuerpo     JSON recibido (puede venir vacío)
+     * @param cabeceras  cabeceras HTTP, con el nombre en minúsculas
+     * @param parametros parámetros de la URL
+     */
+    record Aviso(Map<String, Object> cuerpo, Map<String, String> cabeceras, Map<String, String> parametros) {}
+
+    /** Nombre que ve el cliente ("Pagar con ..."). */
+    String nombre();
+
+    /**
+     * Dirección de la página de pago a la que se envía al cliente.
+     *
+     * @throws com.proyecto.parking.exception.ReglaNegocioException si la pasarela no responde
+     */
     String urlDePago(Pago pago, String urlRetorno);
 
     /** Consulta una transacción por su id. Vacío si no existe o la pasarela no responde. */
@@ -41,6 +59,10 @@ public interface PasarelaPago {
      */
     boolean devolver(String idTransaccion);
 
-    /** true si el aviso recibido trae la firma de la pasarela. */
-    boolean avisoEsAutentico(Map<String, Object> aviso);
+    /**
+     * Si el aviso trae la firma de la pasarela y habla de una transacción,
+     * devuelve el id de esa transacción. Vacío si no se puede comprobar: en ese
+     * caso el aviso se descarta.
+     */
+    Optional<String> transaccionDelAviso(Aviso aviso);
 }

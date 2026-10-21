@@ -57,7 +57,10 @@ public interface PagoService {
     Resultado confirmarTransaccion(String idTransaccion);
 
     /** La pasarela avisa por su cuenta de un cambio en una transacción. Se ignora si no trae su firma. */
-    void procesarAviso(Map<String, Object> aviso);
+    void procesarAviso(PasarelaPago.Aviso aviso);
+
+    /** Nombre de la pasarela, para los textos ("Pagar con ..."). */
+    String nombrePasarela();
 
     /**
      * Pregunta a la pasarela por los intentos de una reserva que sigue sin

@@ -13,7 +13,7 @@
   <div class="pagina-cabecera">
     <div>
       <h1 th:text="#{superadmin.devoluciones}">Devoluciones pendientes</h1>
-      <p th:text="#{superadmin.devolucionesSub}">Anticipos que Wompi no pudo devolver solo.</p>
+      <p th:text="#{superadmin.devolucionesSub}">Anticipos que Mercado Pago no pudo devolver automáticamente.</p>
     </div>
   </div>
 
@@ -40,7 +40,7 @@
         </thead>
         <tbody>
           <!-- Con el nombre, la cédula y el correo el superadministrador ubica al
-               cliente; con la referencia y la transacción, el pago en Wompi. -->
+               cliente; con la referencia y el id del pago, lo encuentra en Mercado Pago. -->
           <tr th:each="d : ${devoluciones}">
             <td th:text="${d.pago.actualizadoEn != null} ? ${#temporals.format(d.pago.actualizadoEn, 'dd/MM/yyyy HH:mm')} : '—'"></td>
             <td>
