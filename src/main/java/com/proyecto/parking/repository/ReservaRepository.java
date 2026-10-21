@@ -47,6 +47,9 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
     @Update("{ '$set': { 'estado': ?2 } }")
     long cambiarEstadoSi(String id, EstadoReserva estadoEsperado, EstadoReserva nuevoEstado);
 
+    /** Reservas que llevan demasiado tiempo esperando el pago del anticipo. */
+    List<Reserva> findByEstadoAndCreadaEnBefore(EstadoReserva estado, LocalDateTime limite);
+
     /** Reservas aceptadas cuya hora de llegada ya pasó: candidatas a expirar. */
     List<Reserva> findByEstadoAndFechaReservaBefore(EstadoReserva estado, LocalDateTime limite);
 }

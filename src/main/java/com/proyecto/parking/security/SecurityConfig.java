@@ -150,6 +150,9 @@ public class SecurityConfig {
                         "/buscar", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.png",
                         "/error", "/error/**",
                         "/actuator/health").permitAll()
+                // Retorno y avisos de la pasarela de pagos: llegan sin sesión. Lo que
+                // traen no se da por bueno; se comprueba contra la API de la pasarela.
+                .requestMatchers("/pagos/wompi/**").permitAll()
                 .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
                 // /comentario/** faltaba aquí: caía en anyRequest() y cualquier
@@ -202,6 +205,9 @@ public class SecurityConfig {
             // apaga ese cambio automático y LoginSuccessHandler lo hace a mano,
             // solo en los logins de verdad.
             .csrf(csrf -> csrf
+                // El aviso lo envía el servidor de la pasarela, que no tiene nuestro
+                // token CSRF; su autenticidad se comprueba con su firma.
+                .ignoringRequestMatchers("/pagos/wompi/eventos")
                 .csrfTokenRepository(REPOSITORIO_CSRF)
                 .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
             .addFilterBefore(jwtCookieAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

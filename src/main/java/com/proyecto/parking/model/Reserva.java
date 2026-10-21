@@ -25,6 +25,16 @@ public class Reserva {
     private LocalDateTime fechaReserva;
     private Integer espacioReservado;
 
+    /** Cuándo la creó el cliente: de aquí sale el plazo para pagar el anticipo. */
+    private LocalDateTime creadaEn;
+
+    /**
+     * Anticipo pagado al reservar (la primera hora). Es {@code null} en las
+     * reservas sin cobro: las anteriores a los pagos o con la pasarela apagada.
+     * Se descuenta de la factura cuando el vehículo sale.
+     */
+    private Double anticipo;
+
     @DBRef(lazy = true)
     private Usuario cliente;
 
@@ -32,7 +42,12 @@ public class Reserva {
     private Parqueadero parqueadero;
 
     public enum EstadoReserva {
-        /** Creada por el cliente, a la espera de que el administrador decida. */
+        /**
+         * Creada por el cliente, que aún no ha pagado el anticipo. El cubículo
+         * queda apartado unos minutos; si no paga a tiempo, se libera.
+         */
+        PENDIENTE_PAGO,
+        /** Lista para que el administrador decida (con el anticipo ya pagado, si aplica). */
         PENDIENTE,
         /** Aceptada: el cubículo queda bloqueado para el cliente. */
         ACEPTADA,
@@ -57,7 +72,12 @@ public class Reserva {
 
         /** Estados desde los que el cliente puede cancelar su reserva. */
         public boolean esCancelable() {
-            return this == PENDIENTE || this == ACEPTADA;
+            return this == PENDIENTE_PAGO || this == PENDIENTE || this == ACEPTADA;
+        }
+
+        /** Aparta el cubículo frente a otros clientes, aunque todavía no descuente cupo. */
+        public boolean apartaEspacio() {
+            return this == PENDIENTE_PAGO || this == PENDIENTE;
         }
     }
 
@@ -80,6 +100,15 @@ public class Reserva {
 
     public Usuario getCliente() { return cliente; }
     public void setCliente(Usuario cliente) { this.cliente = cliente; }
+
+    public LocalDateTime getCreadaEn() { return creadaEn; }
+    public void setCreadaEn(LocalDateTime creadaEn) { this.creadaEn = creadaEn; }
+
+    public Double getAnticipo() { return anticipo; }
+    public void setAnticipo(Double anticipo) { this.anticipo = anticipo; }
+
+    /** true si esta reserva tiene un anticipo a favor del cliente. */
+    public boolean tieneAnticipo() { return anticipo != null && anticipo > 0; }
 
     public Integer getEspacioReservado() { return espacioReservado; }
     public void setEspacioReservado(Integer espacioReservado) { this.espacioReservado = espacioReservado; }

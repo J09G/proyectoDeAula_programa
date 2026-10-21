@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('pago.titulo')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/cliente.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('reservas')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{pago.titulo}">Paga tu anticipo</h1>
+      <p th:text="#{pago.subtitulo}">Tu cubículo queda apartado. Paga el anticipo para confirmar la reserva.</p>
+    </div>
+    <div class="pagina-cabecera-acciones">
+      <a th:href="@{/cliente(scroll='reservas')}" class="btn">&larr; <span th:text="#{nav.misReservas}">Mis reservas</span></a>
+    </div>
+  </div>
+
+  <section class="seccion pago">
+
+    <!-- Qué se está pagando -->
+    <div class="card pago-resumen">
+      <h2 class="card-title" th:text="#{pago.resumen}">Resumen de la reserva</h2>
+      <dl class="pago-datos">
+        <div>
+          <dt th:text="#{cliente.parqueadero}">Parqueadero</dt>
+          <dd th:text="${reserva.parqueadero.nombre}">Parqueadero Centro</dd>
+        </div>
+        <div>
+          <dt th:text="#{admin.espacio}">Espacio</dt>
+          <dd th:text="'#' + ${reserva.espacioReservado}">#12</dd>
+        </div>
+        <div>
+          <dt th:text="#{cliente.fechaLlegada}">Fecha de llegada</dt>
+          <dd th:text="${#temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm')}">10/10/2026 18:00</dd>
+        </div>
+      </dl>
+
+      <div class="pago-total">
+        <span th:text="#{pago.anticipo}">Anticipo (primera hora)</span>
+        <strong th:text="'$' + ${#numbers.formatDecimal(reserva.anticipo, 1, 'POINT', 0, 'COMMA')}">$5.000</strong>
+      </div>
+      <p class="pago-nota" th:text="#{pago.descuento}">Se descuenta de lo que pagues al salir.</p>
+
+      <a th:href="@{/reserva/pago/{id}/ir(id=${reserva.id})}" class="btn-primary btn-ancho pago-boton">
+        <span th:text="#{pago.boton}">Pagar con Wompi</span>
+        <svg th:replace="~{fragments/layout :: flecha}"></svg>
+      </a>
+      <p class="pago-plazo"
+         th:text="#{pago.limite(${#temporals.format(limite, 'HH:mm')})}">Paga antes de las 18:15; después el cubículo se libera.</p>
+      <p class="pago-seguro" th:text="#{pago.seguro}">Pago seguro procesado por Wompi.</p>
+    </div>
+
+    <!-- Qué pasa con el dinero si cambian los planes -->
+    <div class="card pago-politica">
+      <h2 class="card-title" th:text="#{pago.politicaTitulo}">¿Y si cambio de planes?</h2>
+      <ul>
+        <li th:text="#{pago.politica1}">Si el parqueadero no acepta tu reserva, te devolvemos el anticipo.</li>
+        <li th:text="#{pago.politica2(${minutosAntelacion})}">Si cancelas con al menos 60 minutos de anticipación, te lo devolvemos.</li>
+        <li th:text="#{pago.politica3}">Si cancelas más tarde o no llegas, el parqueadero se queda el anticipo.</li>
+      </ul>
+
+      <form th:action="@{/reserva/cancelar/{id}(id=${reserva.id})}" method="post"
+            th:attr="onsubmit='return confirm(\'' + #{cliente.confirmarCancelar} + '\')'">
+        <button type="submit" class="btn-accion btn-eliminar-sm" th:text="#{pago.cancelar}">Cancelar la reserva</button>
+      </form>
+    </div>
+
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

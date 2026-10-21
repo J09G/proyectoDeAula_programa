@@ -81,10 +81,28 @@
         </tr>
       </table>
 
-      <div class="factura-total">
+      <!-- Sin anticipo, el total es lo que se paga. Con anticipo, se muestra el
+           valor del servicio, lo ya pagado al reservar y el saldo. -->
+      <div class="factura-total" th:if="${registro.anticipoAplicado() == 0}">
         <span class="factura-total-label" th:text="#{factura.total}">Total a pagar</span>
         <span class="factura-total-value" th:text="'$' + ${registro.valorPagado}"></span>
       </div>
+      <th:block th:if="${registro.anticipoAplicado() > 0}">
+        <table class="factura-table factura-desglose">
+          <tr>
+            <td th:text="#{factura.valorServicio}">Valor del servicio</td>
+            <td th:text="'$' + ${registro.valorPagado}"></td>
+          </tr>
+          <tr>
+            <td th:text="#{factura.anticipo}">Anticipo pagado al reservar</td>
+            <td th:text="'- $' + ${registro.anticipo}"></td>
+          </tr>
+        </table>
+        <div class="factura-total">
+          <span class="factura-total-label" th:text="#{factura.saldo}">Saldo a pagar</span>
+          <span class="factura-total-value" th:text="'$' + ${registro.saldoAPagar}"></span>
+        </div>
+      </th:block>
     </div>
   </div>
 

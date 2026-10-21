@@ -44,6 +44,13 @@ public class RegistroParqueo {
      */
     private Double tarifaHoraAplicada;
 
+    /**
+     * Anticipo que el cliente ya pagó al reservar. Se copia de la reserva al
+     * registrar la entrada y se descuenta del total al salir. {@code null} si el
+     * vehículo entró sin reserva o la reserva no tenía cobro.
+     */
+    private Double anticipo;
+
     private EstadoRegistro estado = EstadoRegistro.ACTIVO;
 
     public enum EstadoRegistro {
@@ -70,6 +77,21 @@ public class RegistroParqueo {
 
     public LocalDateTime getHoraSalida() { return horaSalida; }
     public void setHoraSalida(LocalDateTime horaSalida) { this.horaSalida = horaSalida; }
+
+    public Double getAnticipo() { return anticipo; }
+    public void setAnticipo(Double anticipo) { this.anticipo = anticipo; }
+
+    /** Anticipo descontado, o 0 si no hubo. */
+    public double anticipoAplicado() { return anticipo != null ? anticipo : 0d; }
+
+    /**
+     * Lo que el cliente paga al salir: el valor del servicio menos el anticipo.
+     * Nunca es negativo; si el anticipo cubre toda la estancia, el saldo es 0.
+     */
+    public double getSaldoAPagar() {
+        double total = valorPagado != null ? valorPagado : 0d;
+        return Math.max(0d, Math.round((total - anticipoAplicado()) * 100d) / 100d);
+    }
 
     public Long getTiempoMinutos() { return tiempoMinutos; }
     public void setTiempoMinutos(Long tiempoMinutos) { this.tiempoMinutos = tiempoMinutos; }

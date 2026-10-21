@@ -55,3 +55,6 @@ historia de `planeacion-scrum-v9.docx` en la que se construyó cada una.
 | RF0041 | Como cliente quiero que mis comentarios se publiquen sin mi nombre, para opinar con sinceridad sobre un parqueadero. | — |
 | RF0042 | Como administrador quiero reportar un comentario ofensivo o falso de mi parqueadero, indicando el motivo, para que sea revisado. | — |
 | RF0043 | Como superadministrador quiero ver los comentarios reportados, con su autor y el motivo, y decidir si se eliminan o siguen publicados. | — |
+| RF0044 | Como cliente quiero pagar en línea un anticipo (la primera hora) al reservar, para dejar confirmada mi intención de usar el cubículo, y que ese valor se descuente de lo que pague al salir. | — |
+| RF0045 | Como cliente quiero recuperar el anticipo si el parqueadero rechaza mi reserva o si la cancelo con al menos una hora de antelación. | — |
+| RF0046 | Como administrador quiero que las reservas lleguen con el anticipo ya pagado y conservarlo si el cliente cancela a última hora o no llega, para no perder un cubículo que otro cliente sí habría usado. | — |

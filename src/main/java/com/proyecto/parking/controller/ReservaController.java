@@ -2,10 +2,15 @@ package com.proyecto.parking.controller;
 
 import com.proyecto.parking.dto.ReservaForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
+import com.proyecto.parking.model.Pago;
+import com.proyecto.parking.model.Pago.EstadoPago;
 import com.proyecto.parking.model.Parqueadero;
+import com.proyecto.parking.model.Reserva;
+import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.EspacioService;
+import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.ReservaService;
@@ -31,17 +36,20 @@ public class ReservaController {
     private final ComentarioService comentarioService;
     private final EspacioService espacioService;
     private final PortadaService portadaService;
+    private final PagoService pagoService;
 
     public ReservaController(ReservaService reservaService,
                              ParqueaderoService parqueaderoService,
                              ComentarioService comentarioService,
                              EspacioService espacioService,
-                             PortadaService portadaService) {
+                             PortadaService portadaService,
+                             PagoService pagoService) {
         this.reservaService = reservaService;
         this.parqueaderoService = parqueaderoService;
         this.comentarioService = comentarioService;
         this.espacioService = espacioService;
         this.portadaService = portadaService;
+        this.pagoService = pagoService;
     }
 
     @GetMapping("/{idParqueadero}")
@@ -56,6 +64,8 @@ public class ReservaController {
         model.addAttribute("llegada", HomeController.esFechaDeFormulario(llegada) ? llegada : null);
         model.addAttribute("espaciosOcupados", espacioService.calcularEspaciosOcupados(idParqueadero));
         model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(idParqueadero));
+        // Con la pasarela activa, el formulario avisa del anticipo antes de reservar.
+        model.addAttribute("anticipo", pagoService.pagosHabilitados() ? pagoService.calcularAnticipo(parqueadero) : null);
         return "cliente/reserva";
     }
 
@@ -71,7 +81,11 @@ public class ReservaController {
         }
 
         try {
-            reservaService.crearReserva(cliente.getId(), form);
+            Reserva reserva = reservaService.crearReserva(cliente.getId(), form);
+            if (reserva.getEstado() == EstadoReserva.PENDIENTE_PAGO) {
+                // El cubículo queda apartado; falta pagar el anticipo para confirmarla.
+                return "redirect:/reserva/pago/" + reserva.getId();
+            }
             flash.addFlashAttribute("mensaje",
                     "Reserva creada. Queda pendiente de que el parqueadero la confirme.");
             return "redirect:/cliente";
@@ -91,10 +105,25 @@ public class ReservaController {
                                   RedirectAttributes flash) {
         try {
             reservaService.cancelarReserva(idReserva, cliente.getId());
-            flash.addFlashAttribute("mensaje", "Reserva cancelada.");
+            flash.addFlashAttribute("mensaje", mensajeDeCancelacion(idReserva));
         } catch (ReglaNegocioException e) {
             flash.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/cliente?scroll=reservas";
+    }
+
+    /** Le dice al cliente qué pasó con su anticipo al cancelar. */
+    private String mensajeDeCancelacion(String idReserva) {
+        EstadoPago estado = pagoService.pagoDeReserva(idReserva).map(Pago::getEstado).orElse(null);
+        if (estado == EstadoPago.DEVUELTO) {
+            return "Reserva cancelada. Te devolvimos el anticipo.";
+        }
+        if (estado == EstadoPago.DEVOLUCION_PENDIENTE) {
+            return "Reserva cancelada. Tu anticipo está en proceso de devolución.";
+        }
+        if (estado == EstadoPago.RETENIDO) {
+            return "Reserva cancelada. El anticipo no se devuelve porque cancelaste muy cerca de la hora de llegada.";
+        }
+        return "Reserva cancelada.";
     }
 }

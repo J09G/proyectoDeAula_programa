@@ -95,6 +95,8 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
                 r.setEstado(EstadoReserva.UTILIZADA);
                 reservaRepository.save(r);
                 registro.setReserva(r);
+                // Lo que pagó al reservar se descuenta del cobro a la salida.
+                registro.setAnticipo(r.getAnticipo());
             });
 
             RegistroParqueo guardado = registroRepository.save(registro);
@@ -131,8 +133,9 @@ public class RegistroParqueoServiceImpl implements RegistroParqueoService {
         RegistroParqueo guardado = registroRepository.save(registro);
         parqueaderoService.liberarEspacio(registro.getParqueadero().getId());
 
-        log.info("Salida registrada: placa {}, {} minutos, total {}.",
-                registro.getPlaca(), minutos, guardado.getValorPagado());
+        log.info("Salida registrada: placa {}, {} minutos, total {}, anticipo {}, saldo {}.",
+                registro.getPlaca(), minutos, guardado.getValorPagado(),
+                guardado.anticipoAplicado(), guardado.getSaldoAPagar());
         return guardado;
     }
 

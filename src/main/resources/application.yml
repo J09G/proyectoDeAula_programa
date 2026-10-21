@@ -111,6 +111,24 @@ parking:
   recuperacion:
     minutos-vigencia: 30
     segundos-entre-envios: 60
+  # Anticipo al reservar (la primera hora), cobrado con Wompi. Sin la llave
+  # pública y el secreto de integridad, los pagos quedan apagados y las reservas
+  # funcionan sin cobro.
+  pagos:
+    # Minutos para pagar antes de que se libere el cubículo apartado.
+    minutos-para-pagar: ${PAGOS_MINUTOS_PARA_PAGAR:15}
+    # Antelación mínima con la que hay que cancelar para recuperar el anticipo.
+    minutos-antelacion-devolucion: ${PAGOS_MINUTOS_ANTELACION_DEVOLUCION:60}
+    # Importe mínimo que acepta la pasarela, en pesos.
+    monto-minimo: ${PAGOS_MONTO_MINIMO:1500}
+    wompi:
+      llave-publica: ${WOMPI_PUBLIC_KEY:}
+      llave-privada: ${WOMPI_PRIVATE_KEY:}
+      secreto-integridad: ${WOMPI_INTEGRITY_SECRET:}
+      secreto-eventos: ${WOMPI_EVENTS_SECRET:}
+      # Pruebas: sandbox.wompi.co   ·   Producción: production.wompi.co
+      url-api: ${WOMPI_API_URL:https://sandbox.wompi.co/v1}
+      url-checkout: ${WOMPI_CHECKOUT_URL:https://checkout.wompi.co/p/}
 
 # ── Correo transaccional (Brevo) ────────────────────────────────────────────
 brevo:

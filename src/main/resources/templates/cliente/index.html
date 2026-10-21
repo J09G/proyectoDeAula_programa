@@ -83,8 +83,14 @@
                    obliga a tocar esta plantilla. -->
               <span th:class="'estado-' + ${#strings.toLowerCase(reserva.estado.name())}"
                     th:text="#{__${'estado.' + reserva.estado.name()}__}"></span>
+              <!-- Qué pasó con el anticipo: pagado, devuelto, retenido... -->
+              <small class="reserva-pago" th:if="${pagos[reserva.id] != null and reserva.estado.name() != 'PENDIENTE_PAGO'}"
+                     th:text="#{cliente.anticipo} + ' ' + '$' + ${#numbers.formatDecimal(pagos[reserva.id].monto, 1, 'POINT', 0, 'COMMA')} + ' · ' + #{__${'pago.estado.' + pagos[reserva.id].estado.name()}__}"></small>
             </td>
             <td>
+              <a th:if="${reserva.estado.name() == 'PENDIENTE_PAGO'}"
+                 th:href="@{/reserva/pago/{id}(id=${reserva.id})}"
+                 class="btn-accion btn-pagar-sm" th:text="#{cliente.pagar}">Pagar anticipo</a>
               <!-- Solo en estados cancelables; la regla vive en EstadoReserva.esCancelable(). -->
               <form th:if="${reserva.estado.esCancelable()}"
                     th:action="@{/reserva/cancelar/{id}(id=${reserva.id})}" method="post"

@@ -86,6 +86,9 @@
             <td>
               <span th:class="'estado-' + ${#strings.toLowerCase(reserva.estado.name())}"
                     th:text="#{__${'estado.' + reserva.estado.name()}__}"></span>
+              <!-- Con anticipo ya cobrado, el administrador sabe que el cliente pagó para apartar. -->
+              <small class="reserva-pago" th:if="${reserva.anticipo != null and (reserva.estado.name() == 'PENDIENTE' or reserva.estado.name() == 'ACEPTADA')}"
+                     th:text="#{admin.anticipoPagado(${'$' + #numbers.formatDecimal(reserva.anticipo, 1, 'POINT', 0, 'COMMA')})}"></small>
             </td>
             <td class="acciones-inline">
               <th:block th:if="${reserva.estado.name() == 'PENDIENTE'}">

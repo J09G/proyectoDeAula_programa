@@ -90,6 +90,13 @@ completa está en [`.env.example`](.env.example).
 | `MAX_INTENTOS_LOGIN` | no | `5` | Intentos antes de bloquear la IP |
 | `MINUTOS_BLOQUEO_LOGIN` | no | `30` | Duración del bloqueo |
 | `ZONA_HORARIA` | no | `America/Bogota` | Hora con la que trabaja la app. Los servidores en la nube van en UTC: sin esto, las reservas de la noche se rechazaban por "ya pasadas" |
+| `WOMPI_PUBLIC_KEY` | para cobrar | vacía | Llave pública de Wompi. Sin ella y sin el secreto de integridad, las reservas no cobran anticipo |
+| `WOMPI_INTEGRITY_SECRET` | para cobrar | vacía | Firma el importe y la referencia de cada pago |
+| `WOMPI_PRIVATE_KEY` | no | vacía | Permite anular cobros (devoluciones) y recuperar pagos sin aviso. Sin ella las devoluciones son manuales |
+| `WOMPI_EVENTS_SECRET` | no | vacía | Verifica los avisos de Wompi. Sin él los avisos se ignoran |
+| `WOMPI_API_URL` | no | sandbox | `https://production.wompi.co/v1` en producción |
+| `PAGOS_MINUTOS_PARA_PAGAR` | no | `15` | Plazo para pagar antes de liberar el cubículo |
+| `PAGOS_MINUTOS_ANTELACION_DEVOLUCION` | no | `60` | Antelación mínima al cancelar para recuperar el anticipo |
 
 ---
 
@@ -176,8 +183,13 @@ Los índices se crean solos (`spring.data.mongodb.auto-index-creation: true`).
 ### Estados de una reserva
 
 ```
+        ┌────────────────┐
+        │ PENDIENTE_PAGO │  el cliente la crea; el cubículo queda apartado
+        └───────┬────────┘  (sólo con la pasarela activa)
+                │ paga el anticipo ──── no paga a tiempo ──► CANCELADA
+                ▼
           ┌──────────────┐
-          │  PENDIENTE   │  el cliente la solicita (no consume cupo)
+          │  PENDIENTE   │  espera al parqueadero (no consume cupo)
           └──────┬───────┘
       ┌──────────┴──────────┐
       ▼                     ▼
@@ -196,6 +208,22 @@ Los índices se crean solos (`spring.data.mongodb.auto-index-creation: true`).
 **Cupos.** Una reserva consume cupo al **aceptarse**, no al solicitarse. El cupo
 vuelve al inventario cuando: el vehículo sale, la reserva se elimina estando
 aceptada, o el job de expiración la caduca.
+
+**Anticipo.** Para que quien aparta un cubículo tenga intención de llegar, al
+reservar se cobra por Wompi un anticipo igual a la primera hora:
+
+- La reserva nace `PENDIENTE_PAGO` y aparta el cubículo durante
+  `PAGOS_MINUTOS_PARA_PAGAR`. Si no se paga, se cancela sola.
+- Con el pago aprobado pasa a `PENDIENTE` y el parqueadero decide como siempre.
+- **Se devuelve** si el parqueadero la rechaza o la elimina, o si el cliente
+  cancela con al menos `PAGOS_MINUTOS_ANTELACION_DEVOLUCION` de antelación.
+- **Se lo queda el parqueadero** si el cliente cancela más tarde o no llega.
+- Al salir, el anticipo se descuenta: la factura muestra el valor del servicio,
+  el anticipo y el saldo.
+
+El estado, el importe y la referencia de cada pago se leen siempre de la API de
+Wompi: ni la URL de retorno ni los avisos se dan por buenos por sí solos. Sin las
+llaves de Wompi, los pagos quedan apagados y las reservas funcionan sin cobro.
 
 **Comentarios.** Se publican como "Cliente verificado": ni los demás clientes ni
 el parqueadero ven quién los escribió, para que se pueda opinar sin temor. El
@@ -232,6 +260,7 @@ registrar la entrada.
 | Validación en servidor de todos los formularios | `dto/` + `@Valid` |
 | Mensajes de login que no revelan si un correo existe | `LoginFailureHandler` |
 | Los errores internos no se muestran al usuario | `GlobalExceptionHandler` |
+| Pagos: importe firmado, verificación contra la API de la pasarela y avisos con firma | `WompiPasarela`, `PagoServiceImpl` |
 
 ### HTTPS en local
 
@@ -261,7 +290,7 @@ y arranca con `SSL_ENABLED=true`, `KEYSTORE_PATH=file:C:/certs/parking.p12` y
 ./mvnw test
 ```
 
-65 tests unitarios sobre la lógica que puede costar dinero o abrir un agujero:
+Tests unitarios y de integración sobre la lógica que puede costar dinero o abrir un agujero:
 
 | Clase | Qué fija |
 |-------|----------|
@@ -270,7 +299,10 @@ y arranca con `SSL_ENABLED=true`, `KEYSTORE_PATH=file:C:/certs/parking.p12` y
 | `ReservaServiceImplTest` | Ciclo de vida de la reserva, compensación de cupo, expiración |
 | `RegistroParqueoServiceImplTest` | Entradas, cubículos ocupados, tarifa congelada |
 | `RegistroClienteFormTest` | Validación del registro (contraseñas, placa, cédula) |
+| `PagoServiceImplTest` | Anticipo: confirmación contra la pasarela, importes alterados, devolución y retención |
+| `WompiPasarelaTest` | Firma de integridad (ejemplo oficial de Wompi) y firma de los avisos |
 | `ComentariosModeracionIT` | Comentarios anónimos; el parqueadero reporta y sólo el superadministrador elimina |
+| `PagoAnticipoIT` | Flujo completo: reservar, pagar, rechazo, cancelación y factura con saldo |
 
 `ParkingApplicationTests` levanta el contexto completo y **sólo se ejecuta si
 hay una base de datos**:
