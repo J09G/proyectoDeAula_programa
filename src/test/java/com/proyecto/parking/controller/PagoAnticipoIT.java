@@ -102,6 +102,7 @@ class PagoAnticipoIT {
         ana = usuarioService.registrarUsuario("Ana Torres", "1000000001", "ana@correo.com", "clave1234", "ABC123", Rol.CLIENTE);
         usuarioService.registrarUsuario("Beto Ruiz", "1000000002", "beto@correo.com", "clave1234", "XYZ987", Rol.CLIENTE);
         Usuario admin = usuarioService.registrarUsuario("Admin", "2000000001", "admin@correo.com", "clave1234", null, Rol.ADMINISTRADOR);
+        usuarioService.registrarUsuario("Jefa", "3000000001", "super@correo.com", "clave1234", null, Rol.SUPERADMIN);
 
         Zona zona = new Zona();
         zona.setNombreZona("Centro");
@@ -313,6 +314,47 @@ class PagoAnticipoIT {
 
         assertEquals(EstadoReserva.CANCELADA, recargar(reserva).getEstado());
         assertEquals(EstadoPago.RETENIDO, pagoRepository.findById(pago.getId()).orElseThrow().getEstado());
+    }
+
+    // ── Devoluciones manuales ────────────────────────────────────────────────
+
+    @Test
+    void laDevolucionQueWompiNoPudoHacerLaVeYLaCierraElSuperadministrador() throws Exception {
+        Reserva reserva = anaReserva();
+        Pago pago = anaPaga(reserva, "APPROVED");
+        // Pagó con Nequi: Wompi no puede anularlo solo.
+        when(pasarela.devolver("txn-1")).thenReturn(false);
+
+        mockMvc.perform(post("/admin/parqueadero/" + parqueadero.getId() + "/reserva/rechazar/" + reserva.getId())
+                        .with(csrf()).cookie(entrar("admin@correo.com")))
+                .andExpect(status().is3xxRedirection());
+        assertEquals(EstadoPago.DEVOLUCION_PENDIENTE, pagoRepository.findById(pago.getId()).orElseThrow().getEstado());
+
+        Cookie jefa = entrar("super@correo.com");
+        mockMvc.perform(get("/superadmin/devoluciones").cookie(jefa))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ana Torres")))
+                .andExpect(content().string(containsString("1000000001")))
+                .andExpect(content().string(containsString("$5.000")))
+                .andExpect(content().string(containsString(pago.getReferencia())));
+
+        mockMvc.perform(post("/superadmin/devoluciones/" + pago.getId() + "/devuelto").with(csrf()).cookie(jefa))
+                .andExpect(redirectedUrl("/superadmin/devoluciones"));
+
+        assertEquals(EstadoPago.DEVUELTO, pagoRepository.findById(pago.getId()).orElseThrow().getEstado());
+        // Ya no aparece en la lista.
+        mockMvc.perform(get("/superadmin/devoluciones").cookie(jefa))
+                .andExpect(content().string(not(containsString(pago.getReferencia()))));
+    }
+
+    @Test
+    void elParqueaderoNoPuedeVerNiMarcarDevoluciones() throws Exception {
+        Cookie admin = entrar("admin@correo.com");
+
+        mockMvc.perform(get("/superadmin/devoluciones").cookie(admin))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/superadmin/devoluciones/cualquiera/devuelto").with(csrf()).cookie(admin))
+                .andExpect(status().isForbidden());
     }
 
     @Test

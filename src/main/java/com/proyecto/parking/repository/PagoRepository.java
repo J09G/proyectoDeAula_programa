@@ -2,6 +2,7 @@ package com.proyecto.parking.repository;
 
 import com.proyecto.parking.model.Pago;
 import com.proyecto.parking.model.Pago.EstadoPago;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -21,6 +22,8 @@ public interface PagoRepository extends MongoRepository<Pago, String> {
     Optional<Pago> findFirstByIdReservaAndEstado(String idReserva, EstadoPago estado);
 
     List<Pago> findByIdReservaInAndEstadoIn(Collection<String> idsReserva, Collection<EstadoPago> estados);
+
+    List<Pago> findByEstado(EstadoPago estado, Sort sort);
 
     /**
      * Cambia el estado solo si sigue siendo {@code estadoEsperado}, en una única

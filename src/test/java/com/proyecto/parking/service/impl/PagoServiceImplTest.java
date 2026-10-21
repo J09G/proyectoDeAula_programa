@@ -10,7 +10,10 @@ import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
 import com.proyecto.parking.model.Usuario;
 import com.proyecto.parking.repository.PagoRepository;
+import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.ReservaRepository;
+import com.proyecto.parking.repository.UsuarioRepository;
+import com.proyecto.parking.service.PagoService.DevolucionPendiente;
 import com.proyecto.parking.service.PagoService.Resultado;
 import com.proyecto.parking.service.PasarelaPago;
 import com.proyecto.parking.service.PasarelaPago.Transaccion;
@@ -50,6 +53,8 @@ class PagoServiceImplTest {
 
     @Mock private PagoRepository pagoRepository;
     @Mock private ReservaRepository reservaRepository;
+    @Mock private UsuarioRepository usuarioRepository;
+    @Mock private ParqueaderoRepository parqueaderoRepository;
     @Mock private PasarelaPago pasarela;
 
     private ParkingProperties properties;
@@ -67,7 +72,8 @@ class PagoServiceImplTest {
         properties.getPagos().setMontoMinimo(1_500);
         properties.setUrlPublica("https://parking.test");
 
-        servicio = new PagoServiceImpl(pagoRepository, reservaRepository, pasarela, properties);
+        servicio = new PagoServiceImpl(pagoRepository, reservaRepository, usuarioRepository,
+                parqueaderoRepository, pasarela, properties);
 
         Usuario cliente = new Usuario();
         cliente.setId(ID_CLIENTE);
@@ -410,6 +416,66 @@ class PagoServiceImplTest {
 
             reserva.setFechaReserva(LocalDateTime.now().minusMinutes(5));
             assertThat(servicio.cancelarDaDerechoADevolucion(reserva)).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("Devoluciones manuales")
+    class DevolucionesManuales {
+
+        @Test
+        @DisplayName("lista cada devolución pendiente con su cliente y su parqueadero")
+        void listaConClienteYParqueadero() {
+            pago.setEstado(EstadoPago.DEVOLUCION_PENDIENTE);
+            pago.setIdCliente(ID_CLIENTE);
+            pago.setIdParqueadero("parq-1");
+            when(pagoRepository.findByEstado(any(), any())).thenReturn(List.of(pago));
+            when(usuarioRepository.findAllById(List.of(ID_CLIENTE))).thenReturn(List.of(reserva.getCliente()));
+            when(parqueaderoRepository.findAllById(List.of("parq-1"))).thenReturn(List.of(reserva.getParqueadero()));
+
+            List<DevolucionPendiente> devoluciones = servicio.listarDevolucionesPendientes();
+
+            assertThat(devoluciones).hasSize(1);
+            assertThat(devoluciones.get(0).pago()).isSameAs(pago);
+            assertThat(devoluciones.get(0).cliente()).isSameAs(reserva.getCliente());
+            assertThat(devoluciones.get(0).parqueadero()).isSameAs(reserva.getParqueadero());
+        }
+
+        @Test
+        @DisplayName("si el cliente se eliminó, la devolución igual aparece, sin sus datos")
+        void clienteEliminado() {
+            pago.setEstado(EstadoPago.DEVOLUCION_PENDIENTE);
+            pago.setIdCliente("ya-no-existe");
+            when(pagoRepository.findByEstado(any(), any())).thenReturn(List.of(pago));
+            when(usuarioRepository.findAllById(any())).thenReturn(List.of());
+            when(parqueaderoRepository.findAllById(any())).thenReturn(List.of());
+
+            List<DevolucionPendiente> devoluciones = servicio.listarDevolucionesPendientes();
+
+            assertThat(devoluciones).hasSize(1);
+            assertThat(devoluciones.get(0).cliente()).isNull();
+        }
+
+        @Test
+        @DisplayName("marcar como devuelto pasa el pago de DEVOLUCION_PENDIENTE a DEVUELTO")
+        void marcarDevuelto() {
+            when(pagoRepository.findById("pago-1")).thenReturn(Optional.of(pago));
+
+            servicio.marcarDevuelto("pago-1", "super-1");
+
+            verify(pagoRepository).cambiarEstadoSi("pago-1", EstadoPago.DEVOLUCION_PENDIENTE, EstadoPago.DEVUELTO);
+            assertThat(pago.getActualizadoEn()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("no se puede marcar dos veces, ni un pago que no estaba pendiente de devolución")
+        void noSeMarcaDosVeces() {
+            when(pagoRepository.cambiarEstadoSi("pago-1", EstadoPago.DEVOLUCION_PENDIENTE, EstadoPago.DEVUELTO))
+                    .thenReturn(0L);
+
+            assertThatThrownBy(() -> servicio.marcarDevuelto("pago-1", "super-1"))
+                    .isInstanceOf(ReglaNegocioException.class);
+            verify(pagoRepository, never()).save(any());
         }
     }
 

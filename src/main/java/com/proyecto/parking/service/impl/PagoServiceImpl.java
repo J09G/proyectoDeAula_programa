@@ -8,13 +8,17 @@ import com.proyecto.parking.model.Pago.EstadoPago;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.model.Reserva.EstadoReserva;
+import com.proyecto.parking.model.Usuario;
 import com.proyecto.parking.repository.PagoRepository;
+import com.proyecto.parking.repository.ParqueaderoRepository;
 import com.proyecto.parking.repository.ReservaRepository;
+import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.PasarelaPago;
 import com.proyecto.parking.service.PasarelaPago.Transaccion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,7 +30,9 @@ import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,15 +48,21 @@ public class PagoServiceImpl implements PagoService {
 
     private final PagoRepository pagoRepository;
     private final ReservaRepository reservaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ParqueaderoRepository parqueaderoRepository;
     private final PasarelaPago pasarela;
     private final ParkingProperties properties;
 
     public PagoServiceImpl(PagoRepository pagoRepository,
                            ReservaRepository reservaRepository,
+                           UsuarioRepository usuarioRepository,
+                           ParqueaderoRepository parqueaderoRepository,
                            PasarelaPago pasarela,
                            ParkingProperties properties) {
         this.pagoRepository = pagoRepository;
         this.reservaRepository = reservaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.parqueaderoRepository = parqueaderoRepository;
         this.pasarela = pasarela;
         this.properties = properties;
     }
@@ -266,7 +278,49 @@ public class PagoServiceImpl implements PagoService {
         }
     }
 
+    // ── Devoluciones manuales ────────────────────────────────────────────────
+
+    @Override
+    public List<DevolucionPendiente> listarDevolucionesPendientes() {
+        // La más antigua primero: es la del cliente que lleva más tiempo esperando.
+        List<Pago> pagos = pagoRepository.findByEstado(
+                EstadoPago.DEVOLUCION_PENDIENTE, Sort.by(Sort.Direction.ASC, "actualizadoEn"));
+        if (pagos.isEmpty()) {
+            return List.of();
+        }
+        // Dos consultas en total, no una por fila.
+        Map<String, Usuario> clientes = usuarioRepository
+                .findAllById(idsDistintos(pagos, Pago::getIdCliente)).stream()
+                .collect(Collectors.toMap(Usuario::getId, u -> u));
+        Map<String, Parqueadero> parqueaderos = parqueaderoRepository
+                .findAllById(idsDistintos(pagos, Pago::getIdParqueadero)).stream()
+                .collect(Collectors.toMap(Parqueadero::getId, p -> p));
+
+        return pagos.stream()
+                .map(p -> new DevolucionPendiente(p,
+                        clientes.get(p.getIdCliente()), parqueaderos.get(p.getIdParqueadero())))
+                .toList();
+    }
+
+    @Override
+    public void marcarDevuelto(String idPago, String idSuperadmin) {
+        // Atómico: si dos superadministradores pulsan a la vez, solo uno lo marca.
+        if (pagoRepository.cambiarEstadoSi(idPago, EstadoPago.DEVOLUCION_PENDIENTE, EstadoPago.DEVUELTO) == 0) {
+            throw new ReglaNegocioException("Esta devolución ya no está pendiente.");
+        }
+        pagoRepository.findById(idPago).ifPresent(pago -> {
+            pago.setActualizadoEn(LocalDateTime.now());
+            pagoRepository.save(pago);
+            log.info("Anticipo {} ({} centavos) devuelto a mano por el superadministrador {}.",
+                    pago.getReferencia(), pago.getMontoCentavos(), idSuperadmin);
+        });
+    }
+
     // ── Auxiliares ───────────────────────────────────────────────────────────
+
+    private static List<String> idsDistintos(List<Pago> pagos, Function<Pago, String> id) {
+        return pagos.stream().map(id).filter(Objects::nonNull).distinct().toList();
+    }
 
     /** Cambia el estado de forma atómica y guarda los datos de la transacción. */
     private boolean marcar(Pago pago, EstadoPago esperado, EstadoPago nuevo, Transaccion transaccion) {

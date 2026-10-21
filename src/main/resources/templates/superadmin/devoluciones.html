@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/layout :: cabeza('superadmin.devoluciones')}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<nav th:replace="~{fragments/layout :: barra('devoluciones')}"></nav>
+
+<main class="pagina">
+
+  <div class="pagina-cabecera">
+    <div>
+      <h1 th:text="#{superadmin.devoluciones}">Devoluciones pendientes</h1>
+      <p th:text="#{superadmin.devolucionesSub}">Anticipos que Wompi no pudo devolver solo.</p>
+    </div>
+  </div>
+
+  <div class="mensajes">
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+  </div>
+
+  <section class="seccion">
+    <p th:if="${#lists.isEmpty(devoluciones)}" class="no-data" th:text="#{superadmin.sinDevoluciones}"></p>
+
+    <div class="tabla-responsive" th:unless="${#lists.isEmpty(devoluciones)}">
+      <table class="tabla-datos">
+        <thead>
+          <tr>
+            <th th:text="#{devolucion.fecha}">Pagado el</th>
+            <th th:text="#{devolucion.cliente}">Cliente</th>
+            <th th:text="#{devolucion.parqueadero}">Parqueadero</th>
+            <th th:text="#{devolucion.monto}">Monto</th>
+            <th th:text="#{devolucion.medio}">Medio de pago</th>
+            <th th:text="#{devolucion.referencia}">Referencia</th>
+            <th th:text="#{common.accion}">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Con el nombre, la cédula y el correo el superadministrador ubica al
+               cliente; con la referencia y la transacción, el pago en Wompi. -->
+          <tr th:each="d : ${devoluciones}">
+            <td th:text="${d.pago.actualizadoEn != null} ? ${#temporals.format(d.pago.actualizadoEn, 'dd/MM/yyyy HH:mm')} : '—'"></td>
+            <td>
+              <th:block th:if="${d.cliente != null}">
+                <strong th:text="${d.cliente.nombre}">Ana Torres</strong><br>
+                <small th:text="${d.cliente.cedula} + ' · ' + ${d.cliente.correo}">1000000001 · ana@correo.com</small>
+              </th:block>
+              <span th:if="${d.cliente == null}" th:text="#{devolucion.eliminado}">(eliminado)</span>
+            </td>
+            <td th:text="${d.parqueadero != null} ? ${d.parqueadero.nombre} : #{devolucion.eliminado}">Central</td>
+            <td><strong th:text="'$' + ${#numbers.formatDecimal(d.pago.monto, 1, 'POINT', 0, 'COMMA')}">$5.000</strong></td>
+            <td th:text="${d.pago.metodo} ?: '—'">NEQUI</td>
+            <td>
+              <small th:text="${d.pago.referencia}">PKG-...</small><br>
+              <small th:text="${d.pago.idTransaccion} ?: '—'">txn</small>
+            </td>
+            <td>
+              <form th:action="@{/superadmin/devoluciones/{id}/devuelto(id=${d.pago.id})}" method="post"
+                    th:attr="onsubmit='return confirm(\'' + #{devolucion.confirmar} + '\')'">
+                <button type="submit" class="btn-editar" th:text="#{devolucion.marcar}">Marcar como devuelto</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: pie}"></th:block>
+</body>
+</html>

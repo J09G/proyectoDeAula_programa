@@ -3,9 +3,11 @@ package com.proyecto.parking.service;
 import com.proyecto.parking.model.Pago;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Reserva;
+import com.proyecto.parking.model.Usuario;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -84,4 +86,25 @@ public interface PagoService {
     Map<String, Pago> pagosPorReserva(Collection<String> idsReserva);
 
     Optional<Pago> pagoDeReserva(String idReserva);
+
+    // ── Devoluciones manuales ────────────────────────────────────────────────
+
+    /**
+     * Un anticipo que la pasarela no pudo devolver sola (Nequi, PSE...), con los
+     * datos que necesita el superadministrador para devolverlo a mano. El
+     * cliente o el parqueadero pueden venir {@code null} si se eliminaron.
+     */
+    record DevolucionPendiente(Pago pago, Usuario cliente, Parqueadero parqueadero) {}
+
+    /** Devoluciones que esperan a una persona, la más antigua primero. */
+    List<DevolucionPendiente> listarDevolucionesPendientes();
+
+    /**
+     * El superadministrador ya le devolvió el dinero al cliente por fuera de la
+     * aplicación (panel de la pasarela, transferencia...).
+     *
+     * @throws com.proyecto.parking.exception.ReglaNegocioException
+     *         si ese pago no está pendiente de devolución (ya se marcó o no existe)
+     */
+    void marcarDevuelto(String idPago, String idSuperadmin);
 }

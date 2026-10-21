@@ -92,7 +92,7 @@ completa está en [`.env.example`](.env.example).
 | `ZONA_HORARIA` | no | `America/Bogota` | Hora con la que trabaja la app. Los servidores en la nube van en UTC: sin esto, las reservas de la noche se rechazaban por "ya pasadas" |
 | `WOMPI_PUBLIC_KEY` | para cobrar | vacía | Llave pública de Wompi. Sin ella y sin el secreto de integridad, las reservas no cobran anticipo |
 | `WOMPI_INTEGRITY_SECRET` | para cobrar | vacía | Firma el importe y la referencia de cada pago |
-| `WOMPI_PRIVATE_KEY` | no | vacía | Permite anular cobros (devoluciones) y recuperar pagos sin aviso. Sin ella las devoluciones son manuales |
+| `WOMPI_PRIVATE_KEY` | no | vacía | Permite anular cobros (devoluciones) y recuperar pagos sin aviso. Sin ella las devoluciones son manuales. Las que Wompi no puede hacer sola (Nequi, PSE) aparecen en Superadministrador > Devoluciones |
 | `WOMPI_EVENTS_SECRET` | no | vacía | Verifica los avisos de Wompi. Sin él los avisos se ignoran |
 | `WOMPI_API_URL` | no | sandbox | `https://production.wompi.co/v1` en producción |
 | `PAGOS_MINUTOS_PARA_PAGAR` | no | `15` | Plazo para pagar antes de liberar el cubículo |
