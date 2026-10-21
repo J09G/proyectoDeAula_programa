@@ -329,9 +329,9 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public int cancelarReservasSinPago() {
-        if (!pagoService.pagosHabilitados()) {
-            return 0;
-        }
+        // Corre aunque los pagos estén apagados: si se quitaron las llaves de la
+        // pasarela con reservas esperando pago, nadie podrá pagarlas y sin esta
+        // limpieza sus cubículos quedarían apartados para siempre.
         LocalDateTime limite = LocalDateTime.now()
                 .minusMinutes(properties.getPagos().getMinutosParaPagar());
 

@@ -553,6 +553,21 @@ class ReservaServiceImplTest {
         }
 
         @Test
+        @DisplayName("con los pagos apagados, las reservas que quedaron esperando pago también se limpian")
+        void sinPagoSeLimpiaConLosPagosApagados() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            when(pagoService.pagosHabilitados()).thenReturn(false);
+            when(reservaRepository.findByEstadoAndCreadaEnBefore(eq(EstadoReserva.PENDIENTE_PAGO), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+
+            assertThat(servicio.cancelarReservasSinPago()).isEqualTo(1);
+            assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.CANCELADA);
+        }
+
+        @Test
         @DisplayName("si el cliente sí había pagado y no volvió a la app, la reserva no se cancela")
         void pagoPerdidoSeRecupera() {
             Reserva reserva = reservaPendiente(2);
