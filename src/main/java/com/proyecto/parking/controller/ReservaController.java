@@ -66,6 +66,7 @@ public class ReservaController {
         model.addAttribute("espaciosPendientes", espacioService.calcularEspaciosPendientes(idParqueadero));
         // Con la pasarela activa, el formulario avisa del anticipo antes de reservar.
         model.addAttribute("anticipo", pagoService.pagosHabilitados() ? pagoService.calcularAnticipo(parqueadero) : null);
+        model.addAttribute("minutosAntelacion", pagoService.minutosAntelacionDevolucion());
         return "cliente/reserva";
     }
 

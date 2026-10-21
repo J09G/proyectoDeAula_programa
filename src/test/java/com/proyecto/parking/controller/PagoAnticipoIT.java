@@ -295,9 +295,14 @@ class PagoAnticipoIT {
     }
 
     @Test
-    void cancelarAUltimaHoraPierdeElAnticipo() throws Exception {
+    void cancelarAUltimaHoraUnaReservaAceptadaPierdeElAnticipo() throws Exception {
         Reserva reserva = anaReserva();
         Pago pago = anaPaga(reserva, "APPROVED");
+        // El parqueadero ya la aceptó: le guardó el cubículo a Ana.
+        mockMvc.perform(post("/admin/parqueadero/" + parqueadero.getId() + "/reserva/aceptar/" + reserva.getId())
+                        .with(csrf()).cookie(entrar("admin@correo.com")))
+                .andExpect(status().is3xxRedirection());
+        assertEquals(EstadoReserva.ACEPTADA, recargar(reserva).getEstado());
         // Faltan 20 minutos para la llegada: fuera del plazo de devolución (60 min).
         Reserva guardada = recargar(reserva);
         guardada.setFechaReserva(LocalDateTime.now().plusMinutes(20));
@@ -308,6 +313,23 @@ class PagoAnticipoIT {
 
         assertEquals(EstadoReserva.CANCELADA, recargar(reserva).getEstado());
         assertEquals(EstadoPago.RETENIDO, pagoRepository.findById(pago.getId()).orElseThrow().getEstado());
+    }
+
+    @Test
+    void cancelarAUltimaHoraUnaReservaSinAceptarDevuelveElAnticipo() throws Exception {
+        Reserva reserva = anaReserva();
+        Pago pago = anaPaga(reserva, "APPROVED");
+        when(pasarela.devolver("txn-1")).thenReturn(true);
+        // Faltan 20 minutos y el parqueadero todavía no ha respondido.
+        Reserva guardada = recargar(reserva);
+        guardada.setFechaReserva(LocalDateTime.now().plusMinutes(20));
+        reservaRepository.save(guardada);
+
+        mockMvc.perform(post("/reserva/cancelar/" + reserva.getId()).with(csrf()).cookie(entrar("ana@correo.com")))
+                .andExpect(redirectedUrl("/cliente?scroll=reservas"));
+
+        assertEquals(EstadoReserva.CANCELADA, recargar(reserva).getEstado());
+        assertEquals(EstadoPago.DEVUELTO, pagoRepository.findById(pago.getId()).orElseThrow().getEstado());
     }
 
     @Test

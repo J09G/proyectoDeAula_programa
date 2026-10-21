@@ -39,6 +39,10 @@ public class ExpiracionReservasJob {
             if (sinPago > 0) {
                 log.info("Job de expiración: {} reservas canceladas por falta de pago.", sinPago);
             }
+            int sinRespuesta = reservaService.rechazarReservasSinRespuesta();
+            if (sinRespuesta > 0) {
+                log.info("Job de expiración: {} reservas rechazadas por falta de respuesta.", sinRespuesta);
+            }
             int expiradas = reservaService.expirarReservasVencidas();
             if (expiradas > 0) {
                 log.info("Job de expiración: {} reservas liberadas.", expiradas);

@@ -388,8 +388,9 @@ class PagoServiceImplTest {
         }
 
         @Test
-        @DisplayName("cancelar con más de una hora de antelación da derecho a devolución; con menos, no")
+        @DisplayName("ya aceptada: cancelar con más de una hora de antelación da derecho a devolución; con menos, no")
         void ventanaDeDevolucion() {
+            reserva.setEstado(EstadoReserva.ACEPTADA);
             reserva.setFechaReserva(LocalDateTime.now().plusMinutes(90));
             assertThat(servicio.cancelarDaDerechoADevolucion(reserva)).isTrue();
 
@@ -398,6 +399,17 @@ class PagoServiceImplTest {
 
             reserva.setFechaReserva(LocalDateTime.now().minusMinutes(5));
             assertThat(servicio.cancelarDaDerechoADevolucion(reserva)).isFalse();
+        }
+
+        @Test
+        @DisplayName("sin aceptar: cancelar siempre devuelve, aunque falten pocos minutos para la llegada")
+        void sinAceptarSiempreDevuelve() {
+            reserva.setEstado(EstadoReserva.PENDIENTE);
+            reserva.setFechaReserva(LocalDateTime.now().plusMinutes(10));
+            assertThat(servicio.cancelarDaDerechoADevolucion(reserva)).isTrue();
+
+            reserva.setFechaReserva(LocalDateTime.now().minusMinutes(5));
+            assertThat(servicio.cancelarDaDerechoADevolucion(reserva)).isTrue();
         }
     }
 

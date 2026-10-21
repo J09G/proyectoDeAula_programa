@@ -50,6 +50,14 @@ public interface ReservaService {
     int cancelarReservasSinPago();
 
     /**
+     * Rechaza las reservas pendientes cuya hora de llegada ya pasó sin que el
+     * parqueadero las aceptara o rechazara, y devuelve el anticipo si lo hubo.
+     *
+     * @return número de reservas rechazadas por falta de respuesta
+     */
+    int rechazarReservasSinRespuesta();
+
+    /**
      * Marca como EXPIRADA toda reserva aceptada cuya hora de llegada pasó hace
      * más de la tolerancia configurada, y devuelve su cubículo al inventario.
      *

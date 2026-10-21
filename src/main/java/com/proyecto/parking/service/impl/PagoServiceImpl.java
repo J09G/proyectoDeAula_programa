@@ -82,6 +82,11 @@ public class PagoServiceImpl implements PagoService {
 
     @Override
     public boolean cancelarDaDerechoADevolucion(Reserva reserva) {
+        // Mientras el parqueadero no la acepte, no se ha comprometido con el
+        // cliente ni ha guardado el cubículo para él: cancelar siempre devuelve.
+        if (reserva.getEstado() != EstadoReserva.ACEPTADA) {
+            return true;
+        }
         if (reserva.getFechaReserva() == null) {
             return false;
         }

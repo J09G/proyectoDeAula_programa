@@ -297,6 +297,37 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
+    public int rechazarReservasSinRespuesta() {
+        // Si llegó la hora y el parqueadero nunca respondió, el cliente ya no
+        // puede contar con ese cubículo: se rechaza y se le devuelve el anticipo.
+        List<Reserva> sinRespuesta = reservaRepository.findByEstadoAndFechaReservaBefore(
+                EstadoReserva.PENDIENTE, LocalDateTime.now());
+
+        int rechazadas = 0;
+        for (Reserva reserva : sinRespuesta) {
+            try {
+                // Atómico: si el administrador la acepta justo ahora, gana su decisión.
+                if (reservaRepository.cambiarEstadoSi(
+                        reserva.getId(), EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA) == 0) {
+                    continue;
+                }
+                reserva.setEstado(EstadoReserva.RECHAZADA);
+                pagoService.devolverAnticipo(reserva);
+                notificarCambioEstado(reserva);
+                rechazadas++;
+            } catch (RuntimeException e) {
+                log.error("No se pudo rechazar por falta de respuesta la reserva {}: {}",
+                        reserva.getId(), e.getMessage());
+            }
+        }
+
+        if (rechazadas > 0) {
+            log.info("{} reservas rechazadas porque el parqueadero no respondió a tiempo.", rechazadas);
+        }
+        return rechazadas;
+    }
+
+    @Override
     public int cancelarReservasSinPago() {
         if (!pagoService.pagosHabilitados()) {
             return 0;

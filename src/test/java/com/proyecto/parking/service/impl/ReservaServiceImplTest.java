@@ -565,5 +565,36 @@ class ReservaServiceImplTest {
             assertThat(servicio.cancelarReservasSinPago()).isZero();
             verify(reservaRepository, never()).cambiarEstadoSi(any(), any(), any());
         }
+
+        @Test
+        @DisplayName("si llega la hora y el parqueadero nunca respondió, se rechaza y se devuelve el anticipo")
+        void sinRespuestaSeRechazaYDevuelve() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setFechaReserva(LocalDateTime.now().minusMinutes(1));
+            when(reservaRepository.findByEstadoAndFechaReservaBefore(eq(EstadoReserva.PENDIENTE), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA))
+                    .thenReturn(1L);
+
+            assertThat(servicio.rechazarReservasSinRespuesta()).isEqualTo(1);
+            assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.RECHAZADA);
+            verify(pagoService).devolverAnticipo(reserva);
+            verify(pagoService, never()).retenerAnticipo(any());
+            // Una reserva pendiente no había tomado cupo: no hay cupo que devolver.
+            verify(parqueaderoService, never()).liberarEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("si el administrador la acepta en el mismo instante, gana su decisión y no se devuelve nada")
+        void sinRespuestaCarreraConElAdministrador() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findByEstadoAndFechaReservaBefore(eq(EstadoReserva.PENDIENTE), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA))
+                    .thenReturn(0L);
+
+            assertThat(servicio.rechazarReservasSinRespuesta()).isZero();
+            verify(pagoService, never()).devolverAnticipo(any());
+        }
     }
 }

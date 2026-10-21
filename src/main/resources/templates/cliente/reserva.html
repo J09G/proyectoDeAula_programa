@@ -124,7 +124,7 @@
 
         <!-- Con la pasarela activa se cobra un anticipo: se avisa antes de reservar. -->
         <p class="reserva-anticipo" th:if="${anticipo != null}"
-           th:utext="#{reserva.avisoAnticipo(${'$' + #numbers.formatDecimal(anticipo, 1, 'POINT', 0, 'COMMA')})}">
+           th:utext="#{reserva.avisoAnticipo(${'$' + #numbers.formatDecimal(anticipo, 1, 'POINT', 0, 'COMMA')}, ${minutosAntelacion})}">
           Al reservar pagas un anticipo de <strong>$5.000</strong>.
         </p>
 

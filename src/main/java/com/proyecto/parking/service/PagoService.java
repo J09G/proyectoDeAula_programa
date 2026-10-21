@@ -74,7 +74,10 @@ public interface PagoService {
     /** El cliente canceló tarde o no llegó: el parqueadero se queda el anticipo. */
     void retenerAnticipo(Reserva reserva);
 
-    /** ¿Cancelar ahora daría derecho a la devolución del anticipo? */
+    /**
+     * ¿Cancelar ahora daría derecho a la devolución del anticipo? Siempre, si el
+     * parqueadero aún no la aceptó; si ya la aceptó, solo con la antelación configurada.
+     */
     boolean cancelarDaDerechoADevolucion(Reserva reserva);
 
     /** Pago más relevante de cada reserva, para mostrar su estado en las listas. */
