@@ -1055,3 +1055,26 @@ hr { border: none; border-top: 1px solid var(--gray-200); }
   .zona-foto-pie strong { font-size: 1rem; }
   .parqueo-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Módulo predictivo: ocupación estimada por hora ─────────────────────── */
+.prediccion { margin: 14px 0 18px; padding: 14px 16px; border: 1px solid var(--gray-200); border-radius: 12px; background: var(--gray-50); }
+.prediccion-titulo { margin: 0 0 4px; font-size: 0.8125rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--gray-500); }
+.prediccion-resumen { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+.prediccion-resumen.nivel-baja  { color: var(--success); }
+.prediccion-resumen.nivel-media { color: var(--warn); }
+.prediccion-resumen.nivel-alta  { color: var(--danger); }
+.prediccion-barras { display: flex; align-items: flex-end; gap: 4px; height: 110px; }
+.prediccion-columna { flex: 1 1 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.prediccion-barra { display: block; width: 100%; border-radius: 4px 4px 0 0; background: var(--gray-300); }
+.prediccion-columna.nivel-baja  .prediccion-barra { background: var(--success); }
+.prediccion-columna.nivel-media .prediccion-barra { background: var(--warn); }
+.prediccion-columna.nivel-alta  .prediccion-barra { background: var(--danger); }
+.prediccion-columna.elegida .prediccion-barra { outline: 2px solid var(--teal); outline-offset: 1px; }
+.prediccion-hora { margin-top: 4px; font-size: 0.6875rem; color: var(--gray-500); }
+.prediccion-columna.elegida .prediccion-hora { font-weight: 700; color: var(--teal); }
+.prediccion-leyenda { display: flex; gap: 14px; margin: 10px 0 6px; font-size: 0.75rem; color: var(--gray-600); }
+.prediccion-leyenda span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; }
+.prediccion-leyenda .nivel-baja::before  { background: var(--success); }
+.prediccion-leyenda .nivel-media::before { background: var(--warn); }
+.prediccion-leyenda .nivel-alta::before  { background: var(--danger); }
+.prediccion small { display: block; color: var(--gray-500); }
