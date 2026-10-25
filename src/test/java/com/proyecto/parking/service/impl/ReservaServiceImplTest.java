@@ -14,6 +14,7 @@ import com.proyecto.parking.repository.ReservaRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.EmailService;
 import com.proyecto.parking.service.EspacioService;
+import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,8 @@ class ReservaServiceImplTest {
     @Mock private ParqueaderoService parqueaderoService;
     @Mock private EspacioService espacioService;
     @Mock private EmailService emailService;
+    // Sin configurar responde "pagos apagados": las reservas se comportan sin cobro.
+    @Mock private PagoService pagoService;
 
     private ReservaServiceImpl servicio;
 
@@ -66,10 +69,11 @@ class ReservaServiceImplTest {
     void preparar() {
         ParkingProperties properties = new ParkingProperties();
         properties.getReservas().setMinutosTolerancia(120);
+        properties.getPagos().setMinutosParaPagar(15);
 
         servicio = new ReservaServiceImpl(reservaRepository, registroParqueoRepository,
                 usuarioRepository, usuarioService, parqueaderoService, espacioService,
-                emailService, properties);
+                emailService, pagoService, properties);
 
         cliente = new Usuario();
         cliente.setId(ID_CLIENTE);
@@ -417,6 +421,195 @@ class ReservaServiceImplTest {
 
             assertThat(servicio.expirarReservasVencidas()).isZero();
             verify(parqueaderoService, never()).liberarEspacio(anyString());
+        }
+    }
+
+    @Nested
+    @DisplayName("Anticipo al reservar")
+    class Anticipo {
+
+        @Test
+        @DisplayName("con la pasarela activa, la reserva nace PENDIENTE_PAGO con el anticipo de la primera hora")
+        void naceEsperandoElPago() {
+            when(pagoService.pagosHabilitados()).thenReturn(true);
+            when(pagoService.calcularAnticipo(parqueadero)).thenReturn(5_000d);
+
+            Reserva creada = servicio.crearReserva(ID_CLIENTE, formulario(2));
+
+            assertThat(creada.getEstado()).isEqualTo(EstadoReserva.PENDIENTE_PAGO);
+            assertThat(creada.getAnticipo()).isEqualTo(5_000d);
+            assertThat(creada.getCreadaEn()).isNotNull();
+            // Apartar el cubículo no descuenta cupo: eso sigue ocurriendo al aceptarla.
+            verify(parqueaderoService, never()).ocuparEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("el parqueadero no puede aceptar una reserva que aún no pagó el anticipo")
+        void sinPagoNoSeAcepta() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+
+            assertThatThrownBy(() -> servicio.aceptarReserva(ID_RESERVA, ID_ADMIN))
+                    .isInstanceOf(ReglaNegocioException.class);
+            verify(parqueaderoService, never()).ocuparEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("si el parqueadero rechaza, el anticipo se devuelve al cliente")
+        void rechazarDevuelve() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+
+            servicio.rechazarReserva(ID_RESERVA, ID_ADMIN);
+
+            verify(pagoService).devolverAnticipo(reserva);
+            verify(pagoService, never()).retenerAnticipo(any());
+        }
+
+        @Test
+        @DisplayName("cancelar con tiempo devuelve el anticipo")
+        void cancelarATiempoDevuelve() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+            when(pagoService.cancelarDaDerechoADevolucion(reserva)).thenReturn(true);
+
+            servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE);
+
+            verify(pagoService).devolverAnticipo(reserva);
+            verify(pagoService, never()).retenerAnticipo(any());
+        }
+
+        @Test
+        @DisplayName("cancelar a última hora deja el anticipo al parqueadero")
+        void cancelarTardeRetiene() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+            when(pagoService.cancelarDaDerechoADevolucion(reserva)).thenReturn(false);
+
+            servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE);
+
+            verify(pagoService).retenerAnticipo(reserva);
+            verify(pagoService, never()).devolverAnticipo(any());
+        }
+
+        @Test
+        @DisplayName("si la cancelación no llegó a aplicarse, el anticipo no se toca")
+        void cancelacionFallidaNoMueveDinero() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(any(), any(), any())).thenReturn(0L);
+
+            assertThatThrownBy(() -> servicio.cancelarReserva(ID_RESERVA, ID_CLIENTE))
+                    .isInstanceOf(ReglaNegocioException.class);
+            verify(pagoService, never()).devolverAnticipo(any());
+            verify(pagoService, never()).retenerAnticipo(any());
+        }
+
+        @Test
+        @DisplayName("quien no llega pierde el anticipo")
+        void noLlegarRetiene() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.ACEPTADA);
+            when(reservaRepository.findByEstadoAndFechaReservaBefore(eq(EstadoReserva.ACEPTADA), any()))
+                    .thenReturn(List.of(reserva));
+
+            servicio.expirarReservasVencidas();
+
+            verify(pagoService).retenerAnticipo(reserva);
+        }
+
+        @Test
+        @DisplayName("eliminar una reserva aceptada devuelve el anticipo, igual que rechazarla")
+        void eliminarAceptadaDevuelve() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.ACEPTADA);
+            when(reservaRepository.findById(ID_RESERVA)).thenReturn(Optional.of(reserva));
+
+            servicio.eliminarReserva(ID_RESERVA, ID_ADMIN);
+
+            verify(pagoService).devolverAnticipo(reserva);
+        }
+
+        @Test
+        @DisplayName("la reserva que no se paga a tiempo se cancela y libera el cubículo apartado")
+        void sinPagoATiempoSeCancela() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            when(pagoService.pagosHabilitados()).thenReturn(true);
+            when(reservaRepository.findByEstadoAndCreadaEnBefore(eq(EstadoReserva.PENDIENTE_PAGO), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+
+            assertThat(servicio.cancelarReservasSinPago()).isEqualTo(1);
+            assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.CANCELADA);
+            // Nunca descontó cupo, así que no hay cupo que devolver.
+            verify(parqueaderoService, never()).liberarEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("con los pagos apagados, las reservas que quedaron esperando pago también se limpian")
+        void sinPagoSeLimpiaConLosPagosApagados() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            when(pagoService.pagosHabilitados()).thenReturn(false);
+            when(reservaRepository.findByEstadoAndCreadaEnBefore(eq(EstadoReserva.PENDIENTE_PAGO), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CANCELADA))
+                    .thenReturn(1L);
+
+            assertThat(servicio.cancelarReservasSinPago()).isEqualTo(1);
+            assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.CANCELADA);
+        }
+
+        @Test
+        @DisplayName("si el cliente sí había pagado y no volvió a la app, la reserva no se cancela")
+        void pagoPerdidoSeRecupera() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            when(pagoService.pagosHabilitados()).thenReturn(true);
+            when(reservaRepository.findByEstadoAndCreadaEnBefore(eq(EstadoReserva.PENDIENTE_PAGO), any()))
+                    .thenReturn(List.of(reserva));
+            when(pagoService.recuperarPagoPerdido(reserva)).thenReturn(true);
+
+            assertThat(servicio.cancelarReservasSinPago()).isZero();
+            verify(reservaRepository, never()).cambiarEstadoSi(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("si llega la hora y el parqueadero nunca respondió, se rechaza y se devuelve el anticipo")
+        void sinRespuestaSeRechazaYDevuelve() {
+            Reserva reserva = reservaPendiente(2);
+            reserva.setFechaReserva(LocalDateTime.now().minusMinutes(1));
+            when(reservaRepository.findByEstadoAndFechaReservaBefore(eq(EstadoReserva.PENDIENTE), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA))
+                    .thenReturn(1L);
+
+            assertThat(servicio.rechazarReservasSinRespuesta()).isEqualTo(1);
+            assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.RECHAZADA);
+            verify(pagoService).devolverAnticipo(reserva);
+            verify(pagoService, never()).retenerAnticipo(any());
+            // Una reserva pendiente no había tomado cupo: no hay cupo que devolver.
+            verify(parqueaderoService, never()).liberarEspacio(anyString());
+        }
+
+        @Test
+        @DisplayName("si el administrador la acepta en el mismo instante, gana su decisión y no se devuelve nada")
+        void sinRespuestaCarreraConElAdministrador() {
+            Reserva reserva = reservaPendiente(2);
+            when(reservaRepository.findByEstadoAndFechaReservaBefore(eq(EstadoReserva.PENDIENTE), any()))
+                    .thenReturn(List.of(reserva));
+            when(reservaRepository.cambiarEstadoSi(ID_RESERVA, EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA))
+                    .thenReturn(0L);
+
+            assertThat(servicio.rechazarReservasSinRespuesta()).isZero();
+            verify(pagoService, never()).devolverAnticipo(any());
         }
     }
 }

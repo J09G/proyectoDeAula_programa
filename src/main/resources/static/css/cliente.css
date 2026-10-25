@@ -248,3 +248,28 @@ body { overflow-x: clip; }
   .mapa-clientes { height: 420px; }
   .mapa-lista { max-height: none; }
 }
+
+/* ── Pago del anticipo ─────────────────────────────────────────────────── */
+.reserva-anticipo {
+  margin: 18px 0 14px; padding: 12px 14px;
+  border-radius: 12px; font-size: 0.9375rem;
+  background: var(--teal-soft); color: var(--teal-text);
+}
+.pago { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.pago-datos { display: grid; gap: 12px; margin: 0 0 22px; }
+.pago-datos div { display: flex; justify-content: space-between; gap: 16px; }
+.pago-datos dt { color: var(--gray-500); }
+.pago-datos dd { margin: 0; font-weight: 600; text-align: right; }
+.pago-total {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding-top: 18px; border-top: 1px solid var(--gray-200);
+}
+.pago-total strong { font-family: var(--fuente-titulo); font-size: 2rem; letter-spacing: -.03em; }
+.pago-nota { margin: 6px 0 22px; color: var(--gray-500); font-size: 0.875rem; }
+.pago-boton { display: inline-flex; justify-content: center; }
+.pago-plazo { margin-top: 14px; font-weight: 600; color: var(--coral); font-size: 0.9375rem; }
+.pago-seguro { margin-top: 6px; color: var(--gray-500); font-size: 0.8125rem; }
+.pago-politica ul { margin: 0 0 22px; padding-left: 20px; display: grid; gap: 10px; color: var(--gray-600); }
+@media (max-width: 820px) {
+  .pago { grid-template-columns: 1fr; }
+}

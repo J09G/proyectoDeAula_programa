@@ -96,7 +96,17 @@ public class OpenPdfFacturaService implements FacturaPdfService {
     }
 
     private void escribirTotal(Document documento, RegistroParqueo registro) {
-        Paragraph total = new Paragraph("TOTAL A PAGAR: $" + registro.getValorPagado(), TOTAL);
+        // Con anticipo se desglosa: valor del servicio, lo pagado al reservar y el saldo.
+        String texto = "TOTAL A PAGAR: $" + registro.getValorPagado();
+        if (registro.anticipoAplicado() > 0) {
+            Paragraph desglose = new Paragraph(
+                    "Valor del servicio: $" + registro.getValorPagado()
+                    + "\nAnticipo pagado al reservar: - $" + registro.getAnticipo());
+            desglose.setAlignment(Element.ALIGN_RIGHT);
+            documento.add(desglose);
+            texto = "SALDO A PAGAR: $" + registro.getSaldoAPagar();
+        }
+        Paragraph total = new Paragraph(texto, TOTAL);
         total.setAlignment(Element.ALIGN_RIGHT);
         documento.add(total);
     }

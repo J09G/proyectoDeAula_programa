@@ -634,7 +634,7 @@ label {
 /* ══════════════════════════════════════════════════════════════════════════
    DISTINTIVOS — píldora suave con el punto de estado
    ══════════════════════════════════════════════════════════════════════════ */
-.estado-pendiente, .estado-aceptada, .estado-rechazada,
+.estado-pendiente, .estado-pendiente_pago, .estado-aceptada, .estado-rechazada,
 .estado-utilizada, .estado-expirada, .estado-cancelada,
 .estado-activo, .estado-finalizado,
 .estado-habilitado, .estado-deshabilitado, .estado-inactivo,
@@ -644,7 +644,7 @@ label {
   font-size: 0.75rem; font-weight: 700;
   white-space: nowrap; color: var(--gray-600); background: var(--gray-100);
 }
-.estado-pendiente::before, .estado-aceptada::before, .estado-rechazada::before,
+.estado-pendiente::before, .estado-pendiente_pago::before, .estado-aceptada::before, .estado-rechazada::before,
 .estado-utilizada::before, .estado-expirada::before, .estado-cancelada::before,
 .estado-activo::before, .estado-finalizado::before,
 .estado-habilitado::before, .estado-deshabilitado::before, .estado-inactivo::before,
@@ -654,6 +654,12 @@ label {
   background: currentColor; flex-shrink: 0;
 }
 .estado-pendiente  { color: var(--warn); background: var(--warn-soft); }
+/* Falta el anticipo: llama más la atención que una pendiente normal. */
+.estado-pendiente_pago { color: var(--coral); background: color-mix(in srgb, var(--coral) 14%, transparent); }
+/* Qué pasó con el anticipo, bajo el estado de la reserva. */
+.reserva-pago { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--gray-500); }
+.btn-pagar-sm { color: #FFFFFF; background: var(--coral); margin-bottom: 6px; }
+.btn-pagar-sm:hover { color: #FFFFFF; filter: brightness(.95); }
 .estado-aceptada, .estado-habilitado, .badge-ok { color: var(--success); background: var(--success-soft); }
 .estado-rechazada, .estado-deshabilitado, .badge-off { color: var(--danger); background: var(--danger-soft); }
 .estado-utilizada, .estado-activo, .badge-reserva { color: var(--teal-text); background: var(--teal-soft); }

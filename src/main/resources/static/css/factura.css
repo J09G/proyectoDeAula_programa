@@ -64,3 +64,6 @@
   .factura-wrap { max-width: 100%; }
   .factura-box { border: none; padding: 0; }
 }
+
+/* Desglose cuando hubo anticipo: valor del servicio, lo ya pagado y el saldo. */
+.factura-desglose { margin-top: 8px; border-top: 1px solid var(--gray-200); }

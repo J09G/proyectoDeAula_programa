@@ -41,6 +41,23 @@ public interface ReservaService {
     void eliminarReserva(String idReserva, String idAdministrador);
 
     /**
+     * Cancela las reservas cuyo anticipo no se pagó dentro del plazo, y libera
+     * el cubículo que tenían apartado. Antes de cancelar cada una pregunta a la
+     * pasarela, por si el cliente pagó y no volvió a la aplicación.
+     *
+     * @return número de reservas canceladas por falta de pago
+     */
+    int cancelarReservasSinPago();
+
+    /**
+     * Rechaza las reservas pendientes cuya hora de llegada ya pasó sin que el
+     * parqueadero las aceptara o rechazara, y devuelve el anticipo si lo hubo.
+     *
+     * @return número de reservas rechazadas por falta de respuesta
+     */
+    int rechazarReservasSinRespuesta();
+
+    /**
      * Marca como EXPIRADA toda reserva aceptada cuya hora de llegada pasó hace
      * más de la tolerancia configurada, y devuelve su cubículo al inventario.
      *

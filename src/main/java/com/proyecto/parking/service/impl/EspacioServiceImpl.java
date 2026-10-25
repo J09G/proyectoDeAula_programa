@@ -47,12 +47,19 @@ public class EspacioServiceImpl implements EspacioService {
     public Set<Integer> calcularEspaciosPendientes(String idParqueadero) {
         Set<Integer> pendientes = new HashSet<>();
 
-        reservaRepository
-                .findByParqueadero_IdAndEstado(idParqueadero, Reserva.EstadoReserva.PENDIENTE)
-                .stream()
-                .map(Reserva::getEspacioReservado)
-                .filter(java.util.Objects::nonNull)
-                .forEach(pendientes::add);
+        // También las que esperan el pago del anticipo: el cubículo está apartado
+        // unos minutos y no debe ofrecerse a otro cliente mientras tanto.
+        for (Reserva.EstadoReserva estado : Reserva.EstadoReserva.values()) {
+            if (!estado.apartaEspacio()) {
+                continue;
+            }
+            reservaRepository
+                    .findByParqueadero_IdAndEstado(idParqueadero, estado)
+                    .stream()
+                    .map(Reserva::getEspacioReservado)
+                    .filter(java.util.Objects::nonNull)
+                    .forEach(pendientes::add);
+        }
 
         return pendientes;
     }

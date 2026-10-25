@@ -122,8 +122,14 @@
         <input type="datetime-local" id="fechaReserva" name="fechaReserva" required th:value="${llegada}" />
         <small th:text="#{reserva.fechaAyuda}">Cuándo planeas llegar.</small>
 
+        <!-- Con la pasarela activa se cobra un anticipo: se avisa antes de reservar. -->
+        <p class="reserva-anticipo" th:if="${anticipo != null}"
+           th:utext="#{reserva.avisoAnticipo(${'$' + #numbers.formatDecimal(anticipo, 1, 'POINT', 0, 'COMMA')}, ${minutosAntelacion})}">
+          Al reservar pagas un anticipo de <strong>$5.000</strong>.
+        </p>
+
         <button type="submit" class="btn-primary btn-ancho" id="btnReserva" disabled>
-          <span th:text="#{reserva.confirmar}">Confirmar reserva</span>
+          <span th:text="${anticipo != null} ? #{reserva.confirmarYPagar} : #{reserva.confirmar}">Confirmar reserva</span>
           <svg th:replace="~{fragments/layout :: flecha}"></svg>
         </button>
       </form>

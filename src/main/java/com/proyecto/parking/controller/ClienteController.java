@@ -4,8 +4,10 @@ import com.proyecto.parking.dto.ComentarioForm;
 import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.model.RegistroParqueo;
+import com.proyecto.parking.model.Reserva;
 import com.proyecto.parking.service.ComentarioService;
 import com.proyecto.parking.service.FacturaPdfService;
+import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.PortadaService;
 import com.proyecto.parking.service.RegistroParqueoService;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 public class ClienteController {
@@ -41,6 +44,7 @@ public class ClienteController {
     private final ParqueaderoService parqueaderoService;
     private final RegistroParqueoService registroParqueoService;
     private final FacturaPdfService facturaPdfService;
+    private final PagoService pagoService;
 
     public ClienteController(ZonaService zonaService,
                              ReservaService reservaService,
@@ -48,7 +52,8 @@ public class ClienteController {
                              PortadaService portadaService,
                              ParqueaderoService parqueaderoService,
                              RegistroParqueoService registroParqueoService,
-                             FacturaPdfService facturaPdfService) {
+                             FacturaPdfService facturaPdfService,
+                             PagoService pagoService) {
         this.zonaService = zonaService;
         this.reservaService = reservaService;
         this.comentarioService = comentarioService;
@@ -56,13 +61,17 @@ public class ClienteController {
         this.parqueaderoService = parqueaderoService;
         this.registroParqueoService = registroParqueoService;
         this.facturaPdfService = facturaPdfService;
+        this.pagoService = pagoService;
     }
 
     @GetMapping("/cliente")
     public String mostrarPanel(@AuthenticationPrincipal UsuarioPrincipal cliente, Model model) {
         // El rol ya lo exige SecurityConfig; aquí no hace falta repetir la comprobación.
         model.addAttribute("zonas", portadaService.zonasConConteo());
-        model.addAttribute("reservas", reservaService.listarReservasCliente(cliente.getId()));
+        List<Reserva> reservas = reservaService.listarReservasCliente(cliente.getId());
+        model.addAttribute("reservas", reservas);
+        // Estado del anticipo de cada reserva (pagado, devuelto, retenido...), por id de reserva.
+        model.addAttribute("pagos", pagoService.pagosPorReserva(reservas.stream().map(Reserva::getId).toList()));
         model.addAttribute("usuario", cliente);
         return "cliente/index";
     }

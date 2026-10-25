@@ -14,6 +14,7 @@ import com.proyecto.parking.repository.ReservaRepository;
 import com.proyecto.parking.repository.UsuarioRepository;
 import com.proyecto.parking.service.EmailService;
 import com.proyecto.parking.service.EspacioService;
+import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.ReservaService;
 import com.proyecto.parking.service.UsuarioService;
@@ -34,7 +35,7 @@ public class ReservaServiceImpl implements ReservaService {
 
     /** Estados que impiden al cliente pedir otra reserva en el mismo parqueadero. */
     private static final List<EstadoReserva> ESTADOS_ABIERTOS =
-            List.of(EstadoReserva.PENDIENTE, EstadoReserva.ACEPTADA);
+            List.of(EstadoReserva.PENDIENTE_PAGO, EstadoReserva.PENDIENTE, EstadoReserva.ACEPTADA);
 
     private final ReservaRepository reservaRepository;
     private final RegistroParqueoRepository registroParqueoRepository;
@@ -43,6 +44,7 @@ public class ReservaServiceImpl implements ReservaService {
     private final ParqueaderoService parqueaderoService;
     private final EspacioService espacioService;
     private final EmailService emailService;
+    private final PagoService pagoService;
     private final ParkingProperties properties;
 
     public ReservaServiceImpl(ReservaRepository reservaRepository,
@@ -52,6 +54,7 @@ public class ReservaServiceImpl implements ReservaService {
                               ParqueaderoService parqueaderoService,
                               EspacioService espacioService,
                               EmailService emailService,
+                              PagoService pagoService,
                               ParkingProperties properties) {
         this.reservaRepository = reservaRepository;
         this.registroParqueoRepository = registroParqueoRepository;
@@ -60,6 +63,7 @@ public class ReservaServiceImpl implements ReservaService {
         this.parqueaderoService = parqueaderoService;
         this.espacioService = espacioService;
         this.emailService = emailService;
+        this.pagoService = pagoService;
         this.properties = properties;
     }
 
@@ -101,9 +105,17 @@ public class ReservaServiceImpl implements ReservaService {
         Reserva nueva = new Reserva();
         nueva.setCliente(cliente);
         nueva.setParqueadero(parqueadero);
-        nueva.setEstado(EstadoReserva.PENDIENTE);
         nueva.setFechaReserva(form.getFechaReserva());
         nueva.setEspacioReservado(espacio);
+        nueva.setCreadaEn(LocalDateTime.now());
+        if (pagoService.pagosHabilitados()) {
+            // El cubículo queda apartado, pero el parqueadero no la ve como
+            // solicitud hasta que el cliente pague el anticipo.
+            nueva.setEstado(EstadoReserva.PENDIENTE_PAGO);
+            nueva.setAnticipo(pagoService.calcularAnticipo(parqueadero));
+        } else {
+            nueva.setEstado(EstadoReserva.PENDIENTE);
+        }
 
         Reserva guardada = reservaRepository.save(nueva);
         log.info("Reserva {} creada por el cliente {} en el parqueadero {}.",
@@ -130,6 +142,10 @@ public class ReservaServiceImpl implements ReservaService {
                     "Esta reserva ya no se puede cancelar: está " + anterior.name().toLowerCase() + ".");
         }
 
+        // Se decide antes de cancelar, con la hora de este instante: quien avisa
+        // con tiempo recupera el anticipo; quien cancela a última hora lo pierde.
+        boolean devolverAnticipo = pagoService.cancelarDaDerechoADevolucion(reserva);
+
         // Atómico: si el administrador la aceptó o rechazó entre la lectura de
         // arriba y este punto, no se modifica nada y no se devuelve un cupo que
         // no corresponde.
@@ -144,6 +160,12 @@ public class ReservaServiceImpl implements ReservaService {
         }
 
         reserva.setEstado(EstadoReserva.CANCELADA);
+        // Sin pago aprobado (reserva sin cobro o aún sin pagar) no hacen nada.
+        if (devolverAnticipo) {
+            pagoService.devolverAnticipo(reserva);
+        } else {
+            pagoService.retenerAnticipo(reserva);
+        }
         log.info("Reserva {} ({}) cancelada por el cliente {}.", idReserva, anterior, idCliente);
         return reserva;
     }
@@ -215,6 +237,8 @@ public class ReservaServiceImpl implements ReservaService {
         // Una reserva pendiente todavía no había tomado cupo: no hay nada que devolver.
         reserva.setEstado(EstadoReserva.RECHAZADA);
         reservaRepository.save(reserva);
+        // El cliente pagó y el parqueadero no lo recibe: se le devuelve el anticipo.
+        pagoService.devolverAnticipo(reserva);
 
         log.info("Reserva {} rechazada por el administrador {}.", idReserva, idAdministrador);
         notificarCambioEstado(reserva);
@@ -229,6 +253,11 @@ public class ReservaServiceImpl implements ReservaService {
         // devolverlo y el parqueadero perdía ese espacio para siempre.
         if (reserva.getEstado().bloqueaEspacio()) {
             parqueaderoService.liberarEspacio(reserva.getParqueadero().getId());
+        }
+
+        // Borrar una reserva que el cliente aún podía usar equivale a rechazarla.
+        if (reserva.getEstado() == EstadoReserva.PENDIENTE || reserva.getEstado() == EstadoReserva.ACEPTADA) {
+            pagoService.devolverAnticipo(reserva);
         }
 
         reservaRepository.deleteById(idReserva);
@@ -251,6 +280,8 @@ public class ReservaServiceImpl implements ReservaService {
                 reserva.setEstado(EstadoReserva.EXPIRADA);
                 reservaRepository.save(reserva);
                 parqueaderoService.liberarEspacio(reserva.getParqueadero().getId());
+                // No llegó: el parqueadero tuvo el cubículo bloqueado y se queda el anticipo.
+                pagoService.retenerAnticipo(reserva);
                 notificarCambioEstado(reserva);
                 expiradas++;
             } catch (RuntimeException e) {
@@ -263,6 +294,70 @@ public class ReservaServiceImpl implements ReservaService {
             log.info("{} reservas expiradas; sus cubículos vuelven a estar disponibles.", expiradas);
         }
         return expiradas;
+    }
+
+    @Override
+    public int rechazarReservasSinRespuesta() {
+        // Si llegó la hora y el parqueadero nunca respondió, el cliente ya no
+        // puede contar con ese cubículo: se rechaza y se le devuelve el anticipo.
+        List<Reserva> sinRespuesta = reservaRepository.findByEstadoAndFechaReservaBefore(
+                EstadoReserva.PENDIENTE, LocalDateTime.now());
+
+        int rechazadas = 0;
+        for (Reserva reserva : sinRespuesta) {
+            try {
+                // Atómico: si el administrador la acepta justo ahora, gana su decisión.
+                if (reservaRepository.cambiarEstadoSi(
+                        reserva.getId(), EstadoReserva.PENDIENTE, EstadoReserva.RECHAZADA) == 0) {
+                    continue;
+                }
+                reserva.setEstado(EstadoReserva.RECHAZADA);
+                pagoService.devolverAnticipo(reserva);
+                notificarCambioEstado(reserva);
+                rechazadas++;
+            } catch (RuntimeException e) {
+                log.error("No se pudo rechazar por falta de respuesta la reserva {}: {}",
+                        reserva.getId(), e.getMessage());
+            }
+        }
+
+        if (rechazadas > 0) {
+            log.info("{} reservas rechazadas porque el parqueadero no respondió a tiempo.", rechazadas);
+        }
+        return rechazadas;
+    }
+
+    @Override
+    public int cancelarReservasSinPago() {
+        // Corre aunque los pagos estén apagados: si se quitaron las llaves de la
+        // pasarela con reservas esperando pago, nadie podrá pagarlas y sin esta
+        // limpieza sus cubículos quedarían apartados para siempre.
+        LocalDateTime limite = LocalDateTime.now()
+                .minusMinutes(properties.getPagos().getMinutosParaPagar());
+
+        int canceladas = 0;
+        for (Reserva reserva : reservaRepository.findByEstadoAndCreadaEnBefore(EstadoReserva.PENDIENTE_PAGO, limite)) {
+            try {
+                // Puede que el cliente pagara y cerrara la pestaña antes de volver.
+                if (pagoService.recuperarPagoPerdido(reserva)) {
+                    continue;
+                }
+                if (reservaRepository.cambiarEstadoSi(
+                        reserva.getId(), EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CANCELADA) > 0) {
+                    reserva.setEstado(EstadoReserva.CANCELADA);
+                    notificarCambioEstado(reserva);
+                    canceladas++;
+                }
+            } catch (RuntimeException e) {
+                log.error("No se pudo cancelar por falta de pago la reserva {}: {}",
+                        reserva.getId(), e.getMessage());
+            }
+        }
+
+        if (canceladas > 0) {
+            log.info("{} reservas canceladas por no pagar el anticipo a tiempo.", canceladas);
+        }
+        return canceladas;
     }
 
     // ── Auxiliares ───────────────────────────────────────────────────────────

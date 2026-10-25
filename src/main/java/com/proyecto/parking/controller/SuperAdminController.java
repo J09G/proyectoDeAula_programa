@@ -7,7 +7,9 @@ import com.proyecto.parking.exception.ReglaNegocioException;
 import com.proyecto.parking.model.Parqueadero;
 import com.proyecto.parking.model.Rol;
 import com.proyecto.parking.model.Usuario;
+import com.proyecto.parking.security.UsuarioPrincipal;
 import com.proyecto.parking.service.ComentarioService;
+import com.proyecto.parking.service.PagoService;
 import com.proyecto.parking.service.ParqueaderoService;
 import com.proyecto.parking.service.UsuarioService;
 import com.proyecto.parking.service.ZonaService;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -40,12 +43,15 @@ public class SuperAdminController {
     private final ZonaService zonaService;
     private final UsuarioService usuarioService;
     private final ComentarioService comentarioService;
+    private final PagoService pagoService;
 
     public SuperAdminController(ParqueaderoService parqueaderoService,
                                 ZonaService zonaService,
                                 UsuarioService usuarioService,
-                                ComentarioService comentarioService) {
+                                ComentarioService comentarioService,
+                                PagoService pagoService) {
         this.comentarioService = comentarioService;
+        this.pagoService = pagoService;
         this.parqueaderoService = parqueaderoService;
         this.zonaService = zonaService;
         this.usuarioService = usuarioService;
@@ -260,6 +266,32 @@ public class SuperAdminController {
         comentarioService.descartarReporte(idComentario);
         flash.addFlashAttribute("mensaje", "Reporte descartado: el comentario sigue publicado.");
         return "redirect:/superadmin/comentarios";
+    }
+
+    // ── Devoluciones manuales ────────────────────────────────────────────────
+
+    /**
+     * Anticipos que la pasarela no pudo devolver sola (Nequi, PSE...). El dinero
+     * entra a la cuenta de ParkingApp, así que la devolución la hace quien la
+     * administra y aquí la deja registrada.
+     */
+    @GetMapping("/devoluciones")
+    public String verDevoluciones(Model model) {
+        model.addAttribute("devoluciones", pagoService.listarDevolucionesPendientes());
+        return "superadmin/devoluciones";
+    }
+
+    @PostMapping("/devoluciones/{idPago}/devuelto")
+    public String marcarDevuelto(@AuthenticationPrincipal UsuarioPrincipal superadmin,
+                                 @PathVariable String idPago,
+                                 RedirectAttributes flash) {
+        try {
+            pagoService.marcarDevuelto(idPago, superadmin.getId());
+            flash.addFlashAttribute("mensaje", "Devolución registrada.");
+        } catch (ReglaNegocioException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/superadmin/devoluciones";
     }
 
     // ── Auxiliares ───────────────────────────────────────────────────────────
