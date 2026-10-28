@@ -28,6 +28,10 @@ public interface RegistroParqueoRepository extends MongoRepository<RegistroParqu
 
     Page<RegistroParqueo> findByParqueadero_Id(String idParqueadero, Pageable pageable);
 
+    /** Vehículos que entraron en un intervalo: alimenta el modelo predictivo. */
+    List<RegistroParqueo> findByParqueadero_IdAndHoraEntradaBetween(
+            String idParqueadero, java.time.LocalDateTime desde, java.time.LocalDateTime hasta);
+
     /** Historial de un cliente (US-12, "Mis parqueos"). */
     Page<RegistroParqueo> findByUsuario_Id(String idUsuario, Pageable pageable);
 }

@@ -53,3 +53,7 @@ src/main/resources/application.properties
 
 ### Script de arranque local (contiene valores personales) ###
 run-local.ps1
+
+### Python (ml/)
+__pycache__/
+*.pyc

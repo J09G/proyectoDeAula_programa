@@ -134,6 +134,31 @@
     <div th:replace="~{fragments/paginacion :: nav(url='/admin/parqueadero/' + ${parqueadero.id}, params=${filtros})}"></div>
   </section>
 
+  <!-- Módulo predictivo -->
+  <section class="seccion" id="prediccion">
+    <h3 th:text="#{prediccion.tituloAdmin}">Ocupación prevista</h3>
+    <p class="comment-ayuda" th:text="#{prediccion.subAdmin}"></p>
+    <label for="fechaPrediccion" th:text="#{common.fecha}">Fecha</label>
+    <input type="date" id="fechaPrediccion" th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+           style="max-width:220px;">
+    <div class="prediccion" data-prediccion hidden
+         th:attr="data-parqueadero=${parqueadero.id}, data-url=@{/prediccion/dia},
+                  data-txt-franja=#{prediccion.franja}, data-txt-pico=#{prediccion.pico},
+                  data-txt-baja=#{prediccion.baja}, data-txt-media=#{prediccion.media}, data-txt-alta=#{prediccion.alta}"
+         data-campo="fechaPrediccion">
+      <p class="prediccion-titulo" th:text="#{prediccion.titulo}">Ocupación estimada</p>
+      <p class="prediccion-resumen" data-resumen></p>
+      <div class="prediccion-barras" data-barras role="img" th:aria-label="#{prediccion.titulo}"></div>
+      <p class="prediccion-leyenda">
+        <span class="nivel-baja" th:text="#{prediccion.baja}">baja</span>
+        <span class="nivel-media" th:text="#{prediccion.media}">media</span>
+        <span class="nivel-alta" th:text="#{prediccion.alta}">alta</span>
+      </p>
+      <small th:text="#{prediccion.aviso}">Estimación del modelo predictivo; puede variar.</small>
+      <small data-nota hidden th:text="#{prediccion.sinHistorial}"></small>
+    </div>
+  </section>
+
   <!-- Comentarios -->
   <section class="seccion">
     <h3 th:text="#{admin.comentarios}">Comentarios de los clientes</h3>
@@ -163,5 +188,6 @@
 </main>
 
 <th:block th:replace="~{fragments/layout :: pie}"></th:block>
+<script th:src="@{/js/prediccion.js}"></script>
 </body>
 </html>

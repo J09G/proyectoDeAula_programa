@@ -1,0 +1,166 @@
+{
+  "filas": {
+    "entrenamiento": 15368,
+    "validacion": 4216,
+    "prueba": 4080
+  },
+  "busqueda_profundidad_arbol": [
+    {
+      "profundidad": 3,
+      "MAE": 8.43,
+      "RMSE": 11.11,
+      "R2": 0.692,
+      "acierto_nivel": 0.845
+    },
+    {
+      "profundidad": 4,
+      "MAE": 8.06,
+      "RMSE": 10.64,
+      "R2": 0.718,
+      "acierto_nivel": 0.859
+    },
+    {
+      "profundidad": 5,
+      "MAE": 7.89,
+      "RMSE": 10.4,
+      "R2": 0.731,
+      "acierto_nivel": 0.861
+    },
+    {
+      "profundidad": 6,
+      "MAE": 7.73,
+      "RMSE": 10.16,
+      "R2": 0.743,
+      "acierto_nivel": 0.861
+    },
+    {
+      "profundidad": 8,
+      "MAE": 7.53,
+      "RMSE": 9.89,
+      "R2": 0.756,
+      "acierto_nivel": 0.866
+    },
+    {
+      "profundidad": 10,
+      "MAE": 7.44,
+      "RMSE": 9.79,
+      "R2": 0.761,
+      "acierto_nivel": 0.865
+    },
+    {
+      "profundidad": 12,
+      "MAE": 7.38,
+      "RMSE": 9.72,
+      "R2": 0.764,
+      "acierto_nivel": 0.864
+    },
+    {
+      "profundidad": 15,
+      "MAE": 7.38,
+      "RMSE": 9.71,
+      "R2": 0.765,
+      "acierto_nivel": 0.863
+    }
+  ],
+  "profundidad_elegida": 12,
+  "resultados_prueba": {
+    "Promedio histórico": {
+      "MAE": 7.61,
+      "RMSE": 10.13,
+      "R2": 0.781,
+      "acierto_nivel": 0.85
+    },
+    "Regresión lineal": {
+      "MAE": 8.14,
+      "RMSE": 10.48,
+      "R2": 0.765,
+      "acierto_nivel": 0.833
+    },
+    "Árbol de decisión": {
+      "MAE": 7.73,
+      "RMSE": 10.04,
+      "R2": 0.784,
+      "acierto_nivel": 0.846
+    },
+    "Bosque aleatorio": {
+      "MAE": 7.4,
+      "RMSE": 9.6,
+      "R2": 0.803,
+      "acierto_nivel": 0.849
+    }
+  },
+  "menor_error": "Bosque aleatorio",
+  "modelo_exportado": "Bosque aleatorio",
+  "importancia_variables": {
+    "ocupacion_semana_anterior": 0.8585,
+    "reservas_pct": 0.0408,
+    "hora": 0.03,
+    "dia_semana": 0.0187,
+    "es_fin_de_semana": 0.0101,
+    "es_festivo": 0.0101,
+    "capacidad": 0.0085,
+    "zona_Getsemani": 0.0062,
+    "tarifa_hora": 0.0061,
+    "temporada_alta": 0.0052,
+    "zona_Manga": 0.0026,
+    "zona_Bocagrande": 0.0013,
+    "zona_Otra": 0.0011,
+    "zona_Centro Historico": 0.0006
+  },
+  "resultados_por_zona": {
+    "Bocagrande": {
+      "MAE": 8.09,
+      "RMSE": 10.59,
+      "R2": 0.748,
+      "acierto_nivel": 0.784
+    },
+    "Centro Historico": {
+      "MAE": 7.94,
+      "RMSE": 10.33,
+      "R2": 0.731,
+      "acierto_nivel": 0.796
+    },
+    "Getsemani": {
+      "MAE": 6.91,
+      "RMSE": 8.87,
+      "R2": 0.87,
+      "acierto_nivel": 0.914
+    },
+    "Manga": {
+      "MAE": 6.37,
+      "RMSE": 8.24,
+      "R2": 0.836,
+      "acierto_nivel": 0.9
+    },
+    "Otra": {
+      "MAE": 6.92,
+      "RMSE": 8.62,
+      "R2": 0.446,
+      "acierto_nivel": 0.906
+    }
+  },
+  "matriz_confusion_niveles": {
+    "orden": [
+      "Baja",
+      "Media",
+      "Alta"
+    ],
+    "filas_real_columnas_predicho": [
+      [
+        2548,
+        167,
+        0
+      ],
+      [
+        312,
+        822,
+        23
+      ],
+      [
+        1,
+        112,
+        95
+      ]
+    ]
+  }
+}
