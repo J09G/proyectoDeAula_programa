@@ -291,7 +291,7 @@ h1, h2, h3, h4, .fuente-titulo {
 .nav-salir {
   display: inline-flex; align-items: center; justify-content: center;
   width: 32px; height: 32px;
-  background: none; border: none; cursor: pointer;
+  background: none; border: none; cursor: var(--cursor-mano, pointer);
   border-radius: 50%;
   color: var(--gray-500);
   transition: background .13s, color .13s;
@@ -301,7 +301,7 @@ h1, h2, h3, h4, .fuente-titulo {
 
 .nav-toggle {
   display: none;
-  background: none; border: none; cursor: pointer;
+  background: none; border: none; cursor: var(--cursor-mano, pointer);
   width: 40px; height: 40px;
   border-radius: 50%;
   color: var(--gray-700);
@@ -450,7 +450,7 @@ h1, h2, h3, h4, .fuente-titulo {
   width: 36px; height: 36px;
   background: none; color: var(--gray-500);
   border: none; border-radius: 50%;
-  cursor: pointer; transition: background .13s, color .13s;
+  cursor: var(--cursor-mano, pointer); transition: background .13s, color .13s;
 }
 .ctrl-btn:hover { background: var(--gray-100); color: var(--gray-900); }
 .ctrl-btn svg { width: 18px; height: 18px; }
@@ -484,7 +484,7 @@ h1, h2, h3, h4, .fuente-titulo {
   background: var(--coral); color: #FFFFFF;
   border: 1px solid var(--coral); border-radius: var(--pildora);
   font-family: inherit; font-size: 0.9375rem; font-weight: 700;
-  cursor: pointer; text-decoration: none; white-space: nowrap;
+  cursor: var(--cursor-mano, pointer); text-decoration: none; white-space: nowrap;
   box-shadow: var(--coral-glow);
   transition: background .15s, transform .12s, box-shadow .15s;
 }
@@ -508,7 +508,7 @@ a:hover > .flecha, button:hover > .flecha { transform: translateX(3px); }
   background: var(--surface); color: var(--teal-text);
   border: 1.5px solid var(--teal-border); border-radius: var(--pildora);
   font-family: inherit; font-size: 0.9375rem; font-weight: 700;
-  cursor: pointer; text-decoration: none; white-space: nowrap;
+  cursor: var(--cursor-mano, pointer); text-decoration: none; white-space: nowrap;
   transition: background .15s, border-color .15s, color .15s;
 }
 .btn-secundario:hover { background: var(--teal-soft); border-color: var(--teal); color: var(--teal-text); }
@@ -519,7 +519,7 @@ a:hover > .flecha, button:hover > .flecha { transform: translateX(3px); }
   background: var(--surface); color: var(--gray-700);
   border: 1px solid var(--gray-300); border-radius: var(--pildora);
   font-family: inherit; font-size: 0.875rem; font-weight: 700;
-  cursor: pointer; text-decoration: none; transition: background .13s, border-color .13s, color .13s;
+  cursor: var(--cursor-mano, pointer); text-decoration: none; transition: background .13s, border-color .13s, color .13s;
 }
 .btn:hover { background: var(--teal-soft); border-color: var(--teal-border); color: var(--teal-text); }
 
@@ -528,7 +528,7 @@ a:hover > .flecha, button:hover > .flecha { transform: translateX(3px); }
   display: inline-flex; align-items: center; gap: 5px;
   padding: 6px 13px; border-radius: var(--pildora);
   font-family: inherit; font-size: 0.8125rem; font-weight: 700;
-  cursor: pointer; text-decoration: none;
+  cursor: var(--cursor-mano, pointer); text-decoration: none;
   background: none; border: 1px solid transparent;
   transition: background .13s, border-color .13s;
 }
@@ -799,7 +799,7 @@ label {
 .cubiculo.pendiente { background: var(--warn-soft); border-color: var(--warn-border); color: var(--warn); }
 .cubiculo.ocupado   { background: var(--gray-100);  border-color: var(--gray-200);    color: var(--gray-400); }
 
-.cubiculo-selectable { cursor: pointer; }
+.cubiculo-selectable { cursor: var(--cursor-mano, pointer); }
 .cubiculo-selectable:hover {
   transform: translateY(-3px);
   border-color: var(--teal);
@@ -846,7 +846,7 @@ label {
 }
 .estrellas-input input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .estrellas-input label {
-  margin: 0; cursor: pointer; text-transform: none; letter-spacing: 0;
+  margin: 0; cursor: var(--cursor-mano, pointer); text-transform: none; letter-spacing: 0;
   color: var(--gray-300); transition: color .12s, transform .12s;
 }
 .estrellas-input label svg { width: 30px; height: 30px; fill: currentColor; display: block; }
@@ -1060,4 +1060,48 @@ hr { border: none; border-top: 1px solid var(--gray-200); }
   .zona-foto-pie { padding: 14px; }
   .zona-foto-pie strong { font-size: 1rem; }
   .parqueo-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Módulo predictivo: ocupación estimada por hora ─────────────────────── */
+.prediccion { margin: 14px 0 18px; padding: 14px 16px; border: 1px solid var(--gray-200); border-radius: 12px; background: var(--gray-50); }
+.prediccion-titulo { margin: 0 0 4px; font-size: 0.8125rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--gray-500); }
+.prediccion-resumen { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+.prediccion-resumen.nivel-baja  { color: var(--success); }
+.prediccion-resumen.nivel-media { color: var(--warn); }
+.prediccion-resumen.nivel-alta  { color: var(--danger); }
+.prediccion-barras { display: flex; align-items: flex-end; gap: 4px; height: 110px; }
+.prediccion-columna { flex: 1 1 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.prediccion-barra { display: block; width: 100%; border-radius: 4px 4px 0 0; background: var(--gray-300); }
+.prediccion-columna.nivel-baja  .prediccion-barra { background: var(--success); }
+.prediccion-columna.nivel-media .prediccion-barra { background: var(--warn); }
+.prediccion-columna.nivel-alta  .prediccion-barra { background: var(--danger); }
+.prediccion-columna.elegida .prediccion-barra { outline: 2px solid var(--teal); outline-offset: 1px; }
+.prediccion-hora { margin-top: 4px; font-size: 0.6875rem; color: var(--gray-500); }
+.prediccion-columna.elegida .prediccion-hora { font-weight: 700; color: var(--teal); }
+.prediccion-leyenda { display: flex; gap: 14px; margin: 10px 0 6px; font-size: 0.75rem; color: var(--gray-600); }
+.prediccion-leyenda span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; }
+.prediccion-leyenda .nivel-baja::before  { background: var(--success); }
+.prediccion-leyenda .nivel-media::before { background: var(--warn); }
+.prediccion-leyenda .nivel-alta::before  { background: var(--danger); }
+.prediccion small { display: block; color: var(--gray-500); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CURSOR CON EL PIN DE PARKINGAPP
+   Pin verde para navegar y pin coral sobre lo que se puede pulsar; la punta
+   del pin es la que señala. Solo en equipos con ratón: en pantallas táctiles
+   no hay cursor. Las reglas que antes decían "cursor: pointer" usan
+   var(--cursor-mano, pointer), así que sin esta media query vuelven a la mano.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  :root {
+    --cursor-pin:  url('/images/marca/cursor-pin.svg') 13 31, auto;
+    --cursor-mano: url('/images/marca/cursor-pin-mano.svg') 13 31, pointer;
+  }
+  body { cursor: var(--cursor-pin); }
+  a[href], button:not(:disabled), summary, select, label[for], [role="button"],
+  input[type="checkbox"], input[type="radio"], input[type="submit"],
+  input[type="button"], input[type="range"] { cursor: var(--cursor-mano); }
+  /* El texto se sigue escribiendo con el cursor de texto de siempre. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]),
+  textarea, [contenteditable="true"] { cursor: text; }
 }
